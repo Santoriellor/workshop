@@ -11,6 +11,8 @@ cssselect2==0.7.0
 Django==5.1.5
 django-cors-headers==4.6.0
 djangorestframework==3.15.2
+djangorestframework_simplejwt==5.4.0
+Faker==35.0.0
 html5lib==1.1
 idna==3.10
 lxml==5.3.0
@@ -20,8 +22,10 @@ pillow==11.1.0
 pycparser==2.22
 pyHanko==0.25.3
 pyhanko-certvalidator==0.26.5
+PyJWT==2.10.1
 pypdf==5.1.0
 python-bidi==0.6.3
+python-dateutil==2.9.0.post0
 PyYAML==6.0.2
 qrcode==8.0
 reportlab==4.2.5
@@ -30,6 +34,7 @@ six==1.17.0
 sqlparse==0.5.3
 svglib==1.5.1
 tinycss2==1.4.0
+typing_extensions==4.12.2
 tzlocal==5.2
 uritools==4.0.3
 urllib3==2.3.0

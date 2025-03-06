@@ -1,0 +1,57 @@
+.scroll-to-top-container {
+  position: fixed;
+  bottom: 20px;
+  right: -80px;
+  width: 40px;
+  height: 48px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 2px #4ca1af solid;
+  border-right: none;
+  background-color: lightblue;
+  z-index: 1000;
+  cursor: default;
+  opacity: 0;
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.scroll-to-top {
+  position: relative;
+  left: -25px;
+  margin: 0;
+  padding: 0;
+  border: 2px #4ca1af solid;
+  border-top-left-radius: 50%;
+  border-bottom-left-radius: 50%;
+  border-right: none;
+  background: lightblue;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.scroll-to-top-container.show {
+  transform: translateX(-80px);
+  opacity: 1;
+}
+
+.scroll-to-top .icon {
+  position: relative;
+  top: -1px;
+  cursor: pointer;
+  width: 50px;
+  height: 50px;
+  fill: white;
+  stroke: #4ca1af;
+  transition: all 0.3s ease-in-out;
+}
+
+.scroll-to-top .icon:hover {
+  stroke: #0056b3;
+  filter: drop-shadow(0 0 5px #0056b3);
+}

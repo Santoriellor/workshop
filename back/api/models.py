@@ -1,23 +1,150 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.utils import timezone
+from django.db.models.signals import post_save
+from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 
-class Client(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    phone = models.CharField(max_length=15)
-    address = models.CharField(max_length=200)
+# -------------- USER & PROFILE --------------
+class User(AbstractUser):
+    username = models.CharField(max_length=100, unique=True)
+    email = models.EmailField(unique=True)
+
+    USERNAME_FIELD = 'email'  # Use email as the login credential
+    REQUIRED_FIELDS = ['username']  # Username is still required for createsuperuser
+
+    def profile(self):
+        try:
+            return self.userprofile
+        except UserProfile.DoesNotExist:
+            return None
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=1000)
+    bio = models.CharField(max_length=100)
+    image = models.ImageField(upload_to="user_images", default="default.jpg")
+    verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user.email
+
+# -------- VEHICLE & OWNER MODELS --------
+class Owner(models.Model):
+    full_name = models.CharField(max_length=100)
+    address = models.TextField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
+
+    def __str__(self):
+        return self.full_name
+
+class Vehicle(models.Model):
+    owner = models.ForeignKey(Owner, on_delete=models.CASCADE)
+    brand = models.CharField(max_length=50)
+    model = models.CharField(max_length=50)
+    license_plate = models.CharField(max_length=20, unique=True)
+    year = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.brand} {self.model} ({self.license_plate})"
+
+    
+# ---------- REPORT & TASKS ------------
+class Report(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('exported', 'Exported')
+    ]
+
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    remarks = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Report number {self.id} for {self.vehicle} - {self.status}"
+    
+    def get_status_display(self):
+        """Returns the user-readable status."""
+        return dict(self.STATUS_CHOICES).get(self.status, self.status)
+
+
+class TaskTemplate(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def __str__(self):
         return self.name
-
-class Report(models.Model):
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    status = models.CharField(max_length=50, default="Open")
+    
+class Task(models.Model):
+    report = models.ForeignKey(Report, on_delete=models.CASCADE)
+    task_template = models.ForeignKey(TaskTemplate, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return self.title
+        return f"{self.task_template.name} in Report {self.report.id}"
+    
+    
+# -------- INVENTORY & REPAIR PARTS --------    
+class Inventory(models.Model):
+    name = models.CharField(max_length=100)
+    reference_code = models.CharField(max_length=50, unique=True)
+    category = models.CharField(max_length=50, blank=True, null=True)
+    quantity_in_stock = models.PositiveIntegerField(default=0)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.reference_code})"
+    
+class Part(models.Model):
+    report = models.ForeignKey(Report, on_delete=models.CASCADE)
+    part = models.ForeignKey(Inventory, on_delete=models.CASCADE)
+    quantity_used = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.quantity_used}x {self.part.name} for {self.report}"
+
+    def save(self, *args, **kwargs):
+        """ Override save method to update inventory automatically """
+        if self.pk is None:  # Only deduct stock on creation, not on update
+            if self.part.quantity_in_stock >= self.quantity_used:
+                self.part.quantity_in_stock -= self.quantity_used
+                self.part.save()
+            else:
+                raise ValueError("Not enough stock available")
+        super().save(*args, **kwargs)
+
+
+# -------- INVOICE --------
+class Invoice(models.Model):
+    invoice_number = models.CharField(max_length=20, unique=True)
+    report = models.ForeignKey(Report, on_delete=models.CASCADE)
+    issued_date = models.DateTimeField(default=timezone.now)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def calculate_total_cost(self):
+        """Automatically calculate total cost from linked repairs"""
+        self.total_cost = sum(repair.total_cost or 0 for repair in self.repairs.all())
+        self.save()
+
+    def __str__(self):
+        return f"Invoice {self.invoice_number} - {self.total_cost} CHF"
+
+    
+# Signals to create/update UserProfile when a User is created/updated
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'userprofile'):
+        instance.userprofile.save()
+
+post_save.connect(create_user_profile, sender=User)
+post_save.connect(save_user_profile, sender=User)

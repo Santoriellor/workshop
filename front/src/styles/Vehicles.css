@@ -1,0 +1,76 @@
+.vehicles-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.vehicle-card {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  width: 290px;
+  padding: 15px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.vehicle-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.vehicle-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+.vehicle-card p {
+  position: relative;
+  margin: 5px 0;
+  font-size: 14px;
+  color: #555;
+}
+.vehicle-actions {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  clip-path: inset(0 0 0 100%);
+  transition: all 0.4s ease-in;
+}
+.vehicle-card:hover .vehicle-actions {
+  clip-path: inset(0 0 0 0);
+}
+
+/* Modal in vehicle CSS */
+.form-inputs {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  letter-spacing: 2px;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 5px;
+  background-color: white;
+}
+.form-inputs label {
+  font-weight: 500;
+  letter-spacing: normal;
+}
+.form-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
