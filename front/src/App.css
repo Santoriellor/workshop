@@ -2,10 +2,82 @@
   outline: solid 1px red;
 } */
 
-.App {
-  font-family: Arial, sans-serif;
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: medium;
+  box-sizing: border-box;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+.main {
+  margin-left: 150px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .content {
+  margin-top: 0;
   padding: 20px;
+  overflow-y: auto;
+}
+
+/* Button styling */
+.btn {
+  margin: 5px;
+  padding: 12px;
+  background: #4ca1af;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 5px;
+  transition: filter 0.3s ease-in-out, background 0.3s ease-in-out;
+}
+.btn:hover {
+  background: #3b8c99;
+}
+.btn:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+}
+.btn-green {
+  padding: 6px;
+  background-color: #4caf50;
+}
+.btn-green:hover {
+  filter: drop-shadow(0 0 3px #39883c);
+  background-color: #39883c;
+}
+.btn-red {
+  padding: 6px;
+  background-color: red;
+}
+.btn-red:hover {
+  filter: drop-shadow(0 0 3px #c70303);
+  background-color: #c70303;
+}
+/* Floating Button */
+.btn-float {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  transition: filter 0.3s ease-in-out, background 0.3s ease-in-out;
+}
+
+.btn-float:hover {
+  filter: drop-shadow(0 0 5px #0056b3);
+  background-color: #0056b3;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
 }

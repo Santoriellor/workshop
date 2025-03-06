@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Daruma";
+  src: url("../assets/fonts/Daruma/DarumadropOne-Regular.ttf")
+    format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 .sidebar {
   position: fixed;
   width: 150px;
@@ -8,8 +16,70 @@
   flex-direction: column;
   align-content: flex-start;
   justify-content: flex-start;
-  background-color: #333;
+  background: linear-gradient(to right, #2c3e50, #4ca1af);
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+.sidebar-company-name {
+  font-family: "Daruma", sans-serif;
+  font-size: 20pt;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+.sidebar-logo {
+  padding: 5px;
+  width: 60px;
+  height: auto;
+  border: solid 3px rgb(0, 0, 0);
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: 0 0 7px 5px rgba(0, 0, 0, 0.5);
+}
+.sidebar-welcome {
+  margin: 0;
+  padding: 20px 5px 15px 5px;
+  text-align: center;
+  color: white;
+  font-size: large;
+  font-weight: 500;
+}
+
+.sidebar-small {
+  font-size: 10pt;
+  font-style: italic;
+  padding-bottom: 5px;
+}
+.sidebar .logout {
+  margin: 0;
+  padding: 4px;
+  padding-right: 10px;
+  width: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  transition: all 0.3s ease-in-out;
+}
+.sidebar .logout:hover {
+  background-color: #fd000056;
+  filter: drop-shadow(0 0 5px #fd0000);
+}
+.sidebar .logout svg {
+  width: 30px;
+  height: 30px;
+  fill: white;
+}
+.sidebar .logout p {
+  margin: 0;
+  padding: 0;
+  line-height: 2;
 }
 
 .sidebar ul {
@@ -39,8 +109,13 @@
   text-decoration: none;
   border: none;
   padding-left: 15px;
+  transition: background 0.3s ease-in-out;
+}
+
+.sidebar a.active {
+  background-color: #4ca1af;
 }
 
 .sidebar a:hover {
-  background-color: grey;
+  background-color: rgba(128, 128, 128, 0.7);
 }
