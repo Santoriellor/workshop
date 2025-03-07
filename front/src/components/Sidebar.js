@@ -87,6 +87,16 @@ function Sidebar() {
                 Inventory
               </Link>
             </li>
+            <li>
+              <Link
+                to="/tasktemplate"
+                className={
+                  location.pathname === "/tasktemplate" ? "active" : ""
+                }
+              >
+                Task templates
+              </Link>
+            </li>
           </ul>
         </>
       )}

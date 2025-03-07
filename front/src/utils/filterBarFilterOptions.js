@@ -103,6 +103,14 @@ const getFilterOptions = (filters) => ({
       type: "select",
     },
   ],
+  task_template: [
+    {
+      name: "search",
+      label: "Search in tasks",
+      value: filters.search,
+      placeholder: "Search in tasks",
+    },
+  ],
 });
 
 export default getFilterOptions;

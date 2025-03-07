@@ -1,4 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
 // Components
 import FilterBar from "./FilterBar";
 import DeleteModal from "./DeleteModal";
@@ -22,6 +24,7 @@ const Page = ({
   CardComponent,
   ModalComponent,
 }) => {
+  const location = useLocation();
   const { selectedItem, setSelectedItem } = useGlobalContext();
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [readonly, setReadonly] = useState(false);
@@ -72,6 +75,14 @@ const Page = ({
     setShowDeleteModal(false);
     setSelectedItem(null);
   };
+
+  // Display the corresponding Modal if viewItemId is passed in location state
+  useEffect(() => {
+    if (location.state?.viewItemId) {
+      const item = items.find((item) => item.id === location.state.viewItemId);
+      if (item) handleViewClick(item);
+    }
+  }, [location.state]);
 
   return (
     <>

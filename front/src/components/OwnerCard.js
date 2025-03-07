@@ -21,8 +21,8 @@ const OwnerCard = ({
         }
       }}
     >
+      <header>{item.full_name}</header>
       <div>
-        <h3>{item.full_name}</h3>
         <p>
           <strong>Email:</strong>&nbsp;{item.email}
         </p>
@@ -35,10 +35,18 @@ const OwnerCard = ({
         </p>
       </div>
       <div className="actions">
-        <button className="btn btn-green" onClick={() => handleEditClick(item)}>
+        <button
+          title="Edit owner"
+          className="btn btn-edit"
+          onClick={() => handleEditClick(item)}
+        >
           Edit
         </button>
-        <button className="btn btn-red" onClick={() => handleDeleteClick(item)}>
+        <button
+          title="Delete owner"
+          className="btn btn-delete"
+          onClick={() => handleDeleteClick(item)}
+        >
           Delete
         </button>
       </div>

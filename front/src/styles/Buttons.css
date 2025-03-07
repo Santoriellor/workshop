@@ -1,0 +1,56 @@
+/* Button styling */
+.btn {
+  margin: 5px;
+  padding: 12px;
+  background: #4ca1af;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 5px;
+  transition: filter 0.3s ease-in-out, background 0.3s ease-in-out;
+}
+.btn:hover {
+  background: #3b8c99;
+}
+.btn:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+}
+.btn-edit {
+  padding: 3px 6px;
+  width: 80px;
+  background-color: #555;
+}
+.btn-edit:hover {
+  filter: drop-shadow(0 0 3px #3b8c99);
+  background-color: #3b8c99;
+}
+.btn-delete {
+  padding: 3px 6px;
+  width: 80px;
+  background-color: #555;
+}
+.btn-delete:hover {
+  filter: drop-shadow(0 0 3px #c70303);
+  background-color: #c70303;
+}
+/* Floating Button */
+.btn-float {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  transition: filter 0.3s ease-in-out, background 0.3s ease-in-out;
+}
+
+.btn-float:hover {
+  filter: drop-shadow(0 0 8px white);
+  background-color: #1f646e;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}

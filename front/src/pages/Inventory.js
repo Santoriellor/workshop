@@ -7,8 +7,6 @@ import InventoryCard from "../components/InventoryCard";
 import InventoryModal from "../components/InventoryModal";
 // Contexts
 import { useInventoryContext } from "../contexts/InventoryContext";
-// Styles
-import "../styles/Inventory.css";
 
 const Inventory = () => {
   const { inventory, deleteInventoryPartWithAlert } = useInventoryContext();

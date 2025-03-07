@@ -64,5 +64,13 @@ export const filterItems = (
     );
   }
 
+  if (filters.type === "task_template") {
+    return (
+      filters.search === "" ||
+      item.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      item.description.toLowerCase().includes(filters.search.toLowerCase())
+    );
+  }
+
   return true;
 };

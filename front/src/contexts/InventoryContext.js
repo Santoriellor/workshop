@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect } from "react";
 // Hooks
 import useCRUD from "../hooks/useCRUD";
 // Utils
-import { Toast } from "../utils/sweetalert";
+import withSuccessAlert from "../utils/successAlert";
 
 const InventoryContext = createContext();
 
@@ -17,6 +17,22 @@ export const InventoryProvider = ({ children }) => {
     error,
   } = useCRUD("task-templates");
 
+  // Create a task template with success alert
+  const createTaskTemplateWithAlert = withSuccessAlert(
+    createTaskTemplate,
+    "Task created successfully!"
+  );
+  // Update a task template with success alert
+  const updateTaskTemplateWithAlert = withSuccessAlert(
+    updateTaskTemplate,
+    "Task updated successfully!"
+  );
+  // Delete a task template with success alert
+  const deleteTaskTemplateWithAlert = withSuccessAlert(
+    deleteTaskTemplate,
+    "Task deleted successfully!"
+  );
+
   const {
     data: inventory,
     fetchData: fetchInventory,
@@ -26,6 +42,22 @@ export const InventoryProvider = ({ children }) => {
     /* loading,
     error, */
   } = useCRUD("inventory");
+
+  // Create an inventory reference with success alert
+  const createInventoryPartWithAlert = withSuccessAlert(
+    createInventoryPart,
+    "Part created successfully!"
+  );
+  // Update an inventory reference with success alert
+  const updateInventoryPartWithAlert = withSuccessAlert(
+    updateInventoryPart,
+    "Part updated successfully!"
+  );
+  // Delete an inventory reference with success alert
+  const deleteInventoryPartWithAlert = withSuccessAlert(
+    deleteInventoryPart,
+    "Part deleted successfully!"
+  );
 
   // Automatically fetch data on first load
   useEffect(() => {
@@ -37,13 +69,13 @@ export const InventoryProvider = ({ children }) => {
     <InventoryContext.Provider
       value={{
         inventory,
-        createInventoryPart,
-        updateInventoryPart,
-        deleteInventoryPart,
+        createInventoryPartWithAlert,
+        updateInventoryPartWithAlert,
+        deleteInventoryPartWithAlert,
         taskTemplate,
-        createTaskTemplate,
-        updateTaskTemplate,
-        deleteTaskTemplate,
+        createTaskTemplateWithAlert,
+        updateTaskTemplateWithAlert,
+        deleteTaskTemplateWithAlert,
         loading,
         error,
       }}

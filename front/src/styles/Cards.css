@@ -8,27 +8,34 @@
 .card {
   position: relative;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex-wrap: nowrap;
   justify-content: space-between;
   width: 230px;
   padding: 15px;
-  background: #fff;
-  border: 1px solid #ddd;
+  padding-bottom: 5px;
+  background: #f5f5f5;
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
   cursor: pointer;
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 12px rgba(59, 140, 153, 0.8);
+}
+.card.low-inventory {
+  box-shadow: 0 0 16px rgba(255, 0, 0, 1);
 }
 
-.card h3 {
-  margin: 0 0 10px 0;
+.card header {
+  margin: 0 0 5px 0;
+  padding-bottom: 5px;
+  color: #555;
   font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 1.5px solid #ddd;
 }
 
 .card p {
@@ -39,16 +46,9 @@
 }
 
 .actions {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
+  position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.5rem;
-  justify-content: flex-end;
-  clip-path: inset(0 0 0 100%);
-  transition: all 0.4s ease-in;
-}
-.card:hover .actions {
-  clip-path: inset(0 0 0 0);
+  justify-content: space-evenly;
 }

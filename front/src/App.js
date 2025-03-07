@@ -17,6 +17,7 @@ import Owner from "./pages/Owner";
 import Vehicle from "./pages/Vehicle";
 import Invoices from "./pages/Invoices";
 import Inventory from "./pages/Inventory";
+import TaskTemplate from "./pages/TaskTemplate";
 // Contexts
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { UserProvider } from "./contexts/UserContext";
@@ -25,7 +26,9 @@ import { ReportProvider } from "./contexts/ReportContext";
 import { OwnerProvider } from "./contexts/OwnerContext";
 import { VehicleProvider } from "./contexts/VehicleContext";
 import { InventoryProvider } from "./contexts/InventoryContext";
+// Styles
 import "./App.css";
+import "./styles/Buttons.css";
 
 const App = () => {
   return (
@@ -63,6 +66,10 @@ const Main = () => {
                             <Route path="/vehicle" element={<Vehicle />} />
                             <Route path="/invoices" element={<Invoices />} />
                             <Route path="/inventory" element={<Inventory />} />
+                            <Route
+                              path="/tasktemplate"
+                              element={<TaskTemplate />}
+                            />
                           </Route>
 
                           {/* Redirect to login by default */}
