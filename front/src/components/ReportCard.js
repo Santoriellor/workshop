@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom";
 // Contexts
 import { useUserContext } from "../contexts/UserContext";
 import { useOwnerContext } from "../contexts/OwnerContext";
@@ -9,6 +10,9 @@ const ReportCard = ({
   handleEditClick,
   handleDeleteClick,
 }) => {
+  const location = useLocation();
+  const isPathReports = location.pathname.includes("report");
+
   const { getUserNameById } = useUserContext();
   const { getOwnerNameByVehicleId } = useOwnerContext();
   const { getVehicleInfoByVehicleId } = useVehicleContext();
@@ -71,16 +75,20 @@ const ReportCard = ({
           </svg>
         )}
       </div>
+      <header>{truncateText(getVehicleInfoByVehicleId(item.vehicle))}</header>
       <div>
-        <h3>{truncateText(getVehicleInfoByVehicleId(item.vehicle))}</h3>
-        <p>
-          <strong>Created Date:</strong>&nbsp;
-          {item.formatted_created_at}
-        </p>
-        <p>
-          <strong>Owner:</strong>&nbsp;
-          {getOwnerNameByVehicleId(item.vehicle)}
-        </p>
+        {isPathReports && (
+          <>
+            <p>
+              <strong>Created Date:</strong>&nbsp;
+              {item.formatted_created_at}
+            </p>
+            <p>
+              <strong>Owner:</strong>&nbsp;
+              {getOwnerNameByVehicleId(item.vehicle)}
+            </p>
+          </>
+        )}
         <p>
           <strong>Status:</strong>&nbsp;
           <span
@@ -102,20 +110,24 @@ const ReportCard = ({
         </p>
       </div>
       <div className="actions">
-        <button
-          title="Edit Report"
-          className="btn btn-green"
-          onClick={() => handleEditClick(item)}
-        >
-          Edit
-        </button>
-        <button
-          title="Delete Report"
-          className="btn btn-red"
-          onClick={() => handleDeleteClick(item)}
-        >
-          Delete
-        </button>
+        {isPathReports && (
+          <>
+            <button
+              title="Edit Report"
+              className="btn btn-edit"
+              onClick={() => handleEditClick(item)}
+            >
+              Edit
+            </button>
+            <button
+              title="Delete Report"
+              className="btn btn-delete"
+              onClick={() => handleDeleteClick(item)}
+            >
+              Delete
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

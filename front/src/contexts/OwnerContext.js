@@ -5,7 +5,7 @@ import { useVehicleContext } from "./VehicleContext";
 // Hooks
 import useCRUD from "../hooks/useCRUD";
 // Utils
-import { Toast } from "../utils/sweetalert";
+import withSuccessAlert from "../utils/successAlert";
 
 const OwnerContext = createContext();
 
@@ -21,40 +21,20 @@ export const OwnerProvider = ({ children }) => {
   } = useCRUD("owners");
 
   // Create a owner with success alert
-  const createOwnerWithAlert = async (ownerData) => {
-    const newOwner = await createOwner(ownerData);
-    if (newOwner) {
-      Toast.fire({
-        icon: "success",
-        title: "Owner created successfully!",
-      });
-    }
-    return newOwner;
-  };
-
+  const createOwnerWithAlert = withSuccessAlert(
+    createOwner,
+    "Owner created successfully!"
+  );
   // Update a owner with success alert
-  const updateOwnerWithAlert = async (ownerId, updatedFields) => {
-    const updatedOwner = await updateOwner(ownerId, updatedFields);
-    if (updatedOwner) {
-      Toast.fire({
-        icon: "success",
-        title: "Owner updated successfully!",
-      });
-    }
-    return updatedOwner;
-  };
-
+  const updateOwnerWithAlert = withSuccessAlert(
+    updateOwner,
+    "Owner updated successfully!"
+  );
   // Delete a owner with success alert
-  const deleteOwnerWithAlert = async (ownerId) => {
-    const success = await deleteOwner(ownerId);
-    if (success) {
-      Toast.fire({
-        icon: "success",
-        title: "Owner deleted successfully!",
-      });
-    }
-    return success;
-  };
+  const deleteOwnerWithAlert = withSuccessAlert(
+    deleteOwner,
+    "Owner deleted successfully!"
+  );
 
   const { vehicles } = useVehicleContext() || {};
 
