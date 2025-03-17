@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Contexts
 import { useInvoiceContext } from "../contexts/InvoiceContext";
@@ -9,11 +9,22 @@ import InvoiceCard from "../components/invoices/InvoiceCard";
 import FilterBar from "../components/FilterBar";
 // Utils
 import { Toast } from "../utils/sweetalert";
+import getFilterOptions from "../utils/filterBarFilterOptions";
 // Styles
 import "../styles/Cards.css";
 import "../styles/Invoices.css";
 
 const Invoices = () => {
+  const [filters, setFilters] = useState({
+    name: "",
+    email: "",
+  });
+  const filterOptions = getFilterOptions(filters).invoices;
+
+  const handleFilterChange = (name, value) => {
+    setFilters({ ...filters, [name]: value });
+  };
+
   const { invoices, fetchInvoices } = useInvoiceContext();
   const { reports, fetchReports, updateReportWithAlert } = useReportContext();
 
