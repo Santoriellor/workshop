@@ -25,7 +25,7 @@ with open(tasks_data_path, "r") as file:
 fake = Faker()
 
 def populate_inventory():
-    if Inventory.objects.exists():
+    if Inventory.objects.count() > 10:
         print("Inventory already populated.")
         return
         
@@ -39,7 +39,7 @@ def populate_inventory():
 
 
 def populate_task_templates():
-    if TaskTemplate.objects.exists():
+    if TaskTemplate.objects.count() > 10:
         print("Task templates already populated.")
         return
     
@@ -130,7 +130,8 @@ def populate_reports(users, vehicles):
             # Add 0 to 2 parts to the report
             parts = Inventory.objects.order_by('?')[:random.randint(0, 2)]
             for part in parts:
-                Part.objects.create(report=report, part=part, quantity_used=random.randint(1, 5))
+                if part.quantity_in_stock > 5:
+                    Part.objects.create(report=report, part=part, quantity_used=random.randint(1, 5))
                 
             print(f'Created report for vehicle {vehicle.license_plate}')
 
