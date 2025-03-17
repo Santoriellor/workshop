@@ -25,11 +25,11 @@ with open(tasks_data_path, "r") as file:
 fake = Faker()
 
 def populate_inventory():
+    if Inventory.objects.exists():
+        print("Inventory already populated.")
+        return
+        
     for item in inventory_data:
-        if Inventory.objects.exists():
-            print("Inventory already populated.")
-            return
-    
         # Avoid duplicate entries
         inventory, created = Inventory.objects.get_or_create(reference_code=item["reference_code"], defaults=item)
         if created:
@@ -52,6 +52,10 @@ def populate_task_templates():
             
 
 def populate_users():
+    if User.objects.count() > 3:
+        print("Users already populated.")
+        return
+    
     users = []
     for _ in range(3):
         username = fake.user_name()
@@ -65,6 +69,10 @@ def populate_users():
     return users
 
 def populate_owners():
+    if Owner.objects.count() > 9:
+        print("Owners already populated.")
+        return
+    
     owners = []
     for _ in range(10):
         owner = Owner.objects.create(
@@ -78,6 +86,10 @@ def populate_owners():
     return owners
 
 def populate_vehicles(owners):
+    if Vehicle.objects.count() > 10:
+        print("Vehicles already populated.")
+        return
+    
     vehicles = []
     for owner in owners:
         for _ in range(random.randint(0, 2)):
@@ -113,12 +125,12 @@ def populate_reports(users, vehicles):
             # Add 1 to 3 tasks to the report
             tasks = TaskTemplate.objects.order_by('?')[:random.randint(1, 3)]
             for task_template in tasks:
-                Task.objects.create(report=report, name=task_template.name, description=task_template.description, price=task_template.price)
+                Task.objects.create(report=report, task_template=task_template.name)
             
             # Add 0 to 2 parts to the report
             parts = Inventory.objects.order_by('?')[:random.randint(0, 2)]
             for part in parts:
-                Part.objects.create(report=report, inventory=part, quantity=random.randint(1, 5))
+                Part.objects.create(report=report, part=part, quantity_used=random.randint(1, 5))
                 
             print(f'Created report for vehicle {vehicle.license_plate}')
 
