@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 
+const apiURL = process.env.REACT_APP_API_URL;
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -12,7 +14,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserData = async (token) => {
     try {
-      const response = await axios.get("http://localhost:8000/api/users/me/", {
+      const response = await axios.get(`${apiURL}/users/me/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAuthenticatedUser(response.data);
@@ -35,7 +37,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoadingAuth(true);
     try {
-      const response = await axios.post("http://localhost:8000/api/login/", {
+      const response = await axios.post(`${apiURL}/login/`, {
         email,
         password,
       });
@@ -94,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     setLoadingAuth(true);
     try {
       // Send registration data to the backend
-      await axios.post("http://localhost:8000/api/register/", {
+      await axios.post(`${apiURL}/register/`, {
         username,
         email,
         password,
@@ -131,10 +133,9 @@ export const AuthProvider = ({ children }) => {
       const refreshToken = localStorage.getItem("refreshToken");
       if (!refreshToken) throw new Error("No refresh token available");
 
-      const response = await axios.post(
-        "http://localhost:8000/api/token/refresh/",
-        { refresh: refreshToken }
-      );
+      const response = await axios.post(`${apiURL}/token/refresh/`, {
+        refresh: refreshToken,
+      });
 
       localStorage.setItem("token", response.data.access);
       if (response.data.refresh) {

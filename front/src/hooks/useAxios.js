@@ -7,7 +7,7 @@ export const useAxios = () => {
 
   const token = localStorage.getItem("token");
   const axiosInstance = axios.create({
-    baseURL: "http://localhost:8000/api/",
+    baseURL: process.env.REACT_APP_API_URL,
     headers:
       token && authenticatedUser ? { Authorization: `Bearer ${token}` } : {},
   });
