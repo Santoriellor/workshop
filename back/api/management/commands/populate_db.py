@@ -125,7 +125,7 @@ def populate_reports(users, vehicles):
             # Add 1 to 3 tasks to the report
             tasks = TaskTemplate.objects.order_by('?')[:random.randint(1, 3)]
             for task_template in tasks:
-                Task.objects.create(report=report, task_template=task_template.name)
+                Task.objects.create(report=report, task_template=task_template)
             
             # Add 0 to 2 parts to the report
             parts = Inventory.objects.order_by('?')[:random.randint(0, 2)]
