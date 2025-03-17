@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Oil Change",
+    "description": "Replace engine oil and oil filter",
+    "price": 29.99
+  },
+  {
+    "name": "Brake Inspection",
+    "description": "Inspect brake pads, rotors, and fluid levels",
+    "price": 19.99
+  },
+  {
+    "name": "Tire Rotation",
+    "description": "Rotate tires for even wear",
+    "price": 15.0
+  },
+  {
+    "name": "Battery Check",
+    "description": "Check battery health and terminals",
+    "price": 10.0
+  },
+  {
+    "name": "Coolant Flush",
+    "description": "Flush and replace engine coolant",
+    "price": 49.99
+  },
+  {
+    "name": "Wheel Alignment",
+    "description": "Adjust the angles of the wheels for proper alignment",
+    "price": 59.99
+  },
+  {
+    "name": "Transmission Fluid Change",
+    "description": "Drain and replace old transmission fluid",
+    "price": 89.99
+  },
+  {
+    "name": "Power Steering Flush",
+    "description": "Flush and replace power steering fluid",
+    "price": 39.99
+  },
+  {
+    "name": "Engine Tune-Up",
+    "description": "Check and replace spark plugs, filters, and ignition components",
+    "price": 129.99
+  },
+  {
+    "name": "Air Conditioning Service",
+    "description": "Recharge refrigerant and check for leaks",
+    "price": 79.99
+  },
+  {
+    "name": "Exhaust System Inspection",
+    "description": "Inspect exhaust pipes, muffler, and catalytic converter",
+    "price": 29.99
+  },
+  {
+    "name": "Timing Belt Replacement",
+    "description": "Replace worn timing belt to prevent engine damage",
+    "price": 299.99
+  },
+  {
+    "name": "Suspension Inspection",
+    "description": "Check shocks, struts, and suspension components",
+    "price": 49.99
+  },
+  {
+    "name": "Headlight Restoration",
+    "description": "Clean and restore foggy headlights",
+    "price": 24.99
+  },
+  {
+    "name": "Fuel System Cleaning",
+    "description": "Clean fuel injectors and throttle body",
+    "price": 69.99
+  },
+  {
+    "name": "Serpentine Belt Replacement",
+    "description": "Replace the serpentine belt to maintain accessory function",
+    "price": 89.99
+  },
+  {
+    "name": "Differential Service",
+    "description": "Change the differential fluid for smoother operation",
+    "price": 79.99
+  },
+  {
+    "name": "Cabin Air Filter Replacement",
+    "description": "Replace the cabin air filter for better air quality",
+    "price": 19.99
+  }
+]
