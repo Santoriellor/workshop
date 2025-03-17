@@ -117,6 +117,14 @@ const getFilterOptions = (filters) => ({
       placeholder: "Enter some text",
     },
   ],
+  invoices: [
+    {
+      name: "search",
+      label: "Search in tasks",
+      value: filters.search,
+      placeholder: "Enter some text",
+    },
+  ],
 });
 
 export default getFilterOptions;
