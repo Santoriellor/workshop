@@ -7,7 +7,7 @@
 }
 
 .sidebar {
-  position: fixed;
+  position: absolute;
   width: 150px;
   height: 100%;
   top: 0;
@@ -16,7 +16,7 @@
   flex-direction: column;
   align-content: flex-start;
   justify-content: flex-start;
-  background: linear-gradient(to right, #2c3e50, #4ca1af);
+  background: #4ca1af;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -30,7 +30,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 20px 0;
   box-sizing: border-box;
 }
 .sidebar-logo {
@@ -44,7 +44,7 @@
 }
 .sidebar-welcome {
   margin: 0;
-  padding: 20px 5px 15px 5px;
+  padding: 10px 5px 15px 5px;
   text-align: center;
   color: white;
   font-size: large;
@@ -63,17 +63,17 @@
   width: 110px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 4px;
   transition: all 0.3s ease-in-out;
 }
 .sidebar .logout:hover {
-  background-color: #fd000056;
   filter: drop-shadow(0 0 5px #fd0000);
 }
 .sidebar .logout svg {
-  width: 30px;
-  height: 30px;
+  width: 15px;
+  height: 15px;
+  rotate: 180deg;
   fill: white;
 }
 .sidebar .logout p {
@@ -85,17 +85,21 @@
 .sidebar ul {
   display: flex;
   flex-direction: column;
-  align-content: flex-start;
+  align-items: flex-start;
   justify-content: flex-start;
   list-style: none;
-  padding: 0;
+  padding: 10px 0;
+  margin: 0;
+  gap: 6px;
 }
 
 .sidebar li {
   display: flex;
-  width: 100%;
+  width: 150px;
   height: 50px;
+  padding-left: 2px;
   border: none;
+  position: relative;
 }
 
 .sidebar a {
@@ -107,15 +111,64 @@
   justify-content: flex-start;
   color: white;
   text-decoration: none;
-  border: none;
+  border: solid 2px transparent;
+  border-right: none;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
   padding-left: 15px;
-  transition: background 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
+/* Pseudo-element styles (initially hidden) */
+.sidebar a::before,
+.sidebar a::after {
+  content: "";
+  position: absolute;
+  opacity: 0;
+}
+
+/* Top curve before */
+.sidebar a::before {
+  top: -30px;
+  right: 1px;
+  height: 30px;
+  width: 30px;
+  border-bottom-right-radius: 50%;
+  background-color: transparent;
+  box-shadow: 0 20px 0 0 #fff;
+}
+
+/* Bottom curve after */
+.sidebar a::after {
+  bottom: -30px;
+  right: 1px;
+  height: 30px;
+  width: 30px;
+  border-top-right-radius: 50%;
+  background-color: transparent;
+  box-shadow: 0 -20px 0 0 white;
+}
+
+/* Active link styles */
 .sidebar a.active {
-  background-color: #4ca1af;
+  color: #4ca1af;
+  border-color: #4ca1af;
+  background-color: white;
+  position: relative;
+  cursor: default;
+}
+
+.sidebar a.active::before,
+.sidebar a.active::after {
+  opacity: 1;
 }
 
 .sidebar a:hover {
-  background-color: rgba(128, 128, 128, 0.7);
+  color: #4ca1af;
+  background-color: white;
+  border-color: #37828d;
+}
+
+.sidebar a.active:hover {
+  border-color: #4ca1af;
 }

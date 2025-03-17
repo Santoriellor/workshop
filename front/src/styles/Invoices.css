@@ -1,0 +1,82 @@
+.invoices-header {
+  background-color: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 10px 0px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.invoices {
+  color: #555;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-content: flex-start;
+}
+
+.invoices-list {
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-right: 10px;
+  justify-content: flex-start;
+  align-content: flex-start;
+}
+
+.invoices-divider {
+  border: 1px solid rgba(85, 85, 85, 0.2);
+  margin: 10px 10px;
+}
+
+.card-invoice {
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  width: 96%;
+  padding: 10px 15px 5px 15px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.card-invoice:hover {
+  box-shadow: 0 0 12px rgba(59, 140, 153, 0.8);
+}
+
+.card-invoice header {
+  margin: 0 0 5px 0;
+  padding-bottom: 5px;
+  color: #555;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 1.5px solid #ddd;
+}
+
+.card-invoice-row {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  justify-content: space-between;
+}
+
+.card-invoice-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-invoice p {
+  padding: 0;
+  margin: 0 0 5px 0;
+}
+
+.card-invoice a {
+  text-align: center;
+}

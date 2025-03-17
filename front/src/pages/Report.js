@@ -1,17 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // Utils
 import getFilterOptions from "../utils/filterBarFilterOptions";
 // Components
 import Page from "../components/Page";
-import ReportCard from "../components/ReportCard";
-import ReportModal from "../components/ReportModal";
+import ReportCard from "../components/reports/ReportCard";
+import ReportModal from "../components/reports/ReportModal";
 // Contexts
 import { useReportContext } from "../contexts/ReportContext";
+import { useGlobalContext } from "../contexts/GlobalContext";
 // Styles
 import "../styles/Report.css";
 
 const Report = () => {
-  const { reports, deleteReportWithAlert } = useReportContext();
+  const { reports } = useReportContext();
+  const { setModalComponent } = useGlobalContext();
+
   const [filters, setFilters] = useState({
     vehicle: "",
     user: "",
@@ -20,17 +23,23 @@ const Report = () => {
     status: "",
   });
 
+  // Select only the non exported reports
+  const nonExportedReports = reports.filter(
+    (report) => report.status !== "exported"
+  );
+
+  useEffect(() => {
+    setModalComponent(() => ReportModal);
+  }, []);
+
   return (
     <Page
       itemType="Report"
       filters={{ ...filters, type: "report" }}
       setFilters={setFilters}
       filterOptions={getFilterOptions(filters).reports}
-      sortingCardFunction={(a, b) => b.status.localeCompare(a.status)}
-      items={reports}
-      deleteItemWithAlert={deleteReportWithAlert}
+      items={nonExportedReports}
       CardComponent={ReportCard}
-      ModalComponent={ReportModal}
     />
   );
 };

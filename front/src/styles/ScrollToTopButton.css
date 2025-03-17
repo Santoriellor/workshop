@@ -9,7 +9,7 @@
   align-items: center;
   margin: 0;
   padding: 0;
-  border: 2px #4ca1af solid;
+  border: 2px #37828d solid;
   border-right: none;
   background-color: lightblue;
   z-index: 1000;
@@ -23,7 +23,7 @@
   left: -25px;
   margin: 0;
   padding: 0;
-  border: 2px #4ca1af solid;
+  border: 2px #37828d solid;
   border-top-left-radius: 50%;
   border-bottom-left-radius: 50%;
   border-right: none;
@@ -47,7 +47,7 @@
   width: 50px;
   height: 50px;
   fill: white;
-  stroke: #4ca1af;
+  stroke: #37828d;
   transition: all 0.3s ease-in-out;
 }
 

@@ -1,9 +1,13 @@
-const DeleteModal = ({ itemType, onClose, handleDeleteConfirm }) => {
+import { useGlobalContext } from "../contexts/GlobalContext";
+
+const DeleteModal = () => {
+  const { itemType, handleDeleteConfirm, closeModals } = useGlobalContext();
+
   return (
     <div className="modal-container">
       <div className="modal-card">
         <svg
-          onClick={onClose}
+          onClick={closeModals}
           className="modal-card-close"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
@@ -17,15 +21,15 @@ const DeleteModal = ({ itemType, onClose, handleDeleteConfirm }) => {
           />
         </svg>
         <h2>Confirm Deletion</h2>
-        <p>Are you sure you want to delete this {itemType}?</p>
+        <p>Are you sure you want to delete this {itemType?.toLowerCase()}?</p>
         <button
           type="button"
           className="delete-btn"
-          onClick={handleDeleteConfirm}
+          onClick={() => handleDeleteConfirm()}
         >
           Yes, Delete
         </button>
-        <button type="button" className="cancel-btn" onClick={onClose}>
+        <button type="button" className="cancel-btn" onClick={closeModals}>
           Cancel
         </button>
       </div>

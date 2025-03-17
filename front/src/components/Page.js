@@ -1,10 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useMemo } from "react";
 
 // Components
 import FilterBar from "./FilterBar";
-import DeleteModal from "./DeleteModal";
-import ScrollToTopButton from "./ScrollToTopButton";
+import ScrollToTopButton from "./buttons/ScrollToTopButton";
 // Contexts
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { useVehicleContext } from "../contexts/VehicleContext";
@@ -18,18 +16,10 @@ const Page = ({
   filters,
   setFilters,
   filterOptions,
-  sortingCardFunction,
   items,
-  deleteItemWithAlert,
   CardComponent,
-  ModalComponent,
 }) => {
-  const location = useLocation();
-  const { selectedItem, setSelectedItem } = useGlobalContext();
-  const [showTypeModal, setShowTypeModal] = useState(false);
-  const [readonly, setReadonly] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-
+  const { openViewModal, openEditModal, openDeleteModal } = useGlobalContext();
   const { vehicles, getVehicleInfoByVehicleId } = useVehicleContext();
 
   const handleFilterChange = (name, value) => {
@@ -38,51 +28,20 @@ const Page = ({
 
   // Filter items based on filters
   const filteredItems = useMemo(() => {
-    return items.filter((item) =>
+    // Filter the items
+    let itemsAfterFilter = items.filter((item) =>
       filterItems(item, filters, vehicles, getVehicleInfoByVehicleId)
     );
-  }, [items, filters, vehicles, getVehicleInfoByVehicleId]);
 
-  const handleViewClick = (item) => {
-    setSelectedItem(item);
-    setReadonly(true);
-    setShowDeleteModal(false);
-    setShowTypeModal(true);
-  };
-
-  const handleCreateClick = () => {
-    setSelectedItem(null);
-    setReadonly(false);
-    setShowDeleteModal(false);
-    setShowTypeModal(true);
-  };
-
-  const handleEditClick = (item) => {
-    setSelectedItem(item);
-    setReadonly(false);
-    setShowDeleteModal(false);
-    setShowTypeModal(true);
-  };
-
-  const handleDeleteClick = (item) => {
-    setSelectedItem(item);
-    setShowTypeModal(false);
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    deleteItemWithAlert(selectedItem.id);
-    setShowDeleteModal(false);
-    setSelectedItem(null);
-  };
-
-  // Display the corresponding Modal if viewItemId is passed in location state
-  useEffect(() => {
-    if (location.state?.viewItemId) {
-      const item = items.find((item) => item.id === location.state.viewItemId);
-      if (item) handleViewClick(item);
+    // If the filter label is "quantity_in_stock", sort the filtered items
+    if (filters.quantity_in_stock) {
+      itemsAfterFilter = itemsAfterFilter.sort(
+        (a, b) => a.quantity_in_stock - b.quantity_in_stock
+      );
     }
-  }, [location.state]);
+
+    return itemsAfterFilter;
+  }, [items, filters, vehicles, getVehicleInfoByVehicleId]);
 
   return (
     <>
@@ -95,45 +54,22 @@ const Page = ({
       {/* Items list with card display */}
       <div className="list">
         {filteredItems.length > 0 ? (
-          filteredItems
-            .sort(sortingCardFunction)
-            .map((item) => (
-              <CardComponent
-                key={item.id}
-                item={item}
-                handleViewClick={handleViewClick}
-                handleEditClick={handleEditClick}
-                handleDeleteClick={handleDeleteClick}
-              />
-            ))
+          filteredItems.map((item) => (
+            <CardComponent
+              key={item.id}
+              item={item}
+              handleViewClick={openViewModal}
+              handleEditClick={openEditModal}
+              handleDeleteClick={openDeleteModal}
+            />
+          ))
         ) : (
           <p>No {itemType} match your filters.</p>
         )}
       </div>
 
-      {/* Floating create Button */}
-      <button className="btn btn-float" onClick={handleCreateClick}>
-        New {itemType}
-      </button>
-
       {/* Floating ScrollToTopButton */}
       <ScrollToTopButton />
-
-      {showTypeModal && (
-        <ModalComponent
-          readonly={readonly}
-          setReadonly={setReadonly}
-          onClose={() => setShowTypeModal(false)}
-          onDelete={() => handleDeleteClick(selectedItem)}
-        />
-      )}
-      {showDeleteModal && (
-        <DeleteModal
-          itemType={itemType}
-          onClose={() => setShowDeleteModal(false)}
-          handleDeleteConfirm={handleDeleteConfirm}
-        />
-      )}
     </>
   );
 };

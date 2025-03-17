@@ -6,35 +6,27 @@ import Swal from "sweetalert2";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [authenticatedUser, setAuthenticatedUser] = useState(() =>
-    localStorage.getItem("token")
-      ? JSON.parse(localStorage.getItem("authTokens")).access
-      : null
-  );
+  const [authenticatedUser, setAuthenticatedUser] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const navigate = useNavigate();
 
+  const fetchUserData = async (token) => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/users/me/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAuthenticatedUser(response.data);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+      logout(); // Log out if the token is invalid
+    }
+  };
+
   // Check for a token in localStorage on initial load
   useEffect(() => {
-    const fetchUserData = async (token) => {
-      try {
-        const response = await axios.get(
-          "http://localhost:8000/api/users/me/",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setAuthenticatedUser(response.data);
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        logout(); // Log out if the token is invalid
-      }
-    };
-
     const token = localStorage.getItem("token");
     if (token) {
-      fetchUserData(token);
-      setLoadingAuth(false);
+      fetchUserData(token).finally(() => setLoadingAuth(false));
     } else {
       setLoadingAuth(false);
     }
@@ -47,47 +39,54 @@ export const AuthProvider = ({ children }) => {
         email,
         password,
       });
+
+      // Store tokens
       localStorage.setItem("token", response.data.access);
       localStorage.setItem("refreshToken", response.data.refresh);
 
-      const fetchUserData = async (token) => {
-        const userResponse = await axios.get(
-          "http://localhost:8000/api/users/me/",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setAuthenticatedUser(userResponse.data);
-      };
+      // Fetch user data
       await fetchUserData(response.data.access);
+
+      // Alert the user on success
       Swal.fire({
         icon: "success",
         title: "Login Successful",
         text: "You have been logged in successfully!",
       });
+
       return true;
     } catch (error) {
       console.error("Login failed:", error);
+
+      // Alert the user on error
       Swal.fire({
         icon: "error",
         title: "Login Failed",
         text: "Invalid email or password. Please try again.",
       });
+
       return false;
     } finally {
-      setLoadingAuth(false); // Stop loading
+      setLoadingAuth(false);
     }
   };
 
   const logout = () => {
+    // Remove tokens
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
+
+    // Clear user data
     setAuthenticatedUser(null);
+
+    // Alert the user on success
     Swal.fire({
       icon: "success",
       title: "Logout Successful",
       text: "You have been logged out successfully!",
     });
+
+    // Redirect to login
     navigate("/login");
   };
 
@@ -101,7 +100,7 @@ export const AuthProvider = ({ children }) => {
         password,
       });
 
-      // Show success message
+      // Alert the user on success
       Swal.fire({
         icon: "success",
         title: "Registration Successful",
@@ -112,6 +111,8 @@ export const AuthProvider = ({ children }) => {
       navigate("/login");
     } catch (error) {
       console.error("Registration failed:", error);
+
+      // Alert the user on error
       Swal.fire({
         icon: "error",
         title: "Registration Failed",
@@ -125,6 +126,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const refreshToken = async () => {
+    setLoadingAuth(true);
     try {
       const refreshToken = localStorage.getItem("refreshToken");
       if (!refreshToken) throw new Error("No refresh token available");
@@ -139,17 +141,21 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("refreshToken", response.data.refresh);
       }
 
-      setAuthenticatedUser({ token: response.data.access });
+      // Update user data
+      await fetchUserData(response.data.access);
+
       return response.data.access;
     } catch (error) {
       console.error("Token refresh failed:", error);
 
-      if (error.response && error.response.status === 401) {
+      if (error.response?.status === 401) {
         console.error("Refresh token expired, logging out...");
         logout();
       }
 
       return null;
+    } finally {
+      setLoadingAuth(false);
     }
   };
 

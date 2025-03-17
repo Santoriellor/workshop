@@ -48,7 +48,7 @@ export const OwnerProvider = ({ children }) => {
 
   // Automatically fetch data on first load
   useEffect(() => {
-    fetchOwners();
+    fetchOwners({}, "full_name");
   }, []);
 
   return (

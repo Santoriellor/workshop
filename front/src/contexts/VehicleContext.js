@@ -43,7 +43,7 @@ export const VehicleProvider = ({ children }) => {
 
   // Automatically fetch data on first load
   useEffect(() => {
-    fetchVehicles();
+    fetchVehicles({}, "brand, model");
   }, []);
 
   return (

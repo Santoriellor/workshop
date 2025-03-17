@@ -102,13 +102,19 @@ const getFilterOptions = (filters) => ({
       value: filters.updated_at,
       type: "select",
     },
+    {
+      name: "quantity_in_stock",
+      label: "sort by quantity",
+      value: filters.quantity_in_stock,
+      type: "checkbox",
+    },
   ],
   task_template: [
     {
       name: "search",
       label: "Search in tasks",
       value: filters.search,
-      placeholder: "Search in tasks",
+      placeholder: "Enter some text",
     },
   ],
 });

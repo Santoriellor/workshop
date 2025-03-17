@@ -1,0 +1,61 @@
+.create-item-button-container {
+  position: absolute;
+  bottom: 20px;
+  left: -80px;
+  width: 40px;
+  height: 48px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 2px #37828d solid;
+  border-left: none;
+  background-color: lightblue;
+  z-index: 1000;
+  cursor: default;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.create-item-button-container.slide-in {
+  transform: translateX(80px);
+  opacity: 1;
+}
+.create-item-button-container.slide-out {
+  transform: translateX(-80px);
+  opacity: 0;
+}
+
+.create-item-button {
+  position: relative;
+  left: 25px;
+  margin: 0;
+  padding: 0;
+  border: 2px #37828d solid;
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+  border-left: none;
+  background: lightblue;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.create-item-button .icon {
+  position: relative;
+  top: -1px;
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+  fill: white;
+  stroke: #37828d;
+  transition: all 0.3s ease-in-out;
+}
+
+.create-item-button .icon:hover {
+  stroke: #0056b3;
+  filter: drop-shadow(0 0 5px #0056b3);
+}

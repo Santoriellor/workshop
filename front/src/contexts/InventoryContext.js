@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 // Hooks
 import useCRUD from "../hooks/useCRUD";
 // Utils
@@ -7,6 +8,7 @@ import withSuccessAlert from "../utils/successAlert";
 const InventoryContext = createContext();
 
 export const InventoryProvider = ({ children }) => {
+  const location = useLocation();
   const {
     data: taskTemplate,
     fetchData: fetchTaskTemplate,
@@ -59,16 +61,27 @@ export const InventoryProvider = ({ children }) => {
     "Part deleted successfully!"
   );
 
-  // Automatically fetch data on first load
+  // Fetch data on load
   useEffect(() => {
-    fetchTaskTemplate();
-    fetchInventory();
+    fetchInventory({}, "name");
+    fetchTaskTemplate({}, "name");
   }, []);
+
+  // Fetch data when pathname change
+  useEffect(() => {
+    if (location.pathname === "/inventory") {
+      fetchInventory({}, "name");
+    }
+    if (location.pathname === "/tasktemplate") {
+      fetchTaskTemplate({}, "name");
+    }
+  }, [location.pathname]);
 
   return (
     <InventoryContext.Provider
       value={{
         inventory,
+        fetchInventory,
         createInventoryPartWithAlert,
         updateInventoryPartWithAlert,
         deleteInventoryPartWithAlert,
