@@ -54,7 +54,7 @@ def populate_task_templates():
 def populate_users():
     if User.objects.count() > 3:
         print("Users already populated.")
-        return
+        return User.objects.all()
     
     users = []
     for _ in range(3):
@@ -71,7 +71,7 @@ def populate_users():
 def populate_owners():
     if Owner.objects.count() > 9:
         print("Owners already populated.")
-        return
+        return Owner.objects.all()
     
     owners = []
     for _ in range(10):
@@ -88,7 +88,7 @@ def populate_owners():
 def populate_vehicles(owners):
     if Vehicle.objects.count() > 10:
         print("Vehicles already populated.")
-        return
+        return Vehicle.objects.all()
     
     vehicles = []
     for owner in owners:
