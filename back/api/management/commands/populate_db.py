@@ -1,36 +1,35 @@
 from django.core.management.base import BaseCommand
-from api.models import User, Owner, Vehicle, Report, Inventory, TaskTemplate
+from api.models import User, Owner, Vehicle, Report, Inventory, TaskTemplate, Task, Part
 from faker import Faker
 from faker_vehicle import VehicleProvider
 import random
+import json
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+data_path = os.path.join(BASE_DIR, "api", "data")
+brands_models_path = os.path.join(data_path, "brands_models.json")
+inventory_data_path = os.path.join(data_path, "inventory_data.json")
+tasks_data_path = os.path.join(data_path, "tasks_data.json")
+
+with open(brands_models_path, "r") as file:
+    brands_models = json.load(file)
+    brands_list = list(brands_models.keys())
+    
+with open(inventory_data_path, "r") as file:
+    inventory_data = json.load(file)
+
+with open(tasks_data_path, "r") as file:
+    tasks_data = json.load(file)
 
 fake = Faker()
-fake.add_provider(VehicleProvider)
 
 def populate_inventory():
-    inventory_data = [
-        {"name": "Air Filter", "reference_code": "AF123", "category": "Engine", "quantity_in_stock": 50, "unit_price": 15.99},
-        {"name": "Oil Filter", "reference_code": "OF456", "category": "Engine", "quantity_in_stock": 60, "unit_price": 12.50},
-        {"name": "Spark Plug", "reference_code": "SP789", "category": "Engine", "quantity_in_stock": 100, "unit_price": 8.75},
-        {"name": "Timing Belt", "reference_code": "TB234", "category": "Engine", "quantity_in_stock": 20, "unit_price": 35.00},
-        {"name": "Serpentine Belt", "reference_code": "SB567", "category": "Engine", "quantity_in_stock": 30, "unit_price": 25.50},
-        {"name": "Brake Pads", "reference_code": "BP890", "category": "Brakes", "quantity_in_stock": 40, "unit_price": 45.00},
-        {"name": "Brake Rotors", "reference_code": "BR345", "category": "Brakes", "quantity_in_stock": 25, "unit_price": 80.00},
-        {"name": "Shock Absorbers", "reference_code": "SA678", "category": "Suspension", "quantity_in_stock": 15, "unit_price": 120.00},
-        {"name": "Struts", "reference_code": "ST901", "category": "Suspension", "quantity_in_stock": 10, "unit_price": 150.00},
-        {"name": "Control Arm", "reference_code": "CA234", "category": "Suspension", "quantity_in_stock": 20, "unit_price": 90.00},
-        {"name": "Tie Rod End", "reference_code": "TRE567", "category": "Steering", "quantity_in_stock": 35, "unit_price": 40.00},
-        {"name": "Battery", "reference_code": "BAT789", "category": "Electrical", "quantity_in_stock": 25, "unit_price": 110.00},
-        {"name": "Alternator", "reference_code": "ALT456", "category": "Electrical", "quantity_in_stock": 12, "unit_price": 200.00},
-        {"name": "Starter Motor", "reference_code": "SM123", "category": "Electrical", "quantity_in_stock": 15, "unit_price": 150.00},
-        {"name": "Radiator", "reference_code": "RAD789", "category": "Cooling", "quantity_in_stock": 18, "unit_price": 220.00},
-        {"name": "Coolant", "reference_code": "COL567", "category": "Fluids", "quantity_in_stock": 50, "unit_price": 20.00},
-        {"name": "Brake Fluid", "reference_code": "BF234", "category": "Fluids", "quantity_in_stock": 60, "unit_price": 10.00},
-        {"name": "Muffler", "reference_code": "MUF890", "category": "Exhaust", "quantity_in_stock": 10, "unit_price": 140.00},
-        {"name": "Oxygen Sensor", "reference_code": "O2S345", "category": "Exhaust", "quantity_in_stock": 30, "unit_price": 75.00},
-    ]
-    
     for item in inventory_data:
+        if Inventory.objects.exists():
+            print("Inventory already populated.")
+            return
+    
         # Avoid duplicate entries
         inventory, created = Inventory.objects.get_or_create(reference_code=item["reference_code"], defaults=item)
         if created:
@@ -40,15 +39,11 @@ def populate_inventory():
 
 
 def populate_task_templates():
-    task_data = [
-        {"name": "Oil Change", "description": "Replace engine oil and oil filter", "price": 29.99},
-        {"name": "Brake Inspection", "description": "Inspect brake pads, rotors, and fluid levels", "price": 19.99},
-        {"name": "Tire Rotation", "description": "Rotate tires for even wear", "price": 15.00},
-        {"name": "Battery Check", "description": "Check battery health and terminals", "price": 10.00},
-        {"name": "Coolant Flush", "description": "Flush and replace engine coolant", "price": 49.99},
-    ]
-
-    for item in task_data:
+    if TaskTemplate.objects.exists():
+        print("Task templates already populated.")
+        return
+    
+    for item in tasks_data:
         task, created = TaskTemplate.objects.get_or_create(name=item["name"], defaults=item)
         if created:
             print(f"Added TaskTemplate: {task.name}")
@@ -58,7 +53,7 @@ def populate_task_templates():
 
 def populate_users():
     users = []
-    for _ in range(5):
+    for _ in range(3):
         username = fake.user_name()
         email = fake.email()
         password = "password123"
@@ -85,34 +80,46 @@ def populate_owners():
 def populate_vehicles(owners):
     vehicles = []
     for owner in owners:
-        for _ in range(2):
-            vehicle_info = fake.vehicle_object()
-            year = vehicle_info.get("Year", fake.year())
-            brand = vehicle_info.get("Make", "Unknown")
-            model = vehicle_info.get("Model", "Unknown")
-
+        for _ in range(random.randint(0, 2)):
+            brand = random.choice(brands_list)
+            model = random.choice(brands_models[brand])
             vehicle = Vehicle.objects.create(
                 owner=owner,
                 model=model,
                 brand=brand,
                 license_plate=fake.license_plate(),
-                year=year
+                year=random.randint(2000, 2024)
             )
-            print(f'Created vehicle for owner {owner.full_name}')
             vehicles.append(vehicle)
+            print(f'Created vehicle: {brand} {model} for {owner.full_name}')
     return vehicles
 
 def populate_reports(users, vehicles):
+    if not Inventory.objects.exists():
+        populate_inventory()
+    if not TaskTemplate.objects.exists():
+        populate_task_templates()
+        
     for vehicle in vehicles:
-        for _ in range(1):
-            random_user = random.choice(users)
-            Report.objects.create(
+        if random.choice([True, False]):
+            report = Report.objects.create(
                 vehicle=vehicle,
-                user=random_user,
+                user=random.choice(users),
                 remarks=fake.sentence(),
-                status=fake.random_element(['pending', 'completed', 'in_progress', 'exported']),
+                status=fake.random_element(['pending', 'completed', 'in_progress']),
                 created_at=fake.date_time()
             )
+            
+            # Add 1 to 3 tasks to the report
+            tasks = TaskTemplate.objects.order_by('?')[:random.randint(1, 3)]
+            for task_template in tasks:
+                Task.objects.create(report=report, name=task_template.name, description=task_template.description, price=task_template.price)
+            
+            # Add 0 to 2 parts to the report
+            parts = Inventory.objects.order_by('?')[:random.randint(0, 2)]
+            for part in parts:
+                Part.objects.create(report=report, inventory=part, quantity=random.randint(1, 5))
+                
             print(f'Created report for vehicle {vehicle.license_plate}')
 
 class Command(BaseCommand):

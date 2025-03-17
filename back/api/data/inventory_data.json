@@ -1,0 +1,135 @@
+[
+    {
+        "name": "Air Filter",
+        "reference_code": "AF123",
+        "category": "Engine",
+        "quantity_in_stock": 50,
+        "unit_price": 15.99
+    },
+    {
+        "name": "Oil Filter",
+        "reference_code": "OF456",
+        "category": "Engine",
+        "quantity_in_stock": 60,
+        "unit_price": 12.5
+    },
+    {
+        "name": "Spark Plug",
+        "reference_code": "SP789",
+        "category": "Engine",
+        "quantity_in_stock": 100,
+        "unit_price": 8.75
+    },
+    {
+        "name": "Timing Belt",
+        "reference_code": "TB234",
+        "category": "Engine",
+        "quantity_in_stock": 20,
+        "unit_price": 35.0
+    },
+    {
+        "name": "Serpentine Belt",
+        "reference_code": "SB567",
+        "category": "Engine",
+        "quantity_in_stock": 30,
+        "unit_price": 25.5
+    },
+    {
+        "name": "Brake Pads",
+        "reference_code": "BP890",
+        "category": "Brakes",
+        "quantity_in_stock": 40,
+        "unit_price": 45.0
+    },
+    {
+        "name": "Brake Rotors",
+        "reference_code": "BR345",
+        "category": "Brakes",
+        "quantity_in_stock": 25,
+        "unit_price": 80.0
+    },
+    {
+        "name": "Shock Absorbers",
+        "reference_code": "SA678",
+        "category": "Suspension",
+        "quantity_in_stock": 15,
+        "unit_price": 120.0
+    },
+    {
+        "name": "Struts",
+        "reference_code": "ST901",
+        "category": "Suspension",
+        "quantity_in_stock": 10,
+        "unit_price": 150.0
+    },
+    {
+        "name": "Control Arm",
+        "reference_code": "CA234",
+        "category": "Suspension",
+        "quantity_in_stock": 20,
+        "unit_price": 90.0
+    },
+    {
+        "name": "Tie Rod End",
+        "reference_code": "TRE567",
+        "category": "Steering",
+        "quantity_in_stock": 35,
+        "unit_price": 40.0
+    },
+    {
+        "name": "Battery",
+        "reference_code": "BAT789",
+        "category": "Electrical",
+        "quantity_in_stock": 25,
+        "unit_price": 110.0
+    },
+    {
+        "name": "Alternator",
+        "reference_code": "ALT456",
+        "category": "Electrical",
+        "quantity_in_stock": 12,
+        "unit_price": 200.0
+    },
+    {
+        "name": "Starter Motor",
+        "reference_code": "SM123",
+        "category": "Electrical",
+        "quantity_in_stock": 15,
+        "unit_price": 150.0
+    },
+    {
+        "name": "Radiator",
+        "reference_code": "RAD789",
+        "category": "Cooling",
+        "quantity_in_stock": 18,
+        "unit_price": 220.0
+    },
+    {
+        "name": "Coolant",
+        "reference_code": "COL567",
+        "category": "Fluids",
+        "quantity_in_stock": 50,
+        "unit_price": 20.0
+    },
+    {
+        "name": "Brake Fluid",
+        "reference_code": "BF234",
+        "category": "Fluids",
+        "quantity_in_stock": 60,
+        "unit_price": 10.0
+    },
+    {
+        "name": "Muffler",
+        "reference_code": "MUF890",
+        "category": "Exhaust",
+        "quantity_in_stock": 10,
+        "unit_price": 140.0
+    },
+    {
+        "name": "Oxygen Sensor",
+        "reference_code": "O2S345",
+        "category": "Exhaust",
+        "quantity_in_stock": 30,
+        "unit_price": 75.0
+    }
+]
