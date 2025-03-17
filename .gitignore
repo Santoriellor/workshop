@@ -1,0 +1,37 @@
+# Python & Django
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+.env
+env/
+*.bak
+
+# Node.js (React frontend)
+node_modules/
+*.log
+*.cache
+.yarn/
+.npm/
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Gunicorn & Nginx
+*.sock
+*.pid
+
+# Build & Static Files
+staticfiles/
+static/
+media/
+dist/
+build/
+
+# Git Credentials
+*.pem
+*.key
