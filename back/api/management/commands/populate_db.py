@@ -7,7 +7,7 @@ import json
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-data_path = os.path.join(BASE_DIR, "api", "data")
+data_path = os.path.join(BASE_DIR, "data")
 brands_models_path = os.path.join(data_path, "brands_models.json")
 inventory_data_path = os.path.join(data_path, "inventory_data.json")
 tasks_data_path = os.path.join(data_path, "tasks_data.json")
