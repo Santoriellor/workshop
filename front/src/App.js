@@ -7,9 +7,10 @@ import {
 } from "react-router-dom";
 // Components
 import Sidebar from "./components/Sidebar";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import PrivateRoute from "./components/PrivateRoute";
+import Login from "./components/authentication/Login";
+import Register from "./components/authentication/Register";
+import PrivateRoute from "./components/authentication/PrivateRoute";
+import DeleteModal from "./components/DeleteModal";
 // Pages
 import Dashboard from "./pages/Dashboard";
 import Report from "./pages/Report";
@@ -21,11 +22,12 @@ import TaskTemplate from "./pages/TaskTemplate";
 // Contexts
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { UserProvider } from "./contexts/UserContext";
-import { GlobalProvider } from "./contexts/GlobalContext";
+import { GlobalProvider, useGlobalContext } from "./contexts/GlobalContext";
 import { ReportProvider } from "./contexts/ReportContext";
 import { OwnerProvider } from "./contexts/OwnerContext";
 import { VehicleProvider } from "./contexts/VehicleContext";
 import { InventoryProvider } from "./contexts/InventoryContext";
+import { InvoiceProvider } from "./contexts/InvoiceContext";
 // Styles
 import "./App.css";
 import "./styles/Buttons.css";
@@ -34,7 +36,9 @@ const App = () => {
   return (
     <Router>
       <AuthProvider>
-        <Main />
+        <GlobalProvider>
+          <Main />
+        </GlobalProvider>
       </AuthProvider>
     </Router>
   );
@@ -42,15 +46,23 @@ const App = () => {
 
 const Main = () => {
   const { authenticatedUser, loadingAuth } = useAuth();
+  const {
+    modalComponent: ModalComponent,
+    showTypeModal,
+    showDeleteModal,
+    deleteItemWithAlert,
+  } = useGlobalContext();
+
+  if (loadingAuth) return <p>Loading...</p>;
 
   return (
     <UserProvider>
       {authenticatedUser ? (
-        <GlobalProvider>
-          <VehicleProvider>
-            <OwnerProvider>
-              <ReportProvider>
-                <InventoryProvider>
+        <VehicleProvider>
+          <OwnerProvider>
+            <ReportProvider>
+              <InventoryProvider>
+                <InvoiceProvider>
                   <div className="container">
                     <div className="sidebar">
                       <Sidebar />
@@ -72,7 +84,7 @@ const Main = () => {
                             />
                           </Route>
 
-                          {/* Redirect to login by default */}
+                          {/* Redirect to dashboard by default */}
                           <Route
                             path="*"
                             element={<Navigate to="/dashboard" />}
@@ -81,11 +93,16 @@ const Main = () => {
                       </div>
                     </div>
                   </div>
-                </InventoryProvider>
-              </ReportProvider>
-            </OwnerProvider>
-          </VehicleProvider>
-        </GlobalProvider>
+                  {showTypeModal && ModalComponent && <ModalComponent />}
+
+                  {showDeleteModal && (
+                    <DeleteModal deleteItemFunction={deleteItemWithAlert} />
+                  )}
+                </InvoiceProvider>
+              </InventoryProvider>
+            </ReportProvider>
+          </OwnerProvider>
+        </VehicleProvider>
       ) : (
         <Routes>
           {/* Public Routes */}

@@ -1,4 +1,5 @@
-from django.db import models
+from django.db import models, transaction
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.contrib.auth.models import AbstractUser
@@ -105,20 +106,43 @@ class Inventory(models.Model):
 class Part(models.Model):
     report = models.ForeignKey(Report, on_delete=models.CASCADE)
     part = models.ForeignKey(Inventory, on_delete=models.CASCADE)
-    quantity_used = models.PositiveIntegerField()
+    quantity_used = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"{self.quantity_used}x {self.part.name} for {self.report}"
 
     def save(self, *args, **kwargs):
-        """ Override save method to update inventory automatically """
-        if self.pk is None:  # Only deduct stock on creation, not on update
-            if self.part.quantity_in_stock >= self.quantity_used:
-                self.part.quantity_in_stock -= self.quantity_used
-                self.part.save()
-            else:
-                raise ValueError("Not enough stock available")
-        super().save(*args, **kwargs)
+        with transaction.atomic():
+            # Fetch the previous state if updating
+            if self.pk:
+                previous_part = Part.objects.get(pk=self.pk)
+                previous_inventory = previous_part.part
+
+                # Restore previous inventory quantity if inventory changed or quantity was modified
+                if previous_inventory == self.part:
+                    previous_inventory.quantity_in_stock += previous_part.quantity_used
+                    previous_inventory.save()
+                else:
+                    # If changing inventory item, restore the old one and update the new one
+                    previous_inventory.quantity_in_stock += previous_part.quantity_used
+                    previous_inventory.save()
+
+            # Check if enough quantity is available
+            if self.part.quantity_in_stock < self.quantity_used:
+                raise ValidationError(f"Not enough stock for {self.part.name}.")
+
+            # Deduct new quantity
+            self.part.quantity_in_stock -= self.quantity_used
+            self.part.save()
+
+            super().save(*args, **kwargs)
+            
+    def delete(self, *args, **kwargs):
+        """Restore inventory quantity when a part is deleted."""
+        with transaction.atomic():
+            self.part.quantity_in_stock += self.quantity_used
+            self.part.save()
+            super().delete(*args, **kwargs)
 
 
 # -------- INVOICE --------
@@ -127,6 +151,7 @@ class Invoice(models.Model):
     report = models.ForeignKey(Report, on_delete=models.CASCADE)
     issued_date = models.DateTimeField(default=timezone.now)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    pdf = models.FileField(upload_to='invoices/', null=True, blank=True)
 
     def calculate_total_cost(self):
         """Automatically calculate total cost from linked repairs"""

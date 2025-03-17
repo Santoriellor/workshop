@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 // Contexts
-import { useGlobalContext } from "../contexts/GlobalContext";
+import { useGlobalContext } from "./GlobalContext";
 // Hooks
 import useCRUD from "../hooks/useCRUD";
 // Utils
@@ -32,7 +32,8 @@ export const ReportProvider = ({ children }) => {
   // Update a report with success alert
   const updateReportWithAlert = withSuccessAlert(
     updateReport,
-    "Report updated successfully!"
+    "Report updated successfully!",
+    "Report exported and PDF generated successfully!"
   );
   // Delete a report with success alert
   const deleteReportWithAlert = withSuccessAlert(
@@ -61,7 +62,7 @@ export const ReportProvider = ({ children }) => {
   } = useCRUD("parts", "reports", selectedItem?.id);
 
   useEffect(() => {
-    fetchReports();
+    fetchReports({}, "vehicle__brand, vehicle__model");
   }, []);
 
   // Automatically fetch data when the selectedItem changes

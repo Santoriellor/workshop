@@ -110,6 +110,11 @@ class ReportSerializer(serializers.ModelSerializer):
 
 
 class InvoiceSerializer(serializers.ModelSerializer):
+    formatted_issued_date = serializers.SerializerMethodField()
+    
     class Meta:
         model = Invoice
         fields = '__all__'
+        
+    def get_formatted_issued_date(self, obj):
+        return format(obj.issued_date, "F j, Y")

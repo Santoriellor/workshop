@@ -1,0 +1,61 @@
+// Components
+import OwnerModal from "./OwnerModal";
+// Contexts
+import { useOwnerContext } from "../../contexts/OwnerContext";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+
+const OwnerCard = ({ item }) => {
+  const itemType = "Owner";
+
+  const { deleteOwnerWithAlert } = useOwnerContext();
+  const { openModal, openDeleteModal } = useGlobalContext();
+
+  return (
+    <div
+      key={item.id}
+      className="card"
+      title="View Owner"
+      onClick={(e) => {
+        // Prevent triggering view mode if clicking on an action button
+        if (!e.target.closest(".actions")) {
+          openModal(OwnerModal, item, itemType, true);
+        }
+      }}
+    >
+      <header>{item.full_name}</header>
+      <div className="card-content">
+        <section>
+          <p>
+            <strong>Email:</strong>&nbsp;{item.email}
+          </p>
+          <p>
+            <strong>Phone:</strong>&nbsp;{item.phone}
+          </p>
+          {/* <p>
+          <strong>Address:</strong>&nbsp;
+          {item.address}
+        </p> */}
+        </section>
+        <section className="actions">
+          <button
+            title="Edit owner"
+            className="btn btn-edit"
+            onClick={() => openModal(OwnerModal, item, itemType, false)}
+          >
+            Edit
+          </button>
+          <button
+            title="Delete owner"
+            className="btn btn-delete"
+            onClick={() =>
+              openDeleteModal(item, itemType, () => deleteOwnerWithAlert)
+            }
+          >
+            Delete
+          </button>
+        </section>
+      </div>
+    </div>
+  );
+};
+export default OwnerCard;

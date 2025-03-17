@@ -1,15 +1,22 @@
 import { Toast } from "../utils/sweetalert";
 
-const withSuccessAlert = (fn, successMessage) => {
+const withSuccessAlert = (fn, successMessage, customMessage = null) => {
   return async (...args) => {
-    const result = await fn(...args);
-    if (result) {
-      Toast.fire({
-        icon: "success",
-        title: successMessage,
-      });
+    try {
+      const result = await fn(...args);
+
+      // Check if the result contains a 'status' field, and if it's 'exported'
+      if (result.status === "exported") {
+        Toast.fire("Success", customMessage, "success");
+      } else {
+        Toast.fire("Success", successMessage, "success");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error:", error);
+      Toast.fire("Error", "Something went wrong.", "error");
     }
-    return result;
   };
 };
 

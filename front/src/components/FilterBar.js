@@ -30,7 +30,9 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
     .sort((a, b) => a.username.localeCompare(b.username));
   // Get unique report statuses
   const uniqueStatuses = new Map(
-    reports.map((report) => [report.status, report.status_display])
+    reports
+      .filter((report) => report.status !== "exported")
+      .map((report) => [report.status, report.status_display])
   );
 
   /* ------------ VEHICLE FILTER AND SORT ----------------- */
@@ -64,7 +66,14 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
   return (
     <div className="filter-bar">
       {filterOptions.map((option) => (
-        <div className="filter-group" key={option.name}>
+        <div
+          className={
+            option.type === "checkbox"
+              ? "filter-group checkbox"
+              : "filter-group"
+          }
+          key={option.name}
+        >
           <label htmlFor={option.name}>
             {capitalizeFirstLetter(option.label)}
           </label>
@@ -76,7 +85,7 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
               onChange={(e) => onFilterChange(option.name, e.target.value)}
             >
               <option value="">All {option.label}</option>
-              {/* Filter bar options for the reports page */}
+              {/* Filter bar select options for the reports page */}
               {option.name === "vehicle" &&
                 sortedVehicles.map((vehicle, index) => (
                   <option key={index} value={vehicle.id}>
@@ -109,9 +118,9 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
                   </option>
                 ))}
 
-              {/* Filter bar options for the owners page */}
+              {/* Filter bar select options for the owners page */}
               {/* no select */}
-              {/* Filter bar options for the vehicles page */}
+              {/* Filter bar select options for the vehicles page */}
               {option.name === "brand" &&
                 sortedUniqueBrands.map((brand) => (
                   <option key={brand} value={brand}>
@@ -136,7 +145,7 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
                     {ownerName}
                   </option>
                 ))}
-              {/* Filter bar options for the inventory page */}
+              {/* Filter bar select options for the inventory page */}
               {option.name === "category" &&
                 sortedUniquesCategories.map((category) => (
                   <option key={category} value={category}>
@@ -156,7 +165,13 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
               id={option.name}
               name={option.name}
               value={option.value}
-              onChange={(e) => onFilterChange(option.name, e.target.value)}
+              checked={option.type === "checkbox" ? option.value : undefined}
+              onChange={(e) =>
+                onFilterChange(
+                  option.name,
+                  option.type === "checkbox" ? e.target.checked : e.target.value
+                )
+              }
               placeholder={option.placeholder || ""}
             />
           )}

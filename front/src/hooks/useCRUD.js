@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useAxios } from "./useAxios";
+// Contexts
+import { useAuth } from "../contexts/AuthContext";
 
 const useCRUD = (apiEndpoint, parentResource = null, itemId = null) => {
+  const { authenticatedUser } = useAuth();
+
   const axiosInstance = useAxios();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,14 +28,25 @@ const useCRUD = (apiEndpoint, parentResource = null, itemId = null) => {
   };
 
   // Fetch all items
-  const fetchData = async () => {
+  const fetchData = async (filters = {}, sort = "") => {
+    if (!authenticatedUser) return;
     if (parentResource && !itemId) {
       setData([]); // Clear state when no itemId is selected
       return;
     }
     try {
       setLoading(true);
-      const response = await axiosInstance.get(baseURL);
+
+      // Build query params
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value); // Only add non-empty filters
+      });
+      if (sort) params.append("ordering", sort);
+
+      const response = await axiosInstance.get(
+        `${baseURL}?${params.toString()}`
+      );
       setData(response.data);
       return response.data;
     } catch (err) {
@@ -43,6 +58,7 @@ const useCRUD = (apiEndpoint, parentResource = null, itemId = null) => {
 
   // Create an item
   const createItem = async (itemData) => {
+    if (!authenticatedUser) return;
     try {
       setLoading(true);
       const response = await axiosInstance.post(`${apiEndpoint}/`, itemData);
@@ -57,6 +73,7 @@ const useCRUD = (apiEndpoint, parentResource = null, itemId = null) => {
 
   // Update an item
   const updateItem = async (itemId, updatedFields) => {
+    if (!authenticatedUser) return;
     try {
       setLoading(true);
       const response = await axiosInstance.patch(
@@ -76,6 +93,7 @@ const useCRUD = (apiEndpoint, parentResource = null, itemId = null) => {
 
   // Delete an item
   const deleteItem = async (itemId) => {
+    if (!authenticatedUser) return;
     try {
       setLoading(true);
       const response = await axiosInstance.delete(`${apiEndpoint}/${itemId}/`);

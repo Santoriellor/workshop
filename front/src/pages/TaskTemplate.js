@@ -1,26 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // Utils
 import getFilterOptions from "../utils/filterBarFilterOptions";
 // Components
 import Page from "../components/Page";
-import TaskTemplateCard from "../components/TaskTemplateCard";
-import TaskTemplateModal from "../components/TaskTemplateModal";
+import TaskTemplateCard from "../components/task-templates/TaskTemplateCard";
+import TaskTemplateModal from "../components/task-templates/TaskTemplateModal";
 // Contexts
 import { useInventoryContext } from "../contexts/InventoryContext";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 const TaskTemplate = () => {
   const { taskTemplate, deleteTaskTemplateWithAlert } = useInventoryContext();
+  const { setModalComponent } = useGlobalContext();
+
   const [filters, setFilters] = useState({
     search: "",
   });
 
+  useEffect(() => {
+    setModalComponent(() => TaskTemplateModal);
+  }, []);
+
   return (
     <Page
-      itemType="Task template"
+      itemType="task"
       filters={{ ...filters, type: "task_template" }}
       setFilters={setFilters}
       filterOptions={getFilterOptions(filters).task_template}
-      sortingCardFunction={(a, b) => a.name.localeCompare(b.name)}
       items={taskTemplate}
       deleteItemWithAlert={deleteTaskTemplateWithAlert}
       CardComponent={TaskTemplateCard}

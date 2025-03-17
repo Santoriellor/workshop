@@ -24,7 +24,12 @@
 .repair-section select {
   margin: 0;
   margin-right: 10px;
-  width: 80%;
+  width: 60%;
+}
+.repair-section input {
+  margin: 0;
+  margin-right: 10px;
+  width: 20%;
 }
 .repair-section button {
   margin: 0;

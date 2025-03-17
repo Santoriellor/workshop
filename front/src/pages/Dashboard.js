@@ -1,10 +1,10 @@
 import React from "react";
 
 // Components
-import LatestReports from "../components/LatestReports";
-import LowestInventory from "../components/LowestInventory";
-import LatestVehicles from "../components/LatestVehicles";
-import ScrollToTopButton from "../components/ScrollToTopButton";
+import LatestReports from "../components/reports/LatestReports";
+import LowestInventory from "../components/inventory/LowestInventory";
+import LatestInvoices from "../components/invoices/LatestInvoices";
+import ScrollToTopButton from "../components/buttons/ScrollToTopButton";
 // Contexts
 import { useAuth } from "../contexts/AuthContext";
 // Styles
@@ -15,18 +15,20 @@ const Dashboard = () => {
 
   return (
     <>
-      <h2>Dashboard - You are logged in as {authenticatedUser.username}</h2>
+      <div className="dashboard-header">
+        Dashboard - You are logged in as {authenticatedUser.username}
+      </div>
       <div className="dashboard">
-        <section className="latest-reports">
-          <LatestReports />
-        </section>
-        <div className="divider"></div>
         <section className="lowest-inventory">
           <LowestInventory />
         </section>
         <div className="divider"></div>
-        <section className="latest-vehicles">
-          <LatestVehicles />
+        <section className="latest-invoices">
+          <LatestInvoices />
+        </section>
+        <div className="divider"></div>
+        <section className="latest-reports">
+          <LatestReports />
         </section>
       </div>
       {/* Floating ScrollToTopButton */}

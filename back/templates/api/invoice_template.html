@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/invoice_template.css' %}" type="text/css" media="all" />
+</head>
+
+<body>
+    <div>
+        <div class="py-4">
+            <div class="px-14 py-6">
+                <table class="w-full border-collapse border-spacing-0">
+                    <tbody>
+                        <tr>
+                            <td class="w-full align-top">
+                                <div class="logo-container">
+                                    <img class="logo h-12" src="{% static 'image/logo-garage.svg' %}" />
+                                    <span class="company-name">The Garage</span>
+                                </div>
+
+                            </td>
+                            <td class="align-top">
+                                <div class="text-sm">
+                                    <table class="border-collapse border-spacing-0">
+                                        <tbody>
+                                            <tr>
+                                                <td class="border-r pr-4">
+                                                    <div>
+                                                        <p class="whitespace-nowrap text-slate-400 text-right">Date</p>
+                                                        <p class="whitespace-nowrap font-bold text-main text-right">
+                                                            {% now "F d, Y" %}</p>
+                                                    </div>
+                                                </td>
+                                                <td class="pl-4">
+                                                    <div>
+                                                        <p class="whitespace-nowrap text-slate-400 text-right">Invoice #
+                                                        </p>
+                                                        <p class="whitespace-nowrap font-bold text-main text-right">
+                                                            {{ invoice.id }}</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-slate-100 px-14 py-6 text-sm">
+                <table class="w-full border-collapse border-spacing-0">
+                    <tbody>
+                        <tr>
+                            <td class="w-1/2 align-top">
+                                <div class="text-sm text-neutral-600">
+                                    <p class="font-bold">The Garage</p>
+                                    <p>Number: 23456789</p>
+                                    <p>VAT: 23456789</p>
+                                    <p>Bahnofstrasse, 14</p>
+                                    <p>8001 Zürich</p>
+                                </div>
+                            </td>
+                            <td class="w-1/2 align-top text-right">
+                                <div class="text-sm text-neutral-600">
+                                    <p class="font-bold">Customer</p>
+                                    <p>Name: {{ invoice.report.vehicle.owner.full_name }}</p>
+                                    <p>{{ invoice.report.vehicle.owner.address }}</p>
+                                    <p>Phone: {{ invoice.report.vehicle.owner.phone }}</p>
+                                    <p>Email: {{ invoice.report.vehicle.owner.email }}</p>
+                                    <p>Vehicle License Plate: {{ invoice.report.vehicle.license_plate }}</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-14 py-10 text-sm text-neutral-700">
+                <table class="w-full border-collapse border-spacing-0">
+                    <thead>
+                        <tr>
+                            <td class="border-b-2 border-main pb-3 pl-3 font-bold text-main">#</td>
+                            <td class="border-b-2 border-main pb-3 pl-2 font-bold text-main">Tasks</td>
+                            <td class="border-b-2 border-main pb-3 pl-2 text-right font-bold text-main">Price</td>
+                            <td class="border-b-2 border-main pb-3 pl-2 text-center font-bold text-main">VAT</td>
+                            <td class="border-b-2 border-main pb-3 pl-2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                            <td class="border-b-2 border-main pb-3 pl-2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                            <td class="border-b-2 border-main pb-3 pl-2 pr-3 text-right font-bold text-main">Subtotal +
+                                VAT</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr>
+                            <td class="border-b py-3 pl-3">{{ forloop.counter }}.</td>
+                            <td class="border-b py-3 pl-2">{{ task.name }}</td>
+                            <td class="border-b py-3 pl-2 text-right">Fr.{{ task.price }}</td>
+                            <td class="border-b py-3 pl-2 text-center">Fr.{{ task.vat }}</td>
+                            <td class="border-b py-3 pl-2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                            <td class="border-b py-3 pl-2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                            <td class="border-b py-3 pl-2 pr-3 text-right">Fr.{{ task.total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <table class="w-full border-collapse border-spacing-0">
+                    <thead>
+                        <tr>
+                            <td class="border-b-2 border-main pb-3 pl-3 font-bold text-main">#</td>
+                            <td class="border-b-2 border-main pb-3 pl-2 font-bold text-main">Parts used</td>
+                            <td class="border-b-2 border-main pb-3 pl-2 text-right font-bold text-main">Price</td>
+                            <td class="border-b-2 border-main pb-3 pl-2 text-center font-bold text-main">Qty.</td>
+                            <td class="border-b-2 border-main pb-3 pl-2 text-center font-bold text-main">VAT</td>
+                            <td class="border-b-2 border-main pb-3 pl-2 text-right font-bold text-main">Subtotal</td>
+                            <td class="border-b-2 border-main pb-3 pl-2 pr-3 text-right font-bold text-main">Subtotal +
+                                VAT</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for part in parts %}
+                        <tr>
+                            <td class="border-b py-3 pl-3">{{ forloop.counter }}.</td>
+                            <td class="border-b py-3 pl-2">{{ part.name }}</td>
+                            <td class="border-b py-3 pl-2 text-right">Fr.{{ part.unit_price }}</td>
+                            <td class="border-b py-3 pl-2 text-center">{{ part.quantity }}</td>
+                            <td class="border-b py-3 pl-2 text-center">Fr.{{ part.vat }}</td>
+                            <td class="border-b py-3 pl-2 text-right">Fr.{{ part.subtotal }}</td>
+                            <td class="border-b py-3 pl-2 pr-3 text-right">Fr.{{ part.total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <table class="w-full border-collapse border-spacing-0">
+                    <tbody>
+                        <tr>
+                            <td class="w-full"></td>
+                            <td>
+                                <table class="w-full border-collapse border-spacing-0">
+                                    <tbody>
+                                        <tr>
+                                            <td class="border-b p-3">
+                                                <div class="whitespace-nowrap text-slate-400">Net Total:</div>
+                                            </td>
+                                            <td class="border-b p-3 text-right">
+                                                <div class="whitespace-nowrap font-bold text-main">
+                                                    Fr.{{ net_total }}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3">
+                                                <div class="whitespace-nowrap text-slate-400">VAT Total:
+                                                </div>
+                                            </td>
+                                            <td class="p-3 text-right">
+                                                <div class="whitespace-nowrap font-bold text-main">
+                                                    Fr.{{ vat_total }}
+                                                </div>
+                                            </td>
+                                            <td class="p-3 text-right">
+                                                <div class="whitespace-nowrap font-bold text-main">Total:</div>
+                                            </td>
+                                            <td class="bg-main p-3 text-right">
+                                                <div class="whitespace-nowrap font-bold text-white">
+                                                    Fr.{{ final_total }}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-14 text-sm text-neutral-700">
+                <p class="text-main font-bold">PAYMENT DETAILS</p>
+                <p>Banks of Banks</p>
+                <p>Bank/Sort Code: 1234567</p>
+                <p>Account Number: 123456678</p>
+                <p>Payment Reference: BRA-00335</p>
+            </div>
+
+            <div class="px-14 py-10 text-sm text-neutral-700">
+                <p class="text-main font-bold">Notes</p>
+                <p class="italic">Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptate eius distinctio
+                    totam animi pariatur voluptates. At corporis, reprehenderit cupiditate est deserunt placeat soluta
+                    nisi, ipsam aspernatur numquam nostrum similique dolores..</p>
+            </div>
+
+            <footer class="fixed bottom-0 left-0 bg-slate-100 w-full text-neutral-600 text-center text-xs py-3">
+                The Garage Company
+                <span class="text-slate-300 px-2">|</span>
+                info@thegarage.ch
+                <span class="text-slate-300 px-2">|</span>
+                +41-76-123-4567
+            </footer>
+        </div>
+</body>
+
+</html>
