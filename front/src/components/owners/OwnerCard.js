@@ -22,19 +22,21 @@ const OwnerCard = ({ item }) => {
         }
       }}
     >
-      <header>{item.full_name}</header>
       <div className="card-content">
         <section>
-          <p>
-            <strong>Email:</strong>&nbsp;{item.email}
-          </p>
-          <p>
-            <strong>Phone:</strong>&nbsp;{item.phone}
-          </p>
-          {/* <p>
+          <header>{item.full_name}</header>
+          <div>
+            <p>
+              <strong>Email:</strong>&nbsp;{item.email}
+            </p>
+            <p>
+              <strong>Phone:</strong>&nbsp;{item.phone}
+            </p>
+            {/* <p>
           <strong>Address:</strong>&nbsp;
           {item.address}
         </p> */}
+          </div>
         </section>
         <section className="actions">
           <button

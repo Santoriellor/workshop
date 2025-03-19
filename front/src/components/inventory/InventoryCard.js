@@ -31,27 +31,29 @@ const InventoryCard = ({ item }) => {
         }
       }}
     >
-      <header>{item.name}</header>
       <div className="card-content">
         <section>
-          <p>
-            <strong>Reference:</strong>&nbsp;{item.reference_code}
-          </p>
-          <p>
-            <strong>Quantity:</strong>&nbsp;{item.quantity_in_stock}
-          </p>
-          {isPathInventory && (
-            <>
-              <p>
-                <strong>Category:</strong>&nbsp;
-                {item.category}
-              </p>
-              <p>
-                <strong>Unit price:</strong>&nbsp;
-                {item.unit_price}
-              </p>
-            </>
-          )}
+          <header>{item.name}</header>
+          <div>
+            <p>
+              <strong>Reference:</strong>&nbsp;{item.reference_code}
+            </p>
+            <p>
+              <strong>Quantity:</strong>&nbsp;{item.quantity_in_stock}
+            </p>
+            {isPathInventory && (
+              <>
+                <p>
+                  <strong>Category:</strong>&nbsp;
+                  {item.category}
+                </p>
+                <p>
+                  <strong>Unit price:</strong>&nbsp;
+                  {item.unit_price}
+                </p>
+              </>
+            )}
+          </div>
         </section>
         <section className="actions">
           {isPathInventory && (

@@ -22,15 +22,17 @@ const TaskTemplateCard = ({ item }) => {
         }
       }}
     >
-      <header>{item.name}</header>
       <div className="card-content">
         <section>
-          <p>
-            <strong>Description:</strong>&nbsp;{item.description}
-          </p>
-          <p>
-            <strong>Price:</strong>&nbsp;{item.price}
-          </p>
+          <header>{item.name}</header>
+          <div>
+            <p>
+              <strong>Description:</strong>&nbsp;{item.description}
+            </p>
+            <p>
+              <strong>Price:</strong>&nbsp;{item.price}
+            </p>
+          </div>
         </section>
         <section className="actions">
           <button

@@ -63,7 +63,8 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React frontend
+    "http://localhost:3000", # React development frontend
+    "https://workshop.santoriello.ch" # React production frontend
 ]
 
 REST_FRAMEWORK = {
@@ -73,6 +74,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
 }
 
 ROOT_URLCONF = 'backend.urls'

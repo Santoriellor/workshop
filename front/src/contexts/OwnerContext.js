@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useContext } from "react";
+import { useLocation } from "react-router-dom";
 
 // Contexts
 import { useVehicleContext } from "./VehicleContext";
@@ -10,6 +11,7 @@ import withSuccessAlert from "../utils/successAlert";
 const OwnerContext = createContext();
 
 export const OwnerProvider = ({ children }) => {
+  const location = useLocation();
   const {
     data: owners,
     fetchData: fetchOwners,
@@ -46,10 +48,19 @@ export const OwnerProvider = ({ children }) => {
     return owner ? owner.full_name : "Unknown";
   };
 
-  // Automatically fetch data on first load
+  // Automatically fetch data when pathname changes
   useEffect(() => {
-    fetchOwners({}, "full_name");
-  }, []);
+    const ownerPaths = [
+      "/owner",
+      "/report",
+      "/dashboard",
+      "/vehicle",
+      "/invoices",
+    ];
+    if (ownerPaths.includes(location.pathname)) {
+      fetchOwners({}, "full_name");
+    }
+  }, [location.pathname]);
 
   return (
     <OwnerContext.Provider

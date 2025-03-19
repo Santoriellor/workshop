@@ -49,6 +49,7 @@
   color: white;
   font-size: large;
   font-weight: 500;
+  text-overflow: ellipsis;
 }
 
 .sidebar-small {

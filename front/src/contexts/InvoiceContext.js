@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useContext } from "react";
+import { useLocation } from "react-router-dom";
 
 // Hooks
 import useCRUD from "../hooks/useCRUD";
@@ -8,6 +9,7 @@ import withSuccessAlert from "../utils/successAlert";
 const InvoiceContext = createContext();
 
 export const InvoiceProvider = ({ children }) => {
+  const location = useLocation();
   const {
     data: invoices,
     fetchData: fetchInvoices,
@@ -34,10 +36,26 @@ export const InvoiceProvider = ({ children }) => {
     "Invoice deleted successfully!"
   );
 
-  // Automatically fetch data on first load
+  // Automatically fetch data when pathname changes
   useEffect(() => {
-    fetchInvoices({}, "issued_date");
-  }, []);
+    const invoicesPaths = ["/invoices", "/dashboard"];
+    if (invoicesPaths.includes(location.pathname)) {
+      let filters = {};
+      let ordering = null;
+      let limit = null;
+      let offset = null;
+
+      if (location.pathname.includes("invoices")) {
+        ordering = "-issued_date";
+      }
+      if (location.pathname.includes("dashboard")) {
+        ordering = "-issued_date";
+        limit = 5;
+      }
+
+      fetchInvoices({ ...filters, ordering, limit, offset });
+    }
+  }, [location.pathname]);
 
   return (
     <InvoiceContext.Provider

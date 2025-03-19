@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 // Hooks
 import useCRUD from "../hooks/useCRUD";
 // Utils
@@ -7,6 +8,7 @@ import withSuccessAlert from "../utils/successAlert";
 const VehicleContext = createContext();
 
 export const VehicleProvider = ({ children }) => {
+  const location = useLocation();
   const [selectedVehicle, setSelectedVehicle] = useState(null);
 
   const {
@@ -15,7 +17,7 @@ export const VehicleProvider = ({ children }) => {
     createItem: createVehicle,
     updateItem: updateVehicle,
     deleteItem: deleteVehicle,
-    loading,
+    loading: loadingVehicles,
     error,
   } = useCRUD("vehicles");
 
@@ -41,10 +43,13 @@ export const VehicleProvider = ({ children }) => {
     return vehicle ? vehicle.__str__ : "Unknown";
   };
 
-  // Automatically fetch data on first load
+  // Automatically fetch data when pathname changes
   useEffect(() => {
-    fetchVehicles({}, "brand, model");
-  }, []);
+    const vehiclePaths = ["/vehicle", "/report", "/dashboard", "/invoices"];
+    if (vehiclePaths.includes(location.pathname)) {
+      fetchVehicles({}, "brand, model");
+    }
+  }, [location.pathname]);
 
   return (
     <VehicleContext.Provider
@@ -56,7 +61,7 @@ export const VehicleProvider = ({ children }) => {
         updateVehicleWithAlert,
         deleteVehicleWithAlert,
         getVehicleInfoByVehicleId,
-        loading,
+        loadingVehicles,
         error,
       }}
     >

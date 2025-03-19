@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 // Contexts
 import { useInvoiceContext } from "../contexts/InvoiceContext";
@@ -25,33 +25,24 @@ const Invoices = () => {
     setFilters({ ...filters, [name]: value });
   };
 
-  const { invoices, fetchInvoices } = useInvoiceContext();
-  const { reports, fetchReports, updateReportWithAlert } = useReportContext();
-
-  // Select only the non exported reports
-  const exportedReports = reports.filter(
-    (report) => report.status === "completed"
-  );
+  const { invoices, fetchInvoices, loadingInvoices } = useInvoiceContext();
+  const { reports, fetchReports, loadingReports, updateReportWithAlert } =
+    useReportContext();
 
   const handleExportClick = async (report) => {
     try {
-      const updatedReport = await updateReportWithAlert(report.id, {
+      await updateReportWithAlert(report.id, {
         ...report,
         status: "exported",
       });
+
+      fetchReports({ status: "completed" }, "vehicle__brand,vehicle__model");
+      fetchInvoices({}, "-issued_date");
     } catch (error) {
       console.error("Error exporting report:", error);
       Toast.fire("Error", "Something went wrong.", "error");
-    } finally {
-      fetchReports({}, "vehicle__brand, vehicle__model");
-      fetchInvoices({}, "issued_date");
     }
   };
-
-  useEffect(() => {
-    fetchReports({}, "vehicle__brand, vehicle__model");
-    fetchInvoices({}, "issued_date");
-  }, []);
 
   return (
     <>
@@ -62,8 +53,10 @@ const Invoices = () => {
       />
       <div className="invoices">
         <div className="invoices-list">
-          {exportedReports.length > 0 ? (
-            exportedReports.map((report) => (
+          {loadingReports ? (
+            <p>Loading reports...</p>
+          ) : reports.length > 0 ? (
+            reports.map((report) => (
               <ReportCard
                 key={report.id}
                 item={report}
@@ -76,7 +69,9 @@ const Invoices = () => {
         </div>
         <div className="invoices-divider"></div>
         <div className="invoices-list">
-          {invoices.length > 0 ? (
+          {loadingInvoices ? (
+            <p>Loading invoices...</p>
+          ) : invoices.length > 0 ? (
             invoices.map((invoice) => (
               <InvoiceCard key={invoice.id} invoice={invoice} />
             ))

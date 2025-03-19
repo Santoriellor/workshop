@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 export const GlobalContext = createContext();
 
@@ -6,12 +6,19 @@ export const GlobalProvider = ({ children }) => {
   const [selectedItem, setSelectedItem] = useState({});
   const [itemType, setItemType] = useState({});
   const [modalComponent, setModalComponent] = useState();
+  const [isModalReady, setIsModalReady] = useState(false);
   const [deleteItemWithAlert, setDeleteItemWithAlert] = useState(
     () => () => {}
   );
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [readonly, setReadonly] = useState(false);
+
+  useEffect(() => {
+    if (modalComponent && selectedItem !== null) {
+      setIsModalReady(true);
+    }
+  }, [modalComponent, selectedItem]);
 
   // Function to open a modal with a specific component
   const openModal = (
@@ -25,6 +32,11 @@ export const GlobalProvider = ({ children }) => {
     setItemType(type);
     setReadonly(isReadonly);
     setShowTypeModal(true);
+    if (item === null) {
+      setIsModalReady(true);
+    } else {
+      setIsModalReady(false);
+    }
   };
 
   // Function to open a modal to confirm deletion
@@ -56,6 +68,7 @@ export const GlobalProvider = ({ children }) => {
     setShowTypeModal(false);
     setShowDeleteModal(false);
     setSelectedItem(null);
+    setIsModalReady(false);
     /* setItemType(null); */
   };
 
@@ -67,6 +80,7 @@ export const GlobalProvider = ({ children }) => {
         modalComponent,
         setModalComponent,
         showTypeModal,
+        isModalReady,
         showDeleteModal,
         readonly,
         setReadonly,

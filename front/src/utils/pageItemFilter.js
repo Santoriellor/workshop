@@ -28,8 +28,9 @@ export const filterItems = (
 
   if (filters.type === "owner") {
     return (
-      (filters.name === "" || item.name.includes(filters.name)) &&
-      (filters.email === "" || item.email.includes(filters.email))
+      (filters.name === "" ||
+        item.full_name.toLowerCase().includes(filters.name)) &&
+      (filters.email === "" || item.email.toLowerCase().includes(filters.email))
     );
   }
 

@@ -24,11 +24,7 @@ with open(tasks_data_path, "r") as file:
 
 fake = Faker()
 
-def populate_inventory():
-    if Inventory.objects.count() > 10:
-        print("Inventory already populated.")
-        return
-        
+def populate_inventory():        
     for item in inventory_data:
         # Avoid duplicate entries
         inventory, created = Inventory.objects.get_or_create(reference_code=item["reference_code"], defaults=item)
@@ -39,10 +35,6 @@ def populate_inventory():
 
 
 def populate_task_templates():
-    if TaskTemplate.objects.count() > 10:
-        print("Task templates already populated.")
-        return
-    
     for item in tasks_data:
         task, created = TaskTemplate.objects.get_or_create(name=item["name"], defaults=item)
         if created:

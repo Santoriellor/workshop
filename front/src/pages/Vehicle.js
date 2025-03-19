@@ -12,7 +12,7 @@ import { useGlobalContext } from "../contexts/GlobalContext";
 import "../styles/Vehicles.css";
 
 const Vehicle = () => {
-  const { vehicles } = useVehicleContext();
+  const { vehicles, loadingVehicles } = useVehicleContext();
   const { setModalComponent } = useGlobalContext();
 
   const [filters, setFilters] = useState({
@@ -35,6 +35,7 @@ const Vehicle = () => {
       filterOptions={getFilterOptions(filters).vehicles}
       items={vehicles}
       CardComponent={VehicleCard}
+      loadingItem={loadingVehicles}
     />
   );
 };

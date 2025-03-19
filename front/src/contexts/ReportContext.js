@@ -1,4 +1,9 @@
-import React, { createContext, useContext, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
 import { useLocation } from "react-router-dom";
 
 // Contexts
@@ -61,13 +66,45 @@ export const ReportProvider = ({ children }) => {
     error: errorParts,
   } = useCRUD("parts", "reports", selectedItem?.id);
 
+  /*   // Memoized function to fetch reports
+  const fetchReportsMemoized = useCallback(() => {
+    fetchReports({}, "vehicle__brand,vehicle__model");
+  }, [fetchReports]);
+
+  // Memoized function to fetch reports
+  const fetchTasksAndPartsMemoized = useCallback(() => {
+    fetchTasks();
+    fetchParts();
+  }, [fetchTasks, fetchParts]);
+ */
   useEffect(() => {
-    fetchReports({}, "vehicle__brand, vehicle__model");
-  }, []);
+    const reportPaths = ["/report", "/dashboard", "/invoices"];
+    if (reportPaths.includes(location.pathname)) {
+      let filters = {};
+      let ordering = "vehicle__brand,vehicle__model";
+      let limit = null;
+      let offset = null;
+
+      if (location.pathname.includes("report")) {
+        filters = { status__in: ["pending", "in_progress", "completed"] };
+      }
+      if (location.pathname.includes("dashboard")) {
+        filters = { status__in: ["pending", "in_progress", "completed"] };
+        ordering = "-created_at";
+        limit = 5;
+      }
+      if (location.pathname.includes("invoices")) {
+        filters = { status: "completed" };
+      }
+
+      fetchReports({ ...filters, ordering, limit, offset });
+    }
+  }, [location.pathname]);
 
   // Automatically fetch data when the selectedItem changes
   useEffect(() => {
-    if (location.pathname.includes("reports")) {
+    const reportPaths = ["/report", "/dashboard", "/invoices"];
+    if (reportPaths.includes(location.pathname)) {
       fetchTasks();
       fetchParts();
     }

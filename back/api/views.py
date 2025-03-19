@@ -1,4 +1,5 @@
 from rest_framework import permissions, status, viewsets, filters
+from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -23,6 +24,8 @@ from .serializers import (
     InventorySerializer, PartSerializer, InvoiceSerializer
 ) 
 
+class CustomPagination(LimitOffsetPagination):
+    default_limit = 5
 
 # Authentication Views
 class RegisterView(APIView):
@@ -125,11 +128,34 @@ class ReportViewSet(viewsets.ModelViewSet):
     serializer_class = ReportSerializer
     permission_classes = [permissions.IsAuthenticated]
     
+    # disable Pagination
+    pagination_class = None
+    
     # To set up filters from the backend side
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['status', 'vehicle__brand', 'vehicle__owner']
+    filterset_fields = {
+        'status': ['exact', 'in'],
+        'vehicle__brand': ['exact'],
+        'vehicle__owner': ['exact'],
+    }
     ordering_fields = ['vehicle__brand', 'vehicle__model', 'created_at', 'updated_at', 'status']
+    
+    def list(self, request, *args, **kwargs):
+        limit = request.query_params.get("limit")
+        offset = request.query_params.get("offset")
+        ordering = request.query_params.get("ordering", "vehicle__brand,vehicle__model")
 
+        queryset = self.filter_queryset(self.get_queryset()).order_by(*ordering.split(","))
+        
+        if limit or offset:
+            self.pagination_class = CustomPagination
+            paginator = self.pagination_class()
+            paginated_queryset = paginator.paginate_queryset(queryset, request)
+            return paginator.get_paginated_response(self.get_serializer(paginated_queryset, many=True).data)
+        
+        # If no pagination params are set, return all results
+        return Response(self.get_serializer(queryset, many=True).data)
+    
     def update(self, request, *args, **kwargs):
         """Allow partial updates while keeping existing values for missing fields."""
         partial = kwargs.pop('partial', False)
@@ -286,10 +312,29 @@ class InventoryViewSet(viewsets.ModelViewSet):
     serializer_class = InventorySerializer
     permission_classes = [permissions.IsAuthenticated]
     
+    # disable Pagination
+    pagination_class = None
+    
     # To set up filters from the backend side
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['name', 'reference_code', 'category', 'updated_at']
     ordering_fields = ['name']
+    
+    def list(self, request, *args, **kwargs):
+        limit = request.query_params.get("limit")
+        offset = request.query_params.get("offset")
+        ordering = request.query_params.get("ordering", "name")
+
+        queryset = self.filter_queryset(self.get_queryset()).order_by(*ordering.split(","))
+        
+        if limit or offset:
+            self.pagination_class = CustomPagination
+            paginator = self.pagination_class()
+            paginated_queryset = paginator.paginate_queryset(queryset, request)
+            return paginator.get_paginated_response(self.get_serializer(paginated_queryset, many=True).data)
+        
+        # If no pagination params are set, return all results
+        return Response(self.get_serializer(queryset, many=True).data)
     
     def update(self, request, *args, **kwargs):
         """Allow partial updates while keeping existing values for missing fields."""
@@ -325,11 +370,30 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     serializer_class = InvoiceSerializer
     permission_classes = [permissions.IsAuthenticated]
     
+    # disable Pagination
+    pagination_class = None
+    
     # To set up filters from the backend side
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['invoice_number']
     ordering_fields = ['issued_date']
 
+    def list(self, request, *args, **kwargs):
+        limit = request.query_params.get("limit")
+        offset = request.query_params.get("offset")
+        ordering = request.query_params.get("ordering", "issued_date")
+
+        queryset = self.filter_queryset(self.get_queryset()).order_by(*ordering.split(","))
+        
+        if limit or offset:
+            self.pagination_class = CustomPagination
+            paginator = self.pagination_class()
+            paginated_queryset = paginator.paginate_queryset(queryset, request)
+            return paginator.get_paginated_response(self.get_serializer(paginated_queryset, many=True).data)
+        
+        # If no pagination params are set, return all results
+        return Response(self.get_serializer(queryset, many=True).data)
+    
     def update(self, request, *args, **kwargs):
         """Allow partial updates while keeping existing values for missing fields."""
         partial = kwargs.pop('partial', False)
