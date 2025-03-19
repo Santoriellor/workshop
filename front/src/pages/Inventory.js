@@ -10,7 +10,8 @@ import { useInventoryContext } from "../contexts/InventoryContext";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
 const Inventory = () => {
-  const { inventory, deleteInventoryPartWithAlert } = useInventoryContext();
+  const { inventory, loadingInventory, deleteInventoryPartWithAlert } =
+    useInventoryContext();
   const { setModalComponent } = useGlobalContext();
 
   const [filters, setFilters] = useState({
@@ -36,6 +37,7 @@ const Inventory = () => {
       deleteItemWithAlert={deleteInventoryPartWithAlert}
       CardComponent={InventoryCard}
       ModalComponent={InventoryModal}
+      loadingItem={loadingInventory}
     />
   );
 };

@@ -12,7 +12,7 @@ import { useGlobalContext } from "../contexts/GlobalContext";
 import "../styles/Report.css";
 
 const Report = () => {
-  const { reports } = useReportContext();
+  const { reports, loadingReports } = useReportContext();
   const { setModalComponent } = useGlobalContext();
 
   const [filters, setFilters] = useState({
@@ -22,11 +22,11 @@ const Report = () => {
     owner: "",
     status: "",
   });
-
+  /* 
   // Select only the non exported reports
   const nonExportedReports = reports.filter(
     (report) => report.status !== "exported"
-  );
+  ); */
 
   useEffect(() => {
     setModalComponent(() => ReportModal);
@@ -38,8 +38,9 @@ const Report = () => {
       filters={{ ...filters, type: "report" }}
       setFilters={setFilters}
       filterOptions={getFilterOptions(filters).reports}
-      items={nonExportedReports}
+      items={reports}
       CardComponent={ReportCard}
+      loadingItem={loadingReports}
     />
   );
 };

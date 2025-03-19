@@ -12,7 +12,7 @@ import { useGlobalContext } from "../contexts/GlobalContext";
 import "../styles/Owner.css";
 
 const Owner = () => {
-  const { owners } = useOwnerContext();
+  const { owners, loadingOwners } = useOwnerContext();
   const { setModalComponent } = useGlobalContext();
 
   const [filters, setFilters] = useState({
@@ -32,6 +32,7 @@ const Owner = () => {
       filterOptions={getFilterOptions(filters).owners}
       items={owners}
       CardComponent={OwnerCard}
+      loadingItem={loadingOwners}
     />
   );
 };

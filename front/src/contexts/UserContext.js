@@ -1,10 +1,13 @@
 import React, { createContext, useContext, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
 // Hooks
 import useCRUD from "../hooks/useCRUD";
 
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
+  const location = useLocation();
   const {
     data: users,
     fetchData: fetchUsers,
@@ -18,10 +21,13 @@ export const UserProvider = ({ children }) => {
     return user ? user.username : "Unknown";
   };
 
-  // Automatically fetch data on first load
+  // Automatically fetch data when pathname changes
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    const userPaths = ["/user", "/report", "/dashboard", "/invoices"];
+    if (userPaths.includes(location.pathname)) {
+      fetchUsers();
+    }
+  }, [location.pathname]);
 
   return (
     <UserContext.Provider

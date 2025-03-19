@@ -87,7 +87,8 @@ class Task(models.Model):
     task_template = models.ForeignKey(TaskTemplate, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return f"{self.task_template.name} in Report {self.report.id}"
+        task_template_name = self.task_template.name if self.task_template else "Unknown Task"
+        return f"{task_template_name} in Report {self.report.id}"
     
     
 # -------- INVENTORY & REPAIR PARTS --------    

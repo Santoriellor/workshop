@@ -10,7 +10,8 @@ import { useInventoryContext } from "../contexts/InventoryContext";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
 const TaskTemplate = () => {
-  const { taskTemplate, deleteTaskTemplateWithAlert } = useInventoryContext();
+  const { taskTemplate, loadingTaskTemplate, deleteTaskTemplateWithAlert } =
+    useInventoryContext();
   const { setModalComponent } = useGlobalContext();
 
   const [filters, setFilters] = useState({
@@ -31,6 +32,7 @@ const TaskTemplate = () => {
       deleteItemWithAlert={deleteTaskTemplateWithAlert}
       CardComponent={TaskTemplateCard}
       ModalComponent={TaskTemplateModal}
+      loadingItem={loadingTaskTemplate}
     />
   );
 };

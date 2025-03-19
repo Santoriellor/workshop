@@ -31,7 +31,19 @@
   box-shadow: 0 0 16px rgba(255, 0, 0, 1);
 }
 
-.card header {
+.card-content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card-content section:nth-child(1) {
+  flex: 1;
+}
+
+.card-content section:nth-child(1) header {
   margin: 0 0 5px 0;
   padding-bottom: 5px;
   color: #555;
@@ -41,14 +53,9 @@
   border-bottom: 1.5px solid #ddd;
 }
 
-.card-content {
+.card-content section:nth-child(1) div {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  gap: 10px;
-}
-.card-content section:nth-child(1) {
-  display: flex;
   gap: 10px;
 }
 
@@ -63,5 +70,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
 }

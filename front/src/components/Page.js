@@ -18,12 +18,16 @@ const Page = ({
   filterOptions,
   items,
   CardComponent,
+  loadingItem,
 }) => {
   const { openViewModal, openEditModal, openDeleteModal } = useGlobalContext();
   const { vehicles, getVehicleInfoByVehicleId } = useVehicleContext();
 
   const handleFilterChange = (name, value) => {
-    setFilters({ ...filters, [name]: value });
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [name]: value,
+    }));
   };
 
   // Filter items based on filters
@@ -53,7 +57,9 @@ const Page = ({
 
       {/* Items list with card display */}
       <div className="list">
-        {filteredItems.length > 0 ? (
+        {loadingItem ? (
+          <p>Loading {itemType.toLowerCase()}...</p>
+        ) : filteredItems.length > 0 ? (
           filteredItems.map((item) => (
             <CardComponent
               key={item.id}

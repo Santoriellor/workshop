@@ -44,23 +44,25 @@ const VehicleCard = ({ item }) => {
         }
       }}
     >
-      <header>{truncateText(getVehicleInfoByVehicleId(item.id))}</header>
       <div className="card-content">
         <section>
-          {isPathVehicles && (
+          <header>{truncateText(getVehicleInfoByVehicleId(item.id))}</header>
+          <div>
+            {isPathVehicles && (
+              <p>
+                <strong>Year:</strong>&nbsp;{item.year}
+              </p>
+            )}
             <p>
-              <strong>Year:</strong>&nbsp;{item.year}
+              <strong>Owner:</strong>&nbsp;
+              {getOwnerNameByVehicleId(item.id)}
             </p>
-          )}
-          <p>
-            <strong>Owner:</strong>&nbsp;
-            {getOwnerNameByVehicleId(item.id)}
-          </p>
-          {!isPathVehicles && (
-            <p>
-              <strong>Last used:</strong>&nbsp;{getLastUsedDate(item.id)}
-            </p>
-          )}
+            {!isPathVehicles && (
+              <p>
+                <strong>Last used:</strong>&nbsp;{getLastUsedDate(item.id)}
+              </p>
+            )}
+          </div>
         </section>
         <section className="actions">
           {isPathVehicles && (

@@ -49,6 +49,7 @@ const Main = () => {
   const {
     modalComponent: ModalComponent,
     showTypeModal,
+    isModalReady,
     showDeleteModal,
     deleteItemWithAlert,
   } = useGlobalContext();
@@ -93,7 +94,7 @@ const Main = () => {
                       </div>
                     </div>
                   </div>
-                  {showTypeModal && ModalComponent && <ModalComponent />}
+                  {isModalReady && showTypeModal && <ModalComponent />}
 
                   {showDeleteModal && (
                     <DeleteModal deleteItemFunction={deleteItemWithAlert} />

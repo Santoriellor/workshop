@@ -11,6 +11,7 @@ import { useReportContext } from "../../contexts/ReportContext";
 const ReportCard = ({ item, handleExportClick }) => {
   const location = useLocation();
   const isPathReports = location.pathname.includes("report");
+  const isPathDashboard = location.pathname.includes("dashboard");
   const isPathInvoices = location.pathname.includes("invoices");
 
   const itemType = "Report";
@@ -81,44 +82,49 @@ const ReportCard = ({ item, handleExportClick }) => {
           )}
         </div>
       )}
-      <header>{truncateText(getVehicleInfoByVehicleId(item.vehicle))}</header>
+
       <div className="card-content">
         <section>
-          {(isPathReports || isPathInvoices) && (
-            <>
-              <p>
-                <strong>Created Date:</strong>&nbsp;
-                {item.formatted_created_at}
-              </p>
-              <p>
-                <strong>Owner:</strong>&nbsp;
-                {getOwnerNameByVehicleId(item.vehicle)}
-              </p>
-            </>
-          )}
-          {!isPathInvoices && (
-            <>
-              <p>
-                <strong>Status:</strong>&nbsp;
-                <span
-                  style={{
-                    color:
-                      item.status === "pending"
-                        ? "red"
-                        : item.status === "in_progress"
-                        ? "orange"
-                        : "green",
-                  }}
-                >
-                  {item.status_display}
-                </span>
-              </p>
-              <p>
-                <strong>Created By:</strong>&nbsp;
-                {getUserNameById(item.user)}
-              </p>
-            </>
-          )}
+          <header>
+            {truncateText(getVehicleInfoByVehicleId(item.vehicle))}
+          </header>
+          <div>
+            {(isPathReports || isPathInvoices || isPathDashboard) && (
+              <>
+                <p>
+                  <strong>Created Date:</strong>&nbsp;
+                  {item.formatted_created_at}
+                </p>
+                <p>
+                  <strong>Owner:</strong>&nbsp;
+                  {getOwnerNameByVehicleId(item.vehicle)}
+                </p>
+              </>
+            )}
+            {!isPathInvoices && (
+              <>
+                <p>
+                  <strong>Status:</strong>&nbsp;
+                  <span
+                    style={{
+                      color:
+                        item.status === "pending"
+                          ? "red"
+                          : item.status === "in_progress"
+                          ? "orange"
+                          : "green",
+                    }}
+                  >
+                    {item.status_display}
+                  </span>
+                </p>
+                <p>
+                  <strong>Created By:</strong>&nbsp;
+                  {getUserNameById(item.user)}
+                </p>
+              </>
+            )}
+          </div>
         </section>
         <section className="actions">
           {isPathReports && (
@@ -141,7 +147,7 @@ const ReportCard = ({ item, handleExportClick }) => {
               </button>
             </>
           )}
-          {isPathInvoices && (
+          {isPathInvoices && item.status === "completed" && (
             <>
               <button
                 title="Export Report"

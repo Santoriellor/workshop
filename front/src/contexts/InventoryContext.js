@@ -15,8 +15,8 @@ export const InventoryProvider = ({ children }) => {
     createItem: createTaskTemplate,
     updateItem: updateTaskTemplate,
     deleteItem: deleteTaskTemplate,
-    loading,
-    error,
+    loading: loadingTaskTemplate,
+    error: errorTaskTemplate,
   } = useCRUD("task-templates");
 
   // Create a task template with success alert
@@ -41,8 +41,8 @@ export const InventoryProvider = ({ children }) => {
     createItem: createInventoryPart,
     updateItem: updateInventoryPart,
     deleteItem: deleteInventoryPart,
-    /* loading,
-    error, */
+    loading: loadingInventory,
+    error: errorInventory,
   } = useCRUD("inventory");
 
   // Create an inventory reference with success alert
@@ -69,11 +69,24 @@ export const InventoryProvider = ({ children }) => {
 
   // Fetch data when pathname change
   useEffect(() => {
-    if (location.pathname === "/inventory") {
-      fetchInventory({}, "name");
-    }
-    if (location.pathname === "/tasktemplate") {
-      fetchTaskTemplate({}, "name");
+    const inventoryPaths = ["/inventory", "/tasktemplate", "/dashboard"];
+    if (inventoryPaths.includes(location.pathname)) {
+      let filters = {};
+      let ordering = "name";
+      let limit = null;
+      let offset = null;
+
+      if (location.pathname.includes("inventory")) {
+        fetchInventory({ ...filters, ordering, limit, offset });
+      }
+      if (location.pathname.includes("tasktemplate")) {
+        fetchTaskTemplate({ ...filters, ordering, limit, offset });
+      }
+      if (location.pathname.includes("dashboard")) {
+        ordering = "quantity_in_stock";
+        limit = 5;
+        fetchInventory({ ...filters, ordering, limit, offset });
+      }
     }
   }, [location.pathname]);
 
@@ -89,8 +102,10 @@ export const InventoryProvider = ({ children }) => {
         createTaskTemplateWithAlert,
         updateTaskTemplateWithAlert,
         deleteTaskTemplateWithAlert,
-        loading,
-        error,
+        loadingInventory,
+        loadingTaskTemplate,
+        errorInventory,
+        errorTaskTemplate,
       }}
     >
       {children}
