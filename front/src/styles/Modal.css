@@ -94,6 +94,17 @@
   margin: 0;
 }
 
+.modal-form > fieldset > label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: left;
+}
+
+.modal-form > fieldset > label span {
+  align-self: flex-start;
+}
+
 .modal-form input,
 .modal-form select,
 .modal-form textarea {
@@ -120,13 +131,25 @@
   outline: none;
 }
 
-/* .modal-form input.invalid {
-    border-color: red;
-  }
-.modal-form input.invalid:focus {
+.modal-form input.invalid,
+.modal-form select.invalid {
+  border-color: red;
+}
+.modal-form input.invalid:focus,
+.modal-form select.invalid:focus {
   border-color: red;
   box-shadow: 0 0 5px rgba(184, 84, 59, 0.5);
-} */
+}
+
+.modal-form .error-text {
+  height: 12px;
+  color: red;
+  font-size: 10pt;
+  font-style: italic;
+  padding: 0;
+  padding-bottom: 5px;
+  margin: 0;
+}
 
 .modal-form input:disabled,
 .modal-form select:disabled,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useUserContext } from "../../contexts/UserContext";
@@ -69,15 +69,18 @@ const Register = () => {
     );
   }, [confirmPassword, password]);
 
-  const isFormValid =
-    !errors.username &&
-    !errors.email &&
-    !errors.password &&
-    !errors.confirmPassword &&
-    username &&
-    email &&
-    password &&
-    confirmPassword;
+  const isFormValid = useMemo(
+    () =>
+      !errors.username &&
+      !errors.email &&
+      !errors.password &&
+      !errors.confirmPassword &&
+      username &&
+      email &&
+      password &&
+      confirmPassword,
+    [errors, username, email, password, confirmPassword]
+  );
 
   // Handle form submission
   const handleSubmit = async (e) => {

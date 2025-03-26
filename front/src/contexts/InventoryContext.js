@@ -88,7 +88,7 @@ export const InventoryProvider = ({ children }) => {
         fetchInventory({ ...filters, ordering, limit, offset });
       }
     }
-  }, [location.pathname]);
+  }, [location.pathname, inventory.length, taskTemplate.length]);
 
   return (
     <InventoryContext.Provider

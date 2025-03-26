@@ -60,7 +60,7 @@ export const OwnerProvider = ({ children }) => {
     if (ownerPaths.includes(location.pathname)) {
       fetchOwners({}, "full_name");
     }
-  }, [location.pathname]);
+  }, [location.pathname, owners.length]);
 
   return (
     <OwnerContext.Provider

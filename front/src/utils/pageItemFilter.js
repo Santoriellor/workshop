@@ -12,12 +12,11 @@ export const filterItems = (
     const vehicle = vehicles.find((v) => v.id === item.vehicle);
     // Get the owner ID from the vehicle (if it exists)
     const ownerId = vehicle ? vehicle.owner : null;
+    const vehicleInfo = getVehicleInfoByVehicleId(item.vehicle) || "";
 
     return (
       (filters.vehicle === "" ||
-        getVehicleInfoByVehicleId(item.vehicle)
-          .toLowerCase()
-          .includes(filters.vehicle.toLowerCase())) &&
+        vehicleInfo.toLowerCase().includes(filters.vehicle.toLowerCase())) &&
       (filters.user === "" || item.user?.toString() === filters.user) &&
       (filters.created_at === "" ||
         item.formatted_created_at.includes(filters.created_at)) &&
@@ -70,6 +69,13 @@ export const filterItems = (
       filters.search === "" ||
       item.name.toLowerCase().includes(filters.search.toLowerCase()) ||
       item.description.toLowerCase().includes(filters.search.toLowerCase())
+    );
+  }
+
+  if (filters.type === "invoices") {
+    return (
+      filters.formatted_issued_date === "" ||
+      item.formatted_issued_date.includes(filters.formatted_issued_date)
     );
   }
 

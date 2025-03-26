@@ -27,7 +27,7 @@ export const UserProvider = ({ children }) => {
     if (userPaths.includes(location.pathname)) {
       fetchUsers();
     }
-  }, [location.pathname]);
+  }, [location.pathname, users.length]);
 
   return (
     <UserContext.Provider

@@ -9,8 +9,13 @@ import "../../styles/CreateItemButton.css";
 const CreateItemButton = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { modalComponent, itemType, openModal, setSelectedItem } =
-    useGlobalContext();
+  const {
+    modalComponent,
+    itemType,
+    openModal,
+    showTypeModal,
+    setSelectedItem,
+  } = useGlobalContext();
   const [visible, setVisible] = useState(false);
 
   // Define the paths where the button should be visible
@@ -29,6 +34,14 @@ const CreateItemButton = () => {
       setVisible(false);
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (showTypeModal) {
+      setVisible(false);
+    } else {
+      setVisible(true);
+    }
+  }, [showTypeModal]);
 
   return (
     <div

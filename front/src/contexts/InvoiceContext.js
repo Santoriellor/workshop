@@ -55,7 +55,7 @@ export const InvoiceProvider = ({ children }) => {
 
       fetchInvoices({ ...filters, ordering, limit, offset });
     }
-  }, [location.pathname]);
+  }, [location.pathname, invoices.length]);
 
   return (
     <InvoiceContext.Provider

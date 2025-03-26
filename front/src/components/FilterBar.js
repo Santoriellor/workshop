@@ -4,6 +4,7 @@ import { useOwnerContext } from "../contexts/OwnerContext";
 import { useReportContext } from "../contexts/ReportContext";
 import { useVehicleContext } from "../contexts/VehicleContext";
 import { useInventoryContext } from "../contexts/InventoryContext";
+import { useInvoiceContext } from "../contexts/InvoiceContext";
 // Styles
 import "../styles/FilterBar.css";
 
@@ -13,6 +14,7 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
   const { reports } = useReportContext();
   const { vehicles } = useVehicleContext();
   const { inventory } = useInventoryContext();
+  const { invoices } = useInvoiceContext();
 
   /* ------------ REPORT FILTER AND SORT ----------------- */
   // get vehicles and sort
@@ -63,6 +65,11 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
+  /* ------------ INVOICES FILTER AND SORT ----------------- */
+  const sortedUniqueIssuedDates = [
+    ...new Set(invoices.map((item) => item.formatted_issued_date)),
+  ].sort((a, b) => new Date(b) - new Date(a));
+
   return (
     <div className="filter-bar">
       {filterOptions.map((option) => (
@@ -86,13 +93,6 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
             >
               <option value="">All {option.label}</option>
               {/* Filter bar select options for the reports page */}
-              {option.name === "vehicle" &&
-                sortedVehicles.map((vehicle, index) => (
-                  <option key={index} value={vehicle.id}>
-                    {vehicle.__str__}
-                  </option>
-                ))}
-
               {option.name === "owner" &&
                 sortedUniqueOwners.map((owner, index) => (
                   <option key={index} value={owner[0]}>
@@ -154,6 +154,13 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
                 ))}
               {option.name === "updated_at" &&
                 sortedUniqueUpdatedDates.map((uniqueDate) => (
+                  <option key={uniqueDate} value={uniqueDate}>
+                    {uniqueDate}
+                  </option>
+                ))}
+              {/* Filter bar select options for the invoices page */}
+              {option.name === "formatted_issued_date" &&
+                sortedUniqueIssuedDates.map((uniqueDate) => (
                   <option key={uniqueDate} value={uniqueDate}>
                     {uniqueDate}
                   </option>
