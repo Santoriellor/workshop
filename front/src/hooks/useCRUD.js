@@ -41,7 +41,7 @@ const useCRUD = (apiEndpoint, parentResource = null, itemId = null) => {
       if (!authenticatedUser) return;
 
       if (parentResource && !itemId) {
-        setData([]); // Clear state when no itemId is selected
+        if (data.length > 0) setData([]); // Clear state when no itemId is selected
         return;
       }
       try {
@@ -60,8 +60,26 @@ const useCRUD = (apiEndpoint, parentResource = null, itemId = null) => {
           `${baseURL}?${params.toString()}`
         );
 
-        if ("results" in response.data) {
-          // ✅ If paginated response, extract metadata and results
+        let newData =
+          "results" in response.data ? response.data.results : response.data;
+
+        let newPagination = {
+          next: response.data.next || null,
+          previous: response.data.previous || null,
+          count:
+            "results" in response.data ? response.data.count : newData.length,
+        };
+
+        // Update state only if data has changed
+        if (JSON.stringify(newData) !== JSON.stringify(data)) {
+          setData(newData);
+        }
+        if (JSON.stringify(newPagination) !== JSON.stringify(pagination)) {
+          setPagination(newPagination);
+        }
+
+        /* if ("results" in response.data) {
+          // If paginated response, extract metadata and results
           setData(response.data.results);
           setPagination({
             next: response.data.next,
@@ -69,14 +87,14 @@ const useCRUD = (apiEndpoint, parentResource = null, itemId = null) => {
             count: response.data.count,
           });
         } else {
-          // ✅ If non-paginated response, store all data normally
+          // If non-paginated response, store all data normally
           setData(response.data);
           setPagination({
             next: null,
             previous: null,
             count: response.data.length,
           });
-        }
+        } */
 
         return response.data;
       } catch (err) {

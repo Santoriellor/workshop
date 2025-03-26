@@ -2,6 +2,7 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useCallback,
 } from "react";
 import { useLocation } from "react-router-dom";
@@ -18,6 +19,27 @@ const ReportContext = createContext();
 export const ReportProvider = ({ children }) => {
   const location = useLocation();
   const { selectedItem } = useGlobalContext();
+
+  const getReportFilters = (pathname) => {
+    let filters = {};
+    let ordering = "vehicle__brand,vehicle__model";
+    let limit = null;
+    let offset = null;
+
+    if (pathname.includes("report")) {
+      filters = { status__in: ["pending", "in_progress", "completed"] };
+    }
+    if (pathname.includes("dashboard")) {
+      filters = { status__in: ["pending", "in_progress", "completed"] };
+      ordering = "-created_at";
+      limit = 5;
+    }
+    if (pathname.includes("invoices")) {
+      filters = { status: "completed" };
+    }
+
+    return { filters, ordering, limit, offset };
+  };
 
   const {
     data: reports,
@@ -77,29 +99,37 @@ export const ReportProvider = ({ children }) => {
     fetchParts();
   }, [fetchTasks, fetchParts]);
  */
+
+  const prevReportLength = useRef(reports.length);
+  const prevPathname = useRef(location.pathname);
+
+  // Fetch reports when the pathname changes
   useEffect(() => {
     const reportPaths = ["/report", "/dashboard", "/invoices"];
     if (reportPaths.includes(location.pathname)) {
-      let filters = {};
-      let ordering = "vehicle__brand,vehicle__model";
-      let limit = null;
-      let offset = null;
-
-      if (location.pathname.includes("report")) {
-        filters = { status__in: ["pending", "in_progress", "completed"] };
-      }
-      if (location.pathname.includes("dashboard")) {
-        filters = { status__in: ["pending", "in_progress", "completed"] };
-        ordering = "-created_at";
-        limit = 5;
-      }
-      if (location.pathname.includes("invoices")) {
-        filters = { status: "completed" };
-      }
-
+      const { filters, ordering, limit, offset } = getReportFilters(
+        location.pathname
+      );
       fetchReports({ ...filters, ordering, limit, offset });
     }
-  }, [location.pathname]);
+    prevPathname.current = location.pathname;
+  }, [location.pathname, reports.length]);
+
+  // Fetch reports when a report is added and pathname stays the same
+  useEffect(() => {
+    const reportPaths = ["/report", "/dashboard", "/invoices"];
+    if (
+      reportPaths.includes(location.pathname) &&
+      location.pathname === prevPathname.current &&
+      reports.length > prevReportLength.current
+    ) {
+      const { filters, ordering, limit, offset } = getReportFilters(
+        location.pathname
+      );
+      fetchReports({ ...filters, ordering, limit, offset });
+    }
+    prevReportLength.current = reports.length;
+  }, [reports.length]);
 
   // Automatically fetch data when the selectedItem changes
   useEffect(() => {

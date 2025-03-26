@@ -5,21 +5,43 @@
   width: 100%;
 }
 
+.input-divider {
+  content: "";
+  border: 1px solid rgba(85, 85, 85, 0.2);
+  padding: 0;
+  margin: 0;
+}
+
 .report-form fieldset:nth-child(1) {
   width: 100%;
 }
+
+.report-form fieldset:nth-child(1) > label,
+.report-form fieldset:nth-child(2) > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: left;
+}
+
+.report-form fieldset:nth-child(1) > label span,
+.report-form fieldset:nth-child(2) > div > span {
+  align-self: flex-start;
+}
+
 .report-form fieldset:nth-child(2) {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  justify-content: space-evenly;
+  justify-content: flex-start;
 }
 
 .repair-section {
   display: flex;
   flex-direction: row;
   margin-bottom: 5px;
+  justify-content: space-between;
 }
 .repair-section select {
   margin: 0;

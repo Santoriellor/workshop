@@ -119,10 +119,16 @@ const getFilterOptions = (filters) => ({
   ],
   invoices: [
     {
-      name: "search",
-      label: "Search in tasks",
-      value: filters.search,
-      placeholder: "Enter some text",
+      name: "vehicle",
+      label: "Vehicle",
+      value: filters.vehicle,
+      placeholder: "Search for a vehicle",
+    },
+    {
+      name: "formatted_issued_date",
+      label: "Issued date",
+      value: filters.formatted_issued_date,
+      type: "select",
     },
   ],
 });

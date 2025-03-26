@@ -49,7 +49,7 @@ export const VehicleProvider = ({ children }) => {
     if (vehiclePaths.includes(location.pathname)) {
       fetchVehicles({}, "brand, model");
     }
-  }, [location.pathname]);
+  }, [location.pathname, vehicles.length]);
 
   return (
     <VehicleContext.Provider

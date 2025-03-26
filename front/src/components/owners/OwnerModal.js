@@ -1,20 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 // Contexts
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useOwnerContext } from "../../contexts/OwnerContext";
 // Utils
 import { Toast } from "../../utils/sweetalert";
+import {
+  isValidEmail,
+  isTakenOwnerName,
+  isValidPhone,
+  isValidAddress,
+} from "../../utils/validation";
 // Styles
 import "../../styles/Modal.css";
+import "../../styles/Auth.css";
 
 const OwnerModal = () => {
   const itemType = "Owner";
+  // Error messages
+  const [errors, setErrors] = useState({
+    full_name: "",
+    email: "",
+    address: "",
+    phone: "",
+  });
 
   const { selectedItem, readonly, setReadonly, openDeleteModal, closeModals } =
     useGlobalContext();
-  const { createOwnerWithAlert, updateOwnerWithAlert, deleteOwnerWithAlert } =
-    useOwnerContext();
+  const {
+    owners,
+    createOwnerWithAlert,
+    updateOwnerWithAlert,
+    deleteOwnerWithAlert,
+    loadingOwners,
+  } = useOwnerContext();
 
   const [ownerData, setOwnerData] = useState({
     full_name: selectedItem?.full_name || "",
@@ -94,10 +113,7 @@ const OwnerModal = () => {
     }
 
     try {
-      const updatedOwner = await updateOwnerWithAlert(
-        selectedItem.id,
-        ownerData
-      );
+      await updateOwnerWithAlert(selectedItem.id, ownerData);
     } catch (error) {
       console.error("Error updating owner:", error);
       Toast.fire("Error", "Something went wrong.", "error");
@@ -106,6 +122,76 @@ const OwnerModal = () => {
       closeModals();
     }
   };
+
+  // Live validation
+  const existingOwnerNames = owners
+    .map((owner) => owner.full_name)
+    .filter(
+      (name) =>
+        !selectedItem ||
+        name.toLowerCase() !== selectedItem.full_name.toLowerCase()
+    );
+
+  useEffect(() => {
+    const fullNameError =
+      ownerData.full_name.trim() === ""
+        ? "This field is required."
+        : isTakenOwnerName(ownerData.full_name, existingOwnerNames);
+    setErrors((prevErrors) =>
+      prevErrors.full_name !== fullNameError
+        ? { ...prevErrors, full_name: fullNameError }
+        : prevErrors
+    );
+  }, [ownerData.full_name]);
+
+  useEffect(() => {
+    const emailError =
+      ownerData.email.trim() === ""
+        ? "This field is required."
+        : isValidEmail(ownerData.email);
+    setErrors((prevErrors) =>
+      prevErrors.email !== emailError
+        ? { ...prevErrors, email: emailError }
+        : prevErrors
+    );
+  }, [ownerData.email]);
+
+  useEffect(() => {
+    const addressError =
+      ownerData.address.trim() === ""
+        ? "This field is required."
+        : isValidAddress(ownerData.address);
+    setErrors((prevErrors) =>
+      prevErrors.address !== addressError
+        ? { ...prevErrors, address: addressError }
+        : prevErrors
+    );
+  }, [ownerData.address]);
+
+  useEffect(() => {
+    const phoneError =
+      ownerData.phone.trim() === ""
+        ? "This field is required."
+        : isValidPhone(ownerData.phone);
+    setErrors((prevErrors) =>
+      prevErrors.phone !== phoneError
+        ? { ...prevErrors, phone: phoneError }
+        : prevErrors
+    );
+  }, [ownerData.phone]);
+
+  const isFormValid = useMemo(
+    () =>
+      !errors.email &&
+      !errors.full_name &&
+      !errors.address &&
+      !errors.phone &&
+      ownerData.email &&
+      ownerData.full_name &&
+      ownerData.address &&
+      ownerData.phone,
+    [errors, ownerData]
+  );
 
   return (
     <div className="modal-container">
@@ -136,8 +222,9 @@ const OwnerModal = () => {
         >
           <fieldset>
             <label>
-              Full Name:
+              <span>Full Name:</span>
               <input
+                className={errors.full_name ? "invalid" : "valid"}
                 type="text"
                 name="full_name"
                 value={ownerData.full_name}
@@ -146,11 +233,15 @@ const OwnerModal = () => {
                 required
                 disabled={readonly}
               />
+              <p className="error-text">
+                {errors.full_name && <>{errors.full_name}</>}
+              </p>
             </label>
 
             <label>
-              Email:
+              <span>Email:</span>
               <input
+                className={errors.email ? "invalid" : "valid"}
                 type="email"
                 name="email"
                 value={ownerData.email}
@@ -159,11 +250,15 @@ const OwnerModal = () => {
                 required
                 disabled={readonly}
               />
+              <p className="error-text">
+                {errors.email && <>{errors.email}</>}
+              </p>
             </label>
 
             <label>
-              Address:
+              <span>Address:</span>
               <input
+                className={errors.address ? "invalid" : "valid"}
                 type="text"
                 name="address"
                 value={ownerData.address}
@@ -172,11 +267,15 @@ const OwnerModal = () => {
                 required
                 disabled={readonly}
               />
+              <p className="error-text">
+                {errors.address && <>{errors.address}</>}
+              </p>
             </label>
 
             <label>
-              Phone:
+              <span>Phone:</span>
               <input
+                className={errors.phone ? "invalid" : "valid"}
                 type="text"
                 name="phone"
                 value={ownerData.phone}
@@ -185,6 +284,9 @@ const OwnerModal = () => {
                 required
                 disabled={readonly}
               />
+              <p className="error-text">
+                {errors.phone && <>{errors.phone}</>}
+              </p>
             </label>
           </fieldset>
           <div className="button-group">
@@ -195,7 +297,10 @@ const OwnerModal = () => {
                     Edit Owner
                   </button>
                 ) : (
-                  <button type="submit" disabled={readonly}>
+                  <button
+                    type="submit"
+                    disabled={readonly || !isFormValid || loadingOwners}
+                  >
                     Update Owner
                   </button>
                 )}
@@ -213,7 +318,10 @@ const OwnerModal = () => {
                 </button>
               </>
             ) : (
-              <button type="submit" disabled={readonly}>
+              <button
+                type="submit"
+                disabled={readonly || !isFormValid || loadingOwners}
+              >
                 Create Owner
               </button>
             )}

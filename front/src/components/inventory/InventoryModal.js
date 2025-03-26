@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 // Contexts
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useInventoryContext } from "../../contexts/InventoryContext";
 // Utils
 import { Toast } from "../../utils/sweetalert";
+import {
+  isValidReferenceCode,
+  isValidQuantityInStock,
+  isValidPrice,
+} from "../../utils/validation";
 // Styles
 import "../../styles/Modal.css";
 
@@ -25,13 +30,23 @@ const categories = [
 
 const InventoryModal = () => {
   const itemType = "Inventory part";
+  // Error messages
+  const [errors, setErrors] = useState({
+    name: "",
+    reference_code: "",
+    category: "",
+    quantity_in_stock: "",
+    unit_price: "",
+  });
 
   const { selectedItem, readonly, setReadonly, openDeleteModal, closeModals } =
     useGlobalContext();
   const {
+    inventory,
     createInventoryPartWithAlert,
     updateInventoryPartWithAlert,
     deleteInventoryPartWithAlert,
+    loadingInventory,
   } = useInventoryContext();
 
   const [inventoryData, setInventoryData] = useState({
@@ -122,10 +137,7 @@ const InventoryModal = () => {
     }
 
     try {
-      const updatedInventory = await updateInventoryPartWithAlert(
-        selectedItem.id,
-        inventoryData
-      );
+      await updateInventoryPartWithAlert(selectedItem.id, inventoryData);
     } catch (error) {
       console.error("Error updating inventory part:", error);
       Toast.fire("Error", "Something went wrong.", "error");
@@ -134,6 +146,83 @@ const InventoryModal = () => {
       closeModals();
     }
   };
+
+  // Live validation
+  const existingReferenceCodes = inventory
+    .map((part) => part.reference_code)
+    .filter(
+      (reference) =>
+        !selectedItem ||
+        reference.toLowerCase() !== selectedItem.reference_code.toLowerCase()
+    );
+
+  useEffect(() => {
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      name: inventoryData.name ? "" : "This field is required.",
+    }));
+  }, [inventoryData.name]);
+
+  useEffect(() => {
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      category: inventoryData.category ? "" : "This field is required.",
+    }));
+  }, [inventoryData.category]);
+
+  useEffect(() => {
+    const referenceCodeError =
+      inventoryData.reference_code.trim() === ""
+        ? "This field is required."
+        : isValidReferenceCode(
+            inventoryData.reference_code,
+            existingReferenceCodes
+          );
+    setErrors((prevErrors) =>
+      prevErrors.reference_code !== referenceCodeError
+        ? { ...prevErrors, reference_code: referenceCodeError }
+        : prevErrors
+    );
+  }, [inventoryData.reference_code]);
+
+  useEffect(() => {
+    const quantityError =
+      inventoryData.quantity_in_stock.toString().trim() === ""
+        ? "This field is required."
+        : isValidQuantityInStock(inventoryData.quantity_in_stock.toString());
+    setErrors((prevErrors) =>
+      prevErrors.quantity_in_stock !== quantityError
+        ? { ...prevErrors, quantity_in_stock: quantityError }
+        : prevErrors
+    );
+  }, [inventoryData.quantity_in_stock]);
+
+  useEffect(() => {
+    const priceError =
+      inventoryData.unit_price.toString().trim() === ""
+        ? "This field is required."
+        : isValidPrice(inventoryData.unit_price.toString());
+    setErrors((prevErrors) =>
+      prevErrors.unit_price !== priceError
+        ? { ...prevErrors, unit_price: priceError }
+        : prevErrors
+    );
+  }, [inventoryData.unit_price]);
+
+  const isFormValid = useMemo(
+    () =>
+      !errors.name &&
+      !errors.reference_code &&
+      !errors.category &&
+      !errors.quantity_in_stock &&
+      !errors.unit_price &&
+      inventoryData.name &&
+      inventoryData.reference_code &&
+      inventoryData.category &&
+      inventoryData.quantity_in_stock &&
+      inventoryData.unit_price,
+    [errors, inventoryData]
+  );
 
   return (
     <div className="modal-container">
@@ -164,8 +253,9 @@ const InventoryModal = () => {
         >
           <fieldset>
             <label>
-              Name:
+              <span>Name:</span>
               <input
+                className={errors.name ? "invalid" : "valid"}
                 type="text"
                 name="name"
                 value={inventoryData.name}
@@ -174,11 +264,13 @@ const InventoryModal = () => {
                 required
                 disabled={readonly}
               />
+              <p className="error-text">{errors.name && <>{errors.name}</>}</p>
             </label>
 
             <label>
-              Reference code:
+              <span>Reference code:</span>
               <input
+                className={errors.reference_code ? "invalid" : "valid"}
                 type="text"
                 name="reference_code"
                 value={inventoryData.reference_code}
@@ -187,11 +279,15 @@ const InventoryModal = () => {
                 required
                 disabled={readonly}
               />
+              <p className="error-text">
+                {errors.reference_code && <>{errors.reference_code}</>}
+              </p>
             </label>
 
             <label>
-              Category:
+              <span>Category:</span>
               <select
+                className={errors.category ? "invalid" : "valid"}
                 name="category"
                 value={inventoryData.category}
                 onChange={handleInventoryChange}
@@ -205,11 +301,15 @@ const InventoryModal = () => {
                   </option>
                 ))}
               </select>
+              <p className="error-text">
+                {errors.category && <>{errors.category}</>}
+              </p>
             </label>
 
             <label>
-              Quantity in stock:
+              <span>Quantity in stock:</span>
               <input
+                className={errors.quantity_in_stock ? "invalid" : "valid"}
                 type="text"
                 name="quantity_in_stock"
                 value={inventoryData.quantity_in_stock}
@@ -217,10 +317,14 @@ const InventoryModal = () => {
                 placeholder="Enter quantity in stock"
                 disabled={readonly}
               />
+              <p className="error-text">
+                {errors.quantity_in_stock && <>{errors.quantity_in_stock}</>}
+              </p>
             </label>
             <label>
-              Unit price:
+              <span>Unit price:</span>
               <input
+                className={errors.unit_price ? "invalid" : "valid"}
                 type="text"
                 name="unit_price"
                 value={inventoryData.unit_price}
@@ -228,6 +332,9 @@ const InventoryModal = () => {
                 placeholder="Enter unit price"
                 disabled={readonly}
               />
+              <p className="error-text">
+                {errors.unit_price && <>{errors.unit_price}</>}
+              </p>
             </label>
           </fieldset>
           <div className="button-group">
@@ -238,7 +345,10 @@ const InventoryModal = () => {
                     Edit Part
                   </button>
                 ) : (
-                  <button type="submit" disabled={readonly}>
+                  <button
+                    type="submit"
+                    disabled={readonly || !isFormValid || loadingInventory}
+                  >
                     Update Part
                   </button>
                 )}
@@ -256,7 +366,10 @@ const InventoryModal = () => {
                 </button>
               </>
             ) : (
-              <button type="submit" disabled={readonly}>
+              <button
+                type="submit"
+                disabled={readonly || !isFormValid || loadingInventory}
+              >
                 Create Part
               </button>
             )}

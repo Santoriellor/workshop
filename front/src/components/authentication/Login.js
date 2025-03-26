@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { useAuth } from "../../contexts/AuthContext";
-import { isValidEmail, isValidPassword } from "../../utils/validation";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
+
+// Contexts
+import { useAuth } from "../../contexts/AuthContext";
+// Utils
+import { isValidEmail, isValidPassword } from "../../utils/validation";
+// Styles
 import "../../styles/Auth.css";
 
 const Login = () => {
@@ -26,16 +30,19 @@ const Login = () => {
     );
   }, [email]);
 
-  /* useEffect(() => {
+  useEffect(() => {
     const passwordError = isValidPassword(password);
     setErrors((prevErrors) =>
       prevErrors.password !== passwordError
         ? { ...prevErrors, password: passwordError }
         : prevErrors
     );
-  }, [password]); */
+  }, [password]);
 
-  const isFormValid = !errors.email && !errors.password && email && password;
+  const isFormValid = useMemo(
+    () => !errors.email && !errors.password && email && password,
+    [errors, email, password]
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();

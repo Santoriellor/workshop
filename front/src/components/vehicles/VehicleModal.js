@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 // Contexts
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -6,6 +6,10 @@ import { useVehicleContext } from "../../contexts/VehicleContext";
 import { useOwnerContext } from "../../contexts/OwnerContext";
 // Utils
 import { Toast } from "../../utils/sweetalert";
+import {
+  isValidOrTakenLicensePlate,
+  isValidYear,
+} from "../../utils/validation";
 // Styles
 import "../../styles/Modal.css";
 // Data
@@ -14,13 +18,22 @@ const brands = Object.keys(brandModelMap);
 
 const VehicleModal = () => {
   const itemType = "Vehicle";
+  // Error messages
+  const [errors, setErrors] = useState({
+    brand: "",
+    model: "",
+    license_plate: "This field is required.",
+    owner: "This field is required.",
+  });
 
   const { selectedItem, readonly, setReadonly, openDeleteModal, closeModals } =
     useGlobalContext();
   const {
+    vehicles,
     createVehicleWithAlert,
     updateVehicleWithAlert,
     deleteVehicleWithAlert,
+    loadingVehicles,
   } = useVehicleContext();
   const { owners } = useOwnerContext();
 
@@ -35,10 +48,15 @@ const VehicleModal = () => {
   const handleVehicleChange = (e) => {
     const { name, value } = e.target;
 
-    setVehicleData({
-      ...vehicleData,
-      [name]: name === "owner" ? Number(value) : value,
-    });
+    setVehicleData((prevData) => ({
+      ...prevData,
+      [name]:
+        name === "owner"
+          ? Number(value)
+          : name === "license_plate"
+          ? value.toUpperCase()
+          : value,
+    }));
   };
 
   const handleBrandChange = (e) => {
@@ -121,10 +139,7 @@ const VehicleModal = () => {
     }
 
     try {
-      const updatedVehicle = await updateVehicleWithAlert(
-        selectedItem.id,
-        vehicleData
-      );
+      await updateVehicleWithAlert(selectedItem.id, vehicleData);
     } catch (error) {
       console.error("Error updating vehicle:", error);
       Toast.fire("Error", "Something went wrong.", "error");
@@ -133,6 +148,75 @@ const VehicleModal = () => {
       closeModals();
     }
   };
+
+  // Live validation
+  const existingLicensePlates = vehicles
+    .map((vehicle) => vehicle.license_plate)
+    .filter(
+      (plate) =>
+        !selectedItem ||
+        plate.toLowerCase() !== selectedItem.license_plate.toLowerCase()
+    );
+
+  useEffect(() => {
+    const licensePlateError = isValidOrTakenLicensePlate(
+      vehicleData.license_plate,
+      existingLicensePlates
+    );
+    setErrors((prevErrors) =>
+      prevErrors.license_plate !== licensePlateError
+        ? { ...prevErrors, license_plate: licensePlateError }
+        : prevErrors
+    );
+  }, [vehicleData.license_plate]);
+
+  useEffect(() => {
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      brand: vehicleData.brand ? "" : "This field is required.",
+    }));
+  }, [vehicleData.brand]);
+
+  useEffect(() => {
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      model: vehicleData.model ? "" : "This field is required.",
+    }));
+  }, [vehicleData.model]);
+
+  useEffect(() => {
+    const yearError =
+      vehicleData.year === ""
+        ? "This field is required."
+        : isValidYear(vehicleData.year);
+    setErrors((prevErrors) =>
+      prevErrors.year !== yearError
+        ? { ...prevErrors, year: yearError }
+        : prevErrors
+    );
+  }, [vehicleData.year]);
+
+  useEffect(() => {
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      owner: vehicleData.owner ? "" : "This field is required.",
+    }));
+  }, [vehicleData.owner]);
+
+  const isFormValid = useMemo(
+    () =>
+      !errors.brand &&
+      !errors.model &&
+      !errors.year &&
+      !errors.license_plate &&
+      !errors.owner &&
+      vehicleData.brand &&
+      vehicleData.model &&
+      vehicleData.year &&
+      vehicleData.license_plate &&
+      vehicleData.owner,
+    [errors, vehicleData]
+  );
 
   return (
     <div className="modal-container">
@@ -163,8 +247,9 @@ const VehicleModal = () => {
         >
           <fieldset>
             <label>
-              Brand:
+              <span>Brand:</span>
               <select
+                className={errors.brand ? "invalid" : "valid"}
                 name="brand"
                 value={vehicleData.brand}
                 onChange={handleBrandChange}
@@ -178,10 +263,14 @@ const VehicleModal = () => {
                   </option>
                 ))}
               </select>
+              <p className="error-text">
+                {errors.brand && <>{errors.brand}</>}
+              </p>
             </label>
             <label>
-              Model:
+              <span>Model:</span>
               <select
+                className={errors.model ? "invalid" : "valid"}
                 name="model"
                 value={vehicleData.model}
                 onChange={handleVehicleChange}
@@ -196,10 +285,14 @@ const VehicleModal = () => {
                     </option>
                   ))}
               </select>
+              <p className="error-text">
+                {errors.model && <>{errors.model}</>}
+              </p>
             </label>
             <label>
-              Year:
+              <span>Year:</span>
               <input
+                className={errors.year ? "invalid" : "valid"}
                 type="number"
                 name="year"
                 placeholder="Enter vehicle year"
@@ -210,10 +303,12 @@ const VehicleModal = () => {
                 required
                 disabled={readonly}
               />
+              <p className="error-text">{errors.year && <>{errors.year}</>}</p>
             </label>
             <label>
-              License plate:
+              <span>License plate:</span>
               <input
+                className={errors.license_plate ? "invalid" : "valid"}
                 type="text"
                 name="license_plate"
                 placeholder="Enter vehicle license plate"
@@ -222,10 +317,14 @@ const VehicleModal = () => {
                 required
                 disabled={readonly}
               />
+              <p className="error-text">
+                {errors.license_plate && <>{errors.license_plate}</>}
+              </p>
             </label>
             <label>
-              Owner:
+              <span>Owner:</span>
               <select
+                className={errors.owner ? "invalid" : "valid"}
                 name="owner"
                 value={vehicleData.owner}
                 onChange={handleVehicleChange}
@@ -239,6 +338,9 @@ const VehicleModal = () => {
                   </option>
                 ))}
               </select>
+              <p className="error-text">
+                {errors.owner && <>{errors.owner}</>}
+              </p>
             </label>
           </fieldset>
           <div className="button-group">
@@ -249,7 +351,10 @@ const VehicleModal = () => {
                     Edit Vehicle
                   </button>
                 ) : (
-                  <button type="submit" disabled={readonly}>
+                  <button
+                    type="submit"
+                    disabled={readonly || !isFormValid || loadingVehicles}
+                  >
                     Update Vehicle
                   </button>
                 )}
@@ -267,7 +372,10 @@ const VehicleModal = () => {
                 </button>
               </>
             ) : (
-              <button type="submit" disabled={readonly}>
+              <button
+                type="submit"
+                disabled={readonly || !isFormValid || loadingVehicles}
+              >
                 Create Vehicle
               </button>
             )}
