@@ -120,6 +120,11 @@ function Sidebar() {
               </Link>
             </li>
           </ul>
+          <div className="footer-bottom">
+            <p>
+              Santoriello <span>&copy;2025</span>
+            </p>
+          </div>
           {/* Floating create Button */}
           <CreateItemButton />
         </>

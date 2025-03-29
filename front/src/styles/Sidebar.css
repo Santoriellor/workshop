@@ -14,8 +14,8 @@
   left: 0;
   display: flex;
   flex-direction: column;
-  align-content: flex-start;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: space-between;
   background: #4ca1af;
   overflow: hidden;
   box-sizing: border-box;
@@ -172,4 +172,15 @@
 
 .sidebar a.active:hover {
   border-color: #4ca1af;
+}
+
+.footer-bottom {
+  color: white;
+  font-size: x-small;
+  text-align: center;
+}
+
+.footer-bottom p {
+  margin: 0;
+  margin-bottom: 4px;
 }
