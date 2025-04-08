@@ -10,7 +10,6 @@
   position: absolute;
   width: 150px;
   height: 100%;
-  min-height: 740px;
   top: 0;
   left: 0;
   display: flex;
@@ -20,6 +19,8 @@
   background: #4ca1af;
   overflow: hidden;
   box-sizing: border-box;
+  z-index: 500;
+  min-height: 390px;
 }
 
 .sidebar-company-name {
@@ -105,6 +106,8 @@
 }
 
 .sidebar a {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   width: 100%;
@@ -114,11 +117,15 @@
   color: white;
   text-decoration: none;
   border: solid 2px transparent;
-  border-right: none;
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
+
+  border-radius: 10px;
   padding-left: 15px;
   transition: all 0.3s ease-in-out;
+}
+
+.sidebar a span {
+  position: relative;
+  z-index: 2;
 }
 
 /* Pseudo-element styles (initially hidden) */
@@ -127,6 +134,7 @@
   content: "";
   position: absolute;
   opacity: 0;
+  z-index: 0;
 }
 
 /* Top curve before */
@@ -155,6 +163,7 @@
 .sidebar a.active {
   color: #4ca1af;
   border-color: #4ca1af;
+  border-right: none;
   background-color: white;
   position: relative;
   cursor: default;
@@ -185,4 +194,93 @@
 .footer-bottom p {
   margin: 0;
   margin-bottom: 4px;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100px;
+    transition: width 0.3s ease-in-out;
+  }
+  .sidebar li {
+    width: 100px;
+  }
+  .sidebar-company-name {
+    display: none;
+  }
+}
+
+@media (min-height: 640px) and (max-height: 739px) {
+  .sidebar {
+    padding: 5px;
+  }
+  .sidebar-header {
+    padding: 0;
+  }
+  .sidebar-logo {
+    display: none;
+  }
+}
+
+@media (min-height: 568px) and (max-height: 639px) {
+  .sidebar {
+    padding: 5px;
+  }
+  .sidebar-header,
+  .sidebar-welcome {
+    padding: 5px;
+  }
+  .sidebar-logo,
+  .sidebar-company-name,
+  .sidebar-small {
+    display: none;
+  }
+}
+
+@media (min-height: 530px) and (max-height: 567px) {
+  .sidebar {
+    padding: 5px;
+  }
+  .sidebar-header {
+    flex-direction: row;
+    justify-content: center;
+  }
+  .sidebar .logout {
+    width: 30px;
+  }
+  .sidebar-header,
+  .sidebar-welcome {
+    padding: 5px;
+  }
+  .sidebar-logo,
+  .sidebar-company-name,
+  .sidebar-small,
+  .sidebar-logout {
+    display: none;
+  }
+}
+
+@media (max-height: 529px) {
+  .sidebar {
+    padding: 5px;
+  }
+  .sidebar-header {
+    flex-direction: row;
+    justify-content: center;
+  }
+  .sidebar .logout {
+    width: 30px;
+  }
+  .sidebar-header,
+  .sidebar-welcome {
+    padding: 5px;
+  }
+  .sidebar-logo,
+  .sidebar-company-name,
+  .sidebar-small,
+  .sidebar-logout {
+    display: none;
+  }
+  .sidebar li {
+    height: 30px;
+  }
 }

@@ -8,6 +8,8 @@ body {
   box-sizing: border-box;
   cursor: default;
   overflow: hidden;
+  min-height: 530px;
+  min-width: 500px;
 }
 
 .container {
@@ -28,11 +30,19 @@ body {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  transition: all 0.3s ease-in-out;
 }
 
 .content {
   margin-top: 0;
   padding: 20px;
   overflow-y: auto;
-  max-height: 100vh;
+  max-height: 95vh;
+}
+
+@media (max-width: 768px) {
+  .main {
+    margin-left: 100px;
+    transition: margin-left 0.3s ease-in-out;
+  }
 }

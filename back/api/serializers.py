@@ -9,10 +9,10 @@ from .models import (
     Invoice
 )
 
-import logging
+#import logging
 
 # Set up logger
-logger = logging.getLogger('myapiapp')
+#logger = logging.getLogger('myapiapp')
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -23,15 +23,15 @@ class LoginSerializer(serializers.Serializer):
         password = data.get('password')
         
         # Log the incoming payload (email and password)
-        logger.info(f"Received login request with email: {email} and password: {password}")
+        # logger.info(f"Received login request with email: {email} and password: {password}")
 
         if email and password:
             user = authenticate(request=self.context.get('request'), email=email, password=password)
             if not user:
-                logger.info("Invalid credentials, authentication failed.")
+                # logger.info("Invalid credentials, authentication failed.")
                 raise serializers.ValidationError("Invalid email or password.")
         else:
-            logger.info("Missing email or password in request.")
+            # logger.info("Missing email or password in request.")
             raise serializers.ValidationError("Must include 'email' and 'password'.")
 
         data['user'] = user
