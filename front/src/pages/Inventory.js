@@ -12,7 +12,7 @@ import { useGlobalContext } from "../contexts/GlobalContext";
 const Inventory = () => {
   const { inventory, loadingInventory, deleteInventoryPartWithAlert } =
     useInventoryContext();
-  const { setModalComponent } = useGlobalContext();
+  const { setModalState } = useGlobalContext();
 
   const [filters, setFilters] = useState({
     part_name: "",
@@ -24,7 +24,10 @@ const Inventory = () => {
   });
 
   useEffect(() => {
-    setModalComponent(() => InventoryModal);
+    setModalState((prev) => ({
+      ...prev,
+      modalComponent: InventoryModal,
+    }));
   }, []);
 
   return (

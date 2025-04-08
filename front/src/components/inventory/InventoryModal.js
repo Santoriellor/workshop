@@ -3,6 +3,9 @@ import { useState, useEffect, useMemo } from "react";
 // Contexts
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useInventoryContext } from "../../contexts/InventoryContext";
+// Components
+import ModalGenericsClose from "../modalGenerics/ModalGenericsClose";
+import ModalGenericsTitle from "../modalGenerics/ModalGenericsTitle";
 // Utils
 import { Toast } from "../../utils/sweetalert";
 import {
@@ -29,7 +32,6 @@ const categories = [
 ];
 
 const InventoryModal = () => {
-  const itemType = "Inventory part";
   // Error messages
   const [errors, setErrors] = useState({
     name: "",
@@ -39,7 +41,7 @@ const InventoryModal = () => {
     unit_price: "",
   });
 
-  const { selectedItem, readonly, setReadonly, openDeleteModal, closeModals } =
+  const { modalState, openDeleteModal, closeModals, toggleReadonly } =
     useGlobalContext();
   const {
     inventory,
@@ -50,11 +52,11 @@ const InventoryModal = () => {
   } = useInventoryContext();
 
   const [inventoryData, setInventoryData] = useState({
-    name: selectedItem?.name || "",
-    reference_code: selectedItem?.reference_code || "",
-    category: selectedItem?.category || "",
-    quantity_in_stock: selectedItem?.quantity_in_stock || "",
-    unit_price: selectedItem?.unit_price || "",
+    name: modalState.selectedItem?.name || "",
+    reference_code: modalState.selectedItem?.reference_code || "",
+    category: modalState.selectedItem?.category || "",
+    quantity_in_stock: modalState.selectedItem?.quantity_in_stock || "",
+    unit_price: modalState.selectedItem?.unit_price || "",
   });
 
   const handleInventoryChange = (e) => {
@@ -64,11 +66,6 @@ const InventoryModal = () => {
       ...inventoryData,
       [name]: value,
     });
-  };
-
-  const toggleReadonly = (e) => {
-    e.preventDefault();
-    setReadonly(!readonly);
   };
 
   const handleCreateSubmit = async (e) => {
@@ -137,7 +134,10 @@ const InventoryModal = () => {
     }
 
     try {
-      await updateInventoryPartWithAlert(selectedItem.id, inventoryData);
+      await updateInventoryPartWithAlert(
+        modalState.selectedItem.id,
+        inventoryData
+      );
     } catch (error) {
       console.error("Error updating inventory part:", error);
       Toast.fire("Error", "Something went wrong.", "error");
@@ -152,8 +152,9 @@ const InventoryModal = () => {
     .map((part) => part.reference_code)
     .filter(
       (reference) =>
-        !selectedItem ||
-        reference.toLowerCase() !== selectedItem.reference_code.toLowerCase()
+        !modalState.selectedItem ||
+        reference.toLowerCase() !==
+          modalState.selectedItem.reference_code.toLowerCase()
     );
 
   useEffect(() => {
@@ -227,29 +228,17 @@ const InventoryModal = () => {
   return (
     <div className="modal-container">
       <div className="modal-card">
-        <svg
-          onClick={closeModals}
-          className="modal-card-close"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            width="100%"
-            height="100%"
-            d="M11.414 10l2.829-2.828a1 1 0 1 0-1.415-1.415L10 8.586 7.172 5.757a1 1 0 0 0-1.415 1.415L8.586 10l-2.829 2.828a1 1 0 0 0 1.415 1.415L10 11.414l2.828 2.829a1 1 0 0 0 1.415-1.415L11.414 10zM10 20C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"
-          />
-        </svg>
-        {readonly ? (
-          <h2>View Part</h2>
-        ) : selectedItem ? (
-          <h2>Edit Part</h2>
-        ) : (
-          <h2>Create Part</h2>
-        )}
+        <ModalGenericsClose onClose={closeModals} />
+        <ModalGenericsTitle
+          readonly={modalState.readonly}
+          selectedItem={modalState.selectedItem}
+          itemType={modalState.itemType}
+        />
         <form
           className="modal-form"
-          onSubmit={selectedItem ? handleEditSubmit : handleCreateSubmit}
+          onSubmit={
+            modalState.selectedItem ? handleEditSubmit : handleCreateSubmit
+          }
         >
           <fieldset>
             <label>
@@ -262,7 +251,7 @@ const InventoryModal = () => {
                 onChange={handleInventoryChange}
                 placeholder="Enter name"
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">{errors.name && <>{errors.name}</>}</p>
             </label>
@@ -277,7 +266,7 @@ const InventoryModal = () => {
                 onChange={handleInventoryChange}
                 placeholder="Enter reference code"
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">
                 {errors.reference_code && <>{errors.reference_code}</>}
@@ -292,7 +281,7 @@ const InventoryModal = () => {
                 value={inventoryData.category}
                 onChange={handleInventoryChange}
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               >
                 <option value="">Select a category</option>
                 {categories.map((category) => (
@@ -315,7 +304,7 @@ const InventoryModal = () => {
                 value={inventoryData.quantity_in_stock}
                 onChange={handleInventoryChange}
                 placeholder="Enter quantity in stock"
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">
                 {errors.quantity_in_stock && <>{errors.quantity_in_stock}</>}
@@ -330,7 +319,7 @@ const InventoryModal = () => {
                 value={inventoryData.unit_price}
                 onChange={handleInventoryChange}
                 placeholder="Enter unit price"
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">
                 {errors.unit_price && <>{errors.unit_price}</>}
@@ -338,16 +327,18 @@ const InventoryModal = () => {
             </label>
           </fieldset>
           <div className="button-group">
-            {selectedItem ? (
+            {modalState.selectedItem ? (
               <>
-                {readonly ? (
+                {modalState.readonly ? (
                   <button type="button" onClick={toggleReadonly}>
                     Edit Part
                   </button>
                 ) : (
                   <button
                     type="submit"
-                    disabled={readonly || !isFormValid || loadingInventory}
+                    disabled={
+                      modalState.readonly || !isFormValid || loadingInventory
+                    }
                   >
                     Update Part
                   </button>
@@ -356,8 +347,8 @@ const InventoryModal = () => {
                   type="button"
                   onClick={() =>
                     openDeleteModal(
-                      selectedItem,
-                      itemType,
+                      modalState.selectedItem,
+                      modalState.itemType,
                       () => deleteInventoryPartWithAlert
                     )
                   }
@@ -368,7 +359,9 @@ const InventoryModal = () => {
             ) : (
               <button
                 type="submit"
-                disabled={readonly || !isFormValid || loadingInventory}
+                disabled={
+                  modalState.readonly || !isFormValid || loadingInventory
+                }
               >
                 Create Part
               </button>

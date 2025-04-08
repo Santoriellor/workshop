@@ -46,13 +46,8 @@ const App = () => {
 
 const Main = () => {
   const { authenticatedUser, loadingAuth } = useAuth();
-  const {
-    modalComponent: ModalComponent,
-    showTypeModal,
-    isModalReady,
-    showDeleteModal,
-    deleteItemWithAlert,
-  } = useGlobalContext();
+  const { modalState, deleteItemWithAlert } = useGlobalContext();
+  const ModalComponent = modalState.modalComponent;
 
   if (loadingAuth) return <p>Loading...</p>;
 
@@ -65,7 +60,7 @@ const Main = () => {
               <InventoryProvider>
                 <InvoiceProvider>
                   <div className="container">
-                    <div className="sidebar">
+                    <div className="left-menu">
                       <Sidebar />
                     </div>
                     <div className="main">
@@ -94,11 +89,11 @@ const Main = () => {
                       </div>
                     </div>
                   </div>
-                  {isModalReady && showTypeModal && <ModalComponent />}
+                  {modalState.isModalReady &&
+                    modalState.showModal &&
+                    ModalComponent && <ModalComponent />}
 
-                  {showDeleteModal && (
-                    <DeleteModal deleteItemFunction={deleteItemWithAlert} />
-                  )}
+                  {modalState.showDeleteModal && <DeleteModal />}
                 </InvoiceProvider>
               </InventoryProvider>
             </ReportProvider>

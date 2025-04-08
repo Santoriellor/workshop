@@ -13,7 +13,7 @@ import "../styles/Report.css";
 
 const Report = () => {
   const { reports, loadingReports } = useReportContext();
-  const { setModalComponent } = useGlobalContext();
+  const { setModalState } = useGlobalContext();
 
   const [filters, setFilters] = useState({
     vehicle: "",
@@ -29,7 +29,10 @@ const Report = () => {
   ); */
 
   useEffect(() => {
-    setModalComponent(() => ReportModal);
+    setModalState((prev) => ({
+      ...prev,
+      modalComponent: ReportModal,
+    }));
   }, []);
 
   return (

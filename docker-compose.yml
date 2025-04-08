@@ -1,0 +1,81 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    secrets:
+      - mysql_root_password
+      - mysql_user
+      - mysql_password
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_USER_FILE: /run/secrets/mysql_user
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_volume:/var/lib/mysql
+    networks:
+      - mysql_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: back/Dockerfile
+    container_name: django
+    secrets:
+      - django_secret_key
+      - mysql_user
+      - mysql_password
+    env_file:
+      - ./back/.env
+    environment:
+      DEBUG: ${DEBUG}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      DJANGO_SECRET_KEY: /run/secrets/django_secret_key
+      MYSQL_USER_FILE: /run/secrets/mysql_user
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
+      IS_DOCKER: "True" # Docker-specific environment variable to use in DJANGO settings
+    depends_on:
+      - mysql
+    ports:
+      - "8000:8000"
+    networks:
+      - mysql_network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: front/Dockerfile
+    container_name: react
+    env_file:
+      - ./front/.env
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - mysql_network
+
+secrets:
+  mysql_root_password:
+    file: ./secrets/mysql_root_password
+  mysql_user:
+    file: ./secrets/mysql_user
+  mysql_password:
+    file: ./secrets/mysql_password
+  django_secret_key:
+    file: ./secrets/django_secret_key
+
+volumes:
+  mysql_volume:
+
+networks:
+  mysql_network:
+    driver: bridge

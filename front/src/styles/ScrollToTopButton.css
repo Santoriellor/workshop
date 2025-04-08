@@ -26,6 +26,8 @@
   border: 2px #37828d solid;
   border-top-left-radius: 50%;
   border-bottom-left-radius: 50%;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
   border-right: none;
   background: lightblue;
   width: 52px;

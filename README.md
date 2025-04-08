@@ -1,0 +1,124 @@
+# Workshop Web Application (Dockerized)
+
+This is a full-stack car workshop management app with:
+
+- Django + MySQL (Backend)
+- React 18 + JavaScript (Frontend)
+- Docker + Docker Compose (Containerized)
+
+---
+
+## Requirements
+
+Install the following:
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/)
+
+---
+
+## 🛠️ Environment Setup
+
+Create secrets files (.env)
+
+### 1. Backend `.env` (in `back/.env`)
+
+```env
+# back/.env
+SECRET_KEY=your-django-secret-key
+DEBUG=True
+ALLOWED_HOSTS=*
+
+MYSQL_DATABASE=workshop_db
+MYSQL_USER=workshop_user
+MYSQL_PASSWORD=yourpassword
+MYSQL_ROOT_PASSWORD=rootpassword
+MYSQL_HOST=db
+MYSQL_PORT=port
+```
+
+### 2. Frontend `.env` (in `front/.env`)
+
+```env
+REACT_APP_API_URL=http://localhost:8000/api
+```
+
+---
+
+## 🚀 Build & Run
+
+From the project root (`workshop/`):
+
+```bash
+docker-compose build
+docker-compose up
+```
+
+This will:
+
+- Build backend and frontend containers
+- Set up MySQL
+- Run Django migrations and populate the DB via `entrypoint.sh`
+
+---
+
+## 🌐 Access the App
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **MySQL**: port 3306 (internal)
+
+---
+
+## 🛠 Useful Commands
+
+### Run Django management commands:
+
+```bash
+docker-compose exec backend python manage.py migrate
+docker-compose exec backend python manage.py createsuperuser
+docker-compose exec backend python manage.py populate_db
+```
+
+### Restart containers:
+
+```bash
+docker-compose down
+docker-compose up --build
+```
+
+---
+
+## 📁 Folder Structure (simplified)
+
+```
+workshop/
+├── back/               # Django backend
+│   ├── backend/        # Django project
+│   ├── api/            # Django app
+│   ├── manage.py
+│   ├── .env
+│   ├── Dockerfile
+│   └── entrypoint.sh   # Handles migrations + populate_db
+│
+├── front/              # React frontend
+│   ├── src/
+│   ├── .env
+│   ├── Dockerfile
+│   └── nginx.conf
+│
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+## ✅ Ready to Go
+
+Once up and running:
+
+- Log into the frontend on port 3000
+- Backend handles API + DB
+- Everything is containerized — no need for manual Python/Node installs!
+
+---

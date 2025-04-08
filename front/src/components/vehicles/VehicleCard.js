@@ -8,10 +8,10 @@ import { useReportContext } from "../../contexts/ReportContext";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const VehicleCard = ({ item }) => {
+  const cardItemType = "Vehicle";
+
   const location = useLocation();
   const isPathVehicles = location.pathname.includes("vehicle");
-
-  const itemType = "Vehicle";
 
   const { getOwnerNameByVehicleId } = useOwnerContext();
   const { deleteVehicleWithAlert, getVehicleInfoByVehicleId } =
@@ -40,7 +40,7 @@ const VehicleCard = ({ item }) => {
       onClick={(e) => {
         // Prevent triggering view mode if clicking on an action button
         if (!e.target.closest(".actions")) {
-          openModal(VehicleModal, item, itemType, true);
+          openModal(VehicleModal, item, cardItemType, true);
         }
       }}
     >
@@ -70,7 +70,9 @@ const VehicleCard = ({ item }) => {
               <button
                 title="Edit vehicle"
                 className="btn btn-edit"
-                onClick={() => openModal(VehicleModal, item, itemType, false)}
+                onClick={() =>
+                  openModal(VehicleModal, item, cardItemType, false)
+                }
               >
                 Edit
               </button>
@@ -78,7 +80,11 @@ const VehicleCard = ({ item }) => {
                 title="Delete vehicle"
                 className="btn btn-delete"
                 onClick={() =>
-                  openDeleteModal(item, itemType, () => deleteVehicleWithAlert)
+                  openDeleteModal(
+                    item,
+                    cardItemType,
+                    () => deleteVehicleWithAlert
+                  )
                 }
               >
                 Delete

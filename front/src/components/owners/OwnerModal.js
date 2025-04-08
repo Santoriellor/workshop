@@ -3,6 +3,9 @@ import { useState, useEffect, useMemo } from "react";
 // Contexts
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useOwnerContext } from "../../contexts/OwnerContext";
+// Components
+import ModalGenericsClose from "../modalGenerics/ModalGenericsClose";
+import ModalGenericsTitle from "../modalGenerics/ModalGenericsTitle";
 // Utils
 import { Toast } from "../../utils/sweetalert";
 import {
@@ -25,7 +28,7 @@ const OwnerModal = () => {
     phone: "",
   });
 
-  const { selectedItem, readonly, setReadonly, openDeleteModal, closeModals } =
+  const { modalState, openDeleteModal, closeModals, toggleReadonly } =
     useGlobalContext();
   const {
     owners,
@@ -36,10 +39,10 @@ const OwnerModal = () => {
   } = useOwnerContext();
 
   const [ownerData, setOwnerData] = useState({
-    full_name: selectedItem?.full_name || "",
-    email: selectedItem?.email || "",
-    phone: selectedItem?.phone || "",
-    address: selectedItem?.address || "",
+    full_name: modalState.selectedItem?.full_name || "",
+    email: modalState.selectedItem?.email || "",
+    phone: modalState.selectedItem?.phone || "",
+    address: modalState.selectedItem?.address || "",
   });
 
   const handleOwnerChange = (e) => {
@@ -49,11 +52,6 @@ const OwnerModal = () => {
       ...ownerData,
       [name]: value,
     });
-  };
-
-  const toggleReadonly = (e) => {
-    e.preventDefault();
-    setReadonly(!readonly);
   };
 
   const handleCreateSubmit = async (e) => {
@@ -113,7 +111,7 @@ const OwnerModal = () => {
     }
 
     try {
-      await updateOwnerWithAlert(selectedItem.id, ownerData);
+      await updateOwnerWithAlert(modalState.selectedItem.id, ownerData);
     } catch (error) {
       console.error("Error updating owner:", error);
       Toast.fire("Error", "Something went wrong.", "error");
@@ -128,8 +126,8 @@ const OwnerModal = () => {
     .map((owner) => owner.full_name)
     .filter(
       (name) =>
-        !selectedItem ||
-        name.toLowerCase() !== selectedItem.full_name.toLowerCase()
+        !modalState.selectedItem ||
+        name.toLowerCase() !== modalState.selectedItem.full_name.toLowerCase()
     );
 
   useEffect(() => {
@@ -196,29 +194,17 @@ const OwnerModal = () => {
   return (
     <div className="modal-container">
       <div className="modal-card">
-        <svg
-          onClick={closeModals}
-          className="modal-card-close"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            width="100%"
-            height="100%"
-            d="M11.414 10l2.829-2.828a1 1 0 1 0-1.415-1.415L10 8.586 7.172 5.757a1 1 0 0 0-1.415 1.415L8.586 10l-2.829 2.828a1 1 0 0 0 1.415 1.415L10 11.414l2.828 2.829a1 1 0 0 0 1.415-1.415L11.414 10zM10 20C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"
-          />
-        </svg>
-        {readonly ? (
-          <h2>View Owner</h2>
-        ) : selectedItem ? (
-          <h2>Edit Owner</h2>
-        ) : (
-          <h2>Create Owner</h2>
-        )}
+        <ModalGenericsClose onClose={closeModals} />
+        <ModalGenericsTitle
+          readonly={modalState.readonly}
+          selectedItem={modalState.selectedItem}
+          itemType={modalState.itemType}
+        />
         <form
           className="modal-form"
-          onSubmit={selectedItem ? handleEditSubmit : handleCreateSubmit}
+          onSubmit={
+            modalState.selectedItem ? handleEditSubmit : handleCreateSubmit
+          }
         >
           <fieldset>
             <label>
@@ -231,7 +217,7 @@ const OwnerModal = () => {
                 onChange={handleOwnerChange}
                 placeholder="Enter full name"
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">
                 {errors.full_name && <>{errors.full_name}</>}
@@ -248,7 +234,7 @@ const OwnerModal = () => {
                 onChange={handleOwnerChange}
                 placeholder="Enter email"
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">
                 {errors.email && <>{errors.email}</>}
@@ -265,7 +251,7 @@ const OwnerModal = () => {
                 onChange={handleOwnerChange}
                 placeholder="Enter address"
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">
                 {errors.address && <>{errors.address}</>}
@@ -282,7 +268,7 @@ const OwnerModal = () => {
                 onChange={handleOwnerChange}
                 placeholder="Enter phone"
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">
                 {errors.phone && <>{errors.phone}</>}
@@ -290,16 +276,18 @@ const OwnerModal = () => {
             </label>
           </fieldset>
           <div className="button-group">
-            {selectedItem ? (
+            {modalState.selectedItem ? (
               <>
-                {readonly ? (
+                {modalState.readonly ? (
                   <button type="button" onClick={toggleReadonly}>
                     Edit Owner
                   </button>
                 ) : (
                   <button
                     type="submit"
-                    disabled={readonly || !isFormValid || loadingOwners}
+                    disabled={
+                      modalState.readonly || !isFormValid || loadingOwners
+                    }
                   >
                     Update Owner
                   </button>
@@ -308,8 +296,8 @@ const OwnerModal = () => {
                   type="button"
                   onClick={() =>
                     openDeleteModal(
-                      selectedItem,
-                      itemType,
+                      modalState.selectedItem,
+                      modalState.itemType,
                       () => deleteOwnerWithAlert
                     )
                   }
@@ -320,7 +308,7 @@ const OwnerModal = () => {
             ) : (
               <button
                 type="submit"
-                disabled={readonly || !isFormValid || loadingOwners}
+                disabled={modalState.readonly || !isFormValid || loadingOwners}
               >
                 Create Owner
               </button>

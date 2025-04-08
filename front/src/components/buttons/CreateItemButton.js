@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 // Contexts
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -8,14 +8,7 @@ import "../../styles/CreateItemButton.css";
 
 const CreateItemButton = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const {
-    modalComponent,
-    itemType,
-    openModal,
-    showTypeModal,
-    setSelectedItem,
-  } = useGlobalContext();
+  const { modalState, openModal } = useGlobalContext();
   const [visible, setVisible] = useState(false);
 
   // Define the paths where the button should be visible
@@ -29,19 +22,15 @@ const CreateItemButton = () => {
 
   useEffect(() => {
     if (allowedPaths.includes(location.pathname)) {
-      setVisible(true);
+      if (modalState.showModal || modalState.showDeleteModal) {
+        setVisible(false);
+      } else {
+        setVisible(true);
+      }
     } else {
       setVisible(false);
     }
-  }, [location.pathname]);
-
-  useEffect(() => {
-    if (showTypeModal) {
-      setVisible(false);
-    } else {
-      setVisible(true);
-    }
-  }, [showTypeModal]);
+  }, [location.pathname, modalState.showModal, modalState.showDeleteModal]);
 
   return (
     <div
@@ -50,10 +39,16 @@ const CreateItemButton = () => {
       }`}
     >
       <button
-        title={`Create new ${location.pathname}`}
+        title={`Create new ${
+          typeof modalState.itemType === "string"
+            ? modalState.itemType.toLowerCase()
+            : "item"
+        }`}
         type="button"
         className="create-item-button"
-        onClick={() => openModal(modalComponent, null, itemType, false)}
+        onClick={() =>
+          openModal(modalState.modalComponent, null, modalState.itemType, false)
+        }
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

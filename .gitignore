@@ -1,3 +1,7 @@
+# Secrets
+/secrets/
+secrets/
+
 # Python & Django
 __pycache__/
 *.py[cod]

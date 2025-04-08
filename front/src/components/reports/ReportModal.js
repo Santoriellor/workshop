@@ -19,7 +19,6 @@ import "../../styles/Modal.css";
 import "../../styles/ReportModal.css";
 
 const ReportModal = () => {
-  const itemType = "Report";
   // Error messages
   const [errors, setErrors] = useState({
     vehicle: "",
@@ -30,14 +29,8 @@ const ReportModal = () => {
   });
 
   const { authenticatedUser } = useAuth();
-  const {
-    selectedItem,
-    setSelectedItem,
-    readonly,
-    setReadonly,
-    openDeleteModal,
-    closeModals,
-  } = useGlobalContext();
+  const { modalState, openDeleteModal, closeModals, toggleReadonly } =
+    useGlobalContext();
 
   const {
     createReportWithAlert,
@@ -58,10 +51,10 @@ const ReportModal = () => {
   const { inventory, taskTemplate } = useInventoryContext();
 
   const [reportData, setReportData] = useState({
-    vehicle: selectedItem?.vehicle || "",
+    vehicle: modalState.selectedItem?.vehicle || "",
     user: authenticatedUser.id,
-    status: selectedItem?.status || "pending",
-    remarks: selectedItem?.remarks || "",
+    status: modalState.selectedItem?.status || "pending",
+    remarks: modalState.selectedItem?.remarks || "",
   });
 
   const [selectedTask, setSelectedTask] = useState("");
@@ -158,11 +151,6 @@ const ReportModal = () => {
     return part;
   };
 
-  const toggleReadonly = (e) => {
-    e.preventDefault();
-    setReadonly(!readonly);
-  };
-
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     if (!reportData.vehicle) {
@@ -217,7 +205,7 @@ const ReportModal = () => {
 
     try {
       const updatedReport = await updateReportWithAlert(
-        selectedItem.id,
+        modalState.selectedItem.id,
         reportData
       );
 
@@ -282,7 +270,6 @@ const ReportModal = () => {
       console.error("Error updating report:", error);
       Toast.fire("Error", "Something went wrong.", "error");
     }
-    setSelectedItem(null);
     closeModals();
   };
 
@@ -348,10 +335,16 @@ const ReportModal = () => {
     <div className="modal-container">
       <div className="modal-card">
         <ModalGenericsClose onClose={closeModals} />
-        <ModalGenericsTitle readonly={readonly} selectedItem={selectedItem} />
+        <ModalGenericsTitle
+          readonly={modalState.readonly}
+          selectedItem={modalState.selectedItem}
+          itemType={modalState.itemType}
+        />
         <form
           className="modal-form"
-          onSubmit={selectedItem ? handleEditSubmit : handleCreateSubmit}
+          onSubmit={
+            modalState.selectedItem ? handleEditSubmit : handleCreateSubmit
+          }
         >
           <div className="report-form">
             <fieldset>
@@ -363,7 +356,7 @@ const ReportModal = () => {
                   value={reportData.vehicle}
                   onChange={handleReportChange}
                   required
-                  disabled={readonly}
+                  disabled={modalState.readonly}
                 >
                   <option value="">Select a vehicle</option>
                   {vehicles.map((vehicle) => (
@@ -385,7 +378,7 @@ const ReportModal = () => {
                   value={reportData.status}
                   onChange={handleReportChange}
                   required
-                  disabled={readonly}
+                  disabled={modalState.readonly}
                 >
                   <option value="pending">Pending</option>
                   <option value="in_progress">In Progress</option>
@@ -403,7 +396,7 @@ const ReportModal = () => {
                   value={reportData.remarks}
                   onChange={handleReportChange}
                   placeholder="Enter remarks"
-                  disabled={readonly}
+                  disabled={modalState.readonly}
                 />
               </label>
             </fieldset>
@@ -417,7 +410,7 @@ const ReportModal = () => {
                     className={errors.tasks ? "invalid" : "valid"}
                     value={selectedTask}
                     onChange={handleTaskChange}
-                    disabled={readonly}
+                    disabled={modalState.readonly}
                   >
                     <option value="">Select a repair task</option>
                     {taskTemplate.map((task) => (
@@ -430,7 +423,7 @@ const ReportModal = () => {
                     type="button"
                     className="small"
                     onClick={addTask}
-                    disabled={readonly}
+                    disabled={modalState.readonly}
                   >
                     Add Task
                   </button>
@@ -451,7 +444,7 @@ const ReportModal = () => {
                           <button
                             type="button"
                             onClick={() => removeTask(index)}
-                            disabled={readonly}
+                            disabled={modalState.readonly}
                           >
                             <SvgTrash />
                           </button>
@@ -473,7 +466,7 @@ const ReportModal = () => {
                   <select
                     value={selectedPart}
                     onChange={handlePartChange}
-                    disabled={readonly}
+                    disabled={modalState.readonly}
                   >
                     <option value="">Select a repair part</option>
                     {inventory.map((part) => (
@@ -486,13 +479,13 @@ const ReportModal = () => {
                     type="text"
                     value={quantityPart}
                     onChange={handleQuantityChange}
-                    disabled={readonly}
+                    disabled={modalState.readonly}
                   />
                   <button
                     type="button"
                     className="small"
                     onClick={addPart}
-                    disabled={readonly}
+                    disabled={modalState.readonly}
                   >
                     Add Part
                   </button>
@@ -515,7 +508,7 @@ const ReportModal = () => {
                             title="Remove Part"
                             type="button"
                             onClick={() => removePart(index)}
-                            disabled={readonly}
+                            disabled={modalState.readonly}
                           >
                             <SvgTrash />
                           </button>
@@ -533,16 +526,18 @@ const ReportModal = () => {
             </fieldset>
           </div>
           <div className="button-group">
-            {selectedItem ? (
+            {modalState.selectedItem ? (
               <>
-                {readonly ? (
+                {modalState.readonly ? (
                   <button type="button" onClick={toggleReadonly}>
                     Edit Report
                   </button>
                 ) : (
                   <button
                     type="submit"
-                    disabled={readonly || !isFormValid || loadingReports}
+                    disabled={
+                      modalState.readonly || !isFormValid || loadingReports
+                    }
                   >
                     Update Report
                   </button>
@@ -551,8 +546,8 @@ const ReportModal = () => {
                   type="button"
                   onClick={() =>
                     openDeleteModal(
-                      selectedItem,
-                      itemType,
+                      modalState.selectedItem,
+                      modalState.itemType,
                       () => deleteReportWithAlert
                     )
                   }
@@ -563,7 +558,7 @@ const ReportModal = () => {
             ) : (
               <button
                 type="submit"
-                disabled={readonly || !isFormValid || loadingReports}
+                disabled={modalState.readonly || !isFormValid || loadingReports}
               >
                 Create Report
               </button>
