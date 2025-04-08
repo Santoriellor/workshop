@@ -35,9 +35,14 @@ def read_secret(filename, default=None):
             return default
         raise Exception(f"Secret file {filename} not found in {SECRETS_DIR}")
 
-DJANGO_SECRET_KEY = read_secret("django_secret_key.txt")
-MYSQL_USER = read_secret("mysql_user.txt")
-MYSQL_PASSWORD = read_secret("mysql_password.txt")
+if IS_DOCKER:
+    DJANGO_SECRET_KEY = read_secret("django_secret_key")
+    MYSQL_USER = read_secret("mysql_user")
+    MYSQL_PASSWORD = read_secret("mysql_password")
+else:
+    DJANGO_SECRET_KEY = read_secret("django_secret_key.txt")
+    MYSQL_USER = read_secret("mysql_user.txt")
+    MYSQL_PASSWORD = read_secret("mysql_password.txt")
 
 # Load environment variables from the .env file
 load_dotenv(os.path.join(BASE_DIR, '.env'))

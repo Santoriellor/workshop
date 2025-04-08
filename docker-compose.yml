@@ -9,8 +9,9 @@ services:
       - mysql_root_password
       - mysql_user
       - mysql_password
+    env_file:
+      - ./back/.env
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
       MYSQL_USER_FILE: /run/secrets/mysql_user
       MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
@@ -33,11 +34,6 @@ services:
     env_file:
       - ./back/.env
     environment:
-      DEBUG: ${DEBUG}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_PORT: ${MYSQL_PORT}
       DJANGO_SECRET_KEY: /run/secrets/django_secret_key
       MYSQL_USER_FILE: /run/secrets/mysql_user
       MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
@@ -65,13 +61,13 @@ services:
 
 secrets:
   mysql_root_password:
-    file: ./secrets/mysql_root_password
+    file: ./secrets/mysql_root_password.txt
   mysql_user:
-    file: ./secrets/mysql_user
+    file: ./secrets/mysql_user.txt
   mysql_password:
-    file: ./secrets/mysql_password
+    file: ./secrets/mysql_password.txt
   django_secret_key:
-    file: ./secrets/django_secret_key
+    file: ./secrets/django_secret_key.txt
 
 volumes:
   mysql_volume:
