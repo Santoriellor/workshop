@@ -69,14 +69,22 @@ export const InventoryProvider = ({ children }) => {
 
   // Fetch data when pathname change
   useEffect(() => {
-    const inventoryPaths = ["/inventory", "/tasktemplate", "/dashboard"];
+    const inventoryPaths = [
+      "/inventory",
+      "/tasktemplate",
+      "/dashboard",
+      "/report",
+    ];
     if (inventoryPaths.includes(location.pathname)) {
       let filters = {};
       let ordering = "name";
       let limit = null;
       let offset = null;
 
-      if (location.pathname.includes("inventory")) {
+      if (
+        location.pathname.includes("inventory") ||
+        location.pathname.includes("report")
+      ) {
         fetchInventory({ ...filters, ordering, limit, offset });
       }
       if (location.pathname.includes("tasktemplate")) {
