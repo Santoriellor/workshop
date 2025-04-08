@@ -6,7 +6,7 @@ import { useInventoryContext } from "../../contexts/InventoryContext";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const InventoryCard = ({ item }) => {
-  const itemType = "Inventory part";
+  const cardItemType = "Inventory part";
 
   const location = useLocation();
   const isPathInventory = location.pathname.includes("inventory");
@@ -27,7 +27,7 @@ const InventoryCard = ({ item }) => {
       onClick={(e) => {
         // Prevent triggering view mode if clicking on an action button
         if (!e.target.closest(".actions")) {
-          openModal(InventoryModal, item, itemType, true);
+          openModal(InventoryModal, item, cardItemType, true);
         }
       }}
     >
@@ -61,7 +61,9 @@ const InventoryCard = ({ item }) => {
               <button
                 title="Edit inventory part"
                 className="btn btn-edit"
-                onClick={() => openModal(InventoryModal, item, itemType, false)}
+                onClick={() =>
+                  openModal(InventoryModal, item, cardItemType, false)
+                }
               >
                 Edit
               </button>
@@ -71,7 +73,7 @@ const InventoryCard = ({ item }) => {
                 onClick={() =>
                   openDeleteModal(
                     item,
-                    itemType,
+                    cardItemType,
                     () => deleteInventoryPartWithAlert
                   )
                 }

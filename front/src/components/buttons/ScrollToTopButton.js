@@ -1,12 +1,35 @@
 import { useState, useEffect } from "react";
+// Contexts
+import { useGlobalContext } from "../../contexts/GlobalContext";
 // Styles
 import "../../styles/ScrollToTopButton.css";
 
 const ScrollToTopButton = () => {
+  const { modalState } = useGlobalContext();
   const [visible, setVisible] = useState(false);
 
   // Show button when scrolled down
   useEffect(() => {
+    const scrollableDiv = document.querySelector(".content");
+    if (!scrollableDiv) return;
+
+    const handleScroll = () => {
+      const shouldBeVisible =
+        scrollableDiv.scrollTop > 200 &&
+        !modalState.showModal &&
+        !modalState.showDeleteModal;
+      setVisible(shouldBeVisible);
+    };
+
+    scrollableDiv.addEventListener("scroll", handleScroll);
+
+    // Run once on mount to set initial visibility
+    handleScroll();
+
+    return () => scrollableDiv.removeEventListener("scroll", handleScroll);
+  }, [modalState.showModal, modalState.showDeleteModal]);
+
+  /*  useEffect(() => {
     // Select the correct scrolling container
     const scrollableDiv = document.querySelector(".content");
     if (!scrollableDiv) return;
@@ -19,6 +42,15 @@ const ScrollToTopButton = () => {
 
     return () => scrollableDiv.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Hide buttom when modal is open
+  useEffect(() => {
+    if (modalState.showModal || modalState.showDeleteModal) {
+      setVisible(false);
+    } else {
+      setVisible(true);
+    }
+  }, [modalState.showModal, modalState.showDeleteModal]); */
 
   // Scroll to top function
   const scrollToTop = () => {

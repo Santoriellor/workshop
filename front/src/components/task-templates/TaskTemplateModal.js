@@ -3,6 +3,9 @@ import { useState, useEffect, useMemo } from "react";
 // Contexts
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useInventoryContext } from "../../contexts/InventoryContext";
+// Components
+import ModalGenericsClose from "../modalGenerics/ModalGenericsClose";
+import ModalGenericsTitle from "../modalGenerics/ModalGenericsTitle";
 // Utils
 import { Toast } from "../../utils/sweetalert";
 import { isTakenTaskName, isValidPrice } from "../../utils/validation";
@@ -18,7 +21,7 @@ const TaskTemplateModal = () => {
     price: "This field is required.",
   });
 
-  const { selectedItem, readonly, setReadonly, openDeleteModal, closeModals } =
+  const { modalState, openDeleteModal, closeModals, toggleReadonly } =
     useGlobalContext();
   const {
     createTaskTemplateWithAlert,
@@ -29,9 +32,9 @@ const TaskTemplateModal = () => {
   } = useInventoryContext();
 
   const [taskTemplateData, setTaskTemplateData] = useState({
-    name: selectedItem?.name || "",
-    description: selectedItem?.description || "",
-    price: selectedItem?.price || "",
+    name: modalState.selectedItem?.name || "",
+    description: modalState.selectedItem?.description || "",
+    price: modalState.selectedItem?.price || "",
   });
 
   const handleTaskTemplateChange = (e) => {
@@ -41,11 +44,6 @@ const TaskTemplateModal = () => {
       ...taskTemplateData,
       [name]: value,
     });
-  };
-
-  const toggleReadonly = (e) => {
-    e.preventDefault();
-    setReadonly(!readonly);
   };
 
   const handleCreateSubmit = async (e) => {
@@ -98,7 +96,10 @@ const TaskTemplateModal = () => {
     }
 
     try {
-      await updateTaskTemplateWithAlert(selectedItem.id, taskTemplateData);
+      await updateTaskTemplateWithAlert(
+        modalState.selectedItem.id,
+        taskTemplateData
+      );
     } catch (error) {
       console.error("Error updating task template:", error);
       Toast.fire("Error", "Something went wrong.", "error");
@@ -113,7 +114,8 @@ const TaskTemplateModal = () => {
     .map((task) => task.name)
     .filter(
       (name) =>
-        !selectedItem || name.toLowerCase() !== selectedItem.name.toLowerCase()
+        !modalState.selectedItem ||
+        name.toLowerCase() !== modalState.selectedItem.name.toLowerCase()
     );
 
   useEffect(() => {
@@ -163,29 +165,17 @@ const TaskTemplateModal = () => {
   return (
     <div className="modal-container">
       <div className="modal-card">
-        <svg
-          onClick={closeModals}
-          className="modal-card-close"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            width="100%"
-            height="100%"
-            d="M11.414 10l2.829-2.828a1 1 0 1 0-1.415-1.415L10 8.586 7.172 5.757a1 1 0 0 0-1.415 1.415L8.586 10l-2.829 2.828a1 1 0 0 0 1.415 1.415L10 11.414l2.828 2.829a1 1 0 0 0 1.415-1.415L11.414 10zM10 20C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"
-          />
-        </svg>
-        {readonly ? (
-          <h2>View Task</h2>
-        ) : selectedItem ? (
-          <h2>Edit Task</h2>
-        ) : (
-          <h2>Create Task</h2>
-        )}
+        <ModalGenericsClose onClose={closeModals} />
+        <ModalGenericsTitle
+          readonly={modalState.readonly}
+          selectedItem={modalState.selectedItem}
+          itemType={modalState.itemType}
+        />
         <form
           className="modal-form"
-          onSubmit={selectedItem ? handleEditSubmit : handleCreateSubmit}
+          onSubmit={
+            modalState.selectedItem ? handleEditSubmit : handleCreateSubmit
+          }
         >
           <fieldset>
             <label>
@@ -198,7 +188,7 @@ const TaskTemplateModal = () => {
                 onChange={handleTaskTemplateChange}
                 placeholder="Enter name"
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">{errors.name && <>{errors.name}</>}</p>
             </label>
@@ -213,7 +203,7 @@ const TaskTemplateModal = () => {
                 onChange={handleTaskTemplateChange}
                 placeholder="Please describe the task"
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">
                 {errors.description && <>{errors.description}</>}
@@ -229,7 +219,7 @@ const TaskTemplateModal = () => {
                 value={taskTemplateData.price}
                 onChange={handleTaskTemplateChange}
                 placeholder="Enter price"
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">
                 {errors.price && <>{errors.price}</>}
@@ -237,16 +227,18 @@ const TaskTemplateModal = () => {
             </label>
           </fieldset>
           <div className="button-group">
-            {selectedItem ? (
+            {modalState.selectedItem ? (
               <>
-                {readonly ? (
+                {modalState.readonly ? (
                   <button type="button" onClick={toggleReadonly}>
                     Edit Task
                   </button>
                 ) : (
                   <button
                     type="submit"
-                    disabled={readonly || !isFormValid || loadingTaskTemplate}
+                    disabled={
+                      modalState.readonly || !isFormValid || loadingTaskTemplate
+                    }
                   >
                     Update Task
                   </button>
@@ -255,8 +247,8 @@ const TaskTemplateModal = () => {
                   type="button"
                   onClick={() =>
                     openDeleteModal(
-                      selectedItem,
-                      itemType,
+                      modalState.selectedItem,
+                      modalState.itemType,
                       () => deleteTaskTemplateWithAlert
                     )
                   }
@@ -267,7 +259,9 @@ const TaskTemplateModal = () => {
             ) : (
               <button
                 type="submit"
-                disabled={readonly || !isFormValid || loadingTaskTemplate}
+                disabled={
+                  modalState.readonly || !isFormValid || loadingTaskTemplate
+                }
               >
                 Create Task
               </button>

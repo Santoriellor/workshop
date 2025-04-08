@@ -18,6 +18,27 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Check if we are inside Docker
+IS_DOCKER = os.getenv('IS_DOCKER', 'False') == 'True'
+
+# Set the MySQL host depending on whether we're inside Docker
+MYSQL_HOST = os.getenv('MYSQL_HOST') if IS_DOCKER else 'localhost'
+
+# Path to the secrets directory (../secrets)
+SECRETS_DIR = Path("/run/secrets") if IS_DOCKER else BASE_DIR.parent / "secrets"
+
+def read_secret(filename, default=None):
+    try:
+        return (SECRETS_DIR / filename).read_text().strip()
+    except FileNotFoundError:
+        if default is not None:
+            return default
+        raise Exception(f"Secret file {filename} not found in {SECRETS_DIR}")
+
+DJANGO_SECRET_KEY = read_secret("django_secret_key.txt")
+MYSQL_USER = read_secret("mysql_user.txt")
+MYSQL_PASSWORD = read_secret("mysql_password.txt")
+
 # Load environment variables from the .env file
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
@@ -25,12 +46,13 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+SECRET_KEY = DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
+ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
 
 
 # Application definition
@@ -52,6 +74,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -59,12 +82,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-]
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000", # React development frontend
-    "https://workshop.santoriello.ch" # React production frontend
 ]
 
 REST_FRAMEWORK = {
@@ -104,11 +121,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'NAME': os.getenv('MYSQL_DATABASE'),
+        'USER': MYSQL_USER,
+        'PASSWORD': MYSQL_PASSWORD,
+        'HOST': MYSQL_HOST,
+        'PORT': os.getenv('MYSQL_PORT'),
     }
 }
 
@@ -150,10 +167,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static_django/'
+
+#Where to refer to static files in the development environment
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+#Where to reference static files in production
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # MEDIA settings
+#Media file path
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -163,7 +185,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=20),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -193,3 +215,33 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        # You can also add specific loggers for your app
+        'myapiapp': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
+CORS_ALLOWED_ORIGINS = CORS_ALLOWED_ORIGINS
+
+CORS_ORIGIN_WHITELIST = [
+     'http://localhost'
+]

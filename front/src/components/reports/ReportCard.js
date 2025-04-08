@@ -10,12 +10,12 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useReportContext } from "../../contexts/ReportContext";
 
 const ReportCard = ({ item, handleExportClick }) => {
+  const cardItemType = "Report";
+
   const location = useLocation();
   const isPathReports = location.pathname.includes("report");
   const isPathDashboard = location.pathname.includes("dashboard");
   const isPathInvoices = location.pathname.includes("invoices");
-
-  const itemType = "Report";
 
   const { deleteReportWithAlert } = useReportContext();
   const { openModal, openDeleteModal } = useGlobalContext();
@@ -36,7 +36,7 @@ const ReportCard = ({ item, handleExportClick }) => {
       onClick={(e) => {
         // Prevent triggering view mode if clicking on an action button
         if (!e.target.closest(".actions")) {
-          openModal(ReportModal, item, itemType, true);
+          openModal(ReportModal, item, cardItemType, true);
         }
       }}
     >
@@ -95,7 +95,9 @@ const ReportCard = ({ item, handleExportClick }) => {
               <button
                 title="Edit Report"
                 className="btn btn-edit"
-                onClick={() => openModal(ReportModal, item, itemType, false)}
+                onClick={() =>
+                  openModal(ReportModal, item, cardItemType, false)
+                }
               >
                 Edit
               </button>
@@ -103,7 +105,11 @@ const ReportCard = ({ item, handleExportClick }) => {
                 title="Delete Report"
                 className="btn btn-delete"
                 onClick={() =>
-                  openDeleteModal(item, itemType, () => deleteReportWithAlert)
+                  openDeleteModal(
+                    item,
+                    cardItemType,
+                    () => deleteReportWithAlert
+                  )
                 }
               >
                 Delete

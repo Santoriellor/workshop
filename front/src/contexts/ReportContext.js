@@ -18,7 +18,7 @@ const ReportContext = createContext();
 
 export const ReportProvider = ({ children }) => {
   const location = useLocation();
-  const { selectedItem } = useGlobalContext();
+  const { modalState } = useGlobalContext();
 
   const getReportFilters = (pathname) => {
     let filters = {};
@@ -76,7 +76,7 @@ export const ReportProvider = ({ children }) => {
     deleteItem: deleteTask,
     loading: loadingTasks,
     error: errorTasks,
-  } = useCRUD("tasks", "reports", selectedItem?.id);
+  } = useCRUD("tasks", "reports", modalState.selectedItem?.id);
 
   const {
     data: parts,
@@ -86,7 +86,7 @@ export const ReportProvider = ({ children }) => {
     deleteItem: deletePart,
     loading: loadingParts,
     error: errorParts,
-  } = useCRUD("parts", "reports", selectedItem?.id);
+  } = useCRUD("parts", "reports", modalState.selectedItem?.id);
 
   /*   // Memoized function to fetch reports
   const fetchReportsMemoized = useCallback(() => {
@@ -134,11 +134,14 @@ export const ReportProvider = ({ children }) => {
   // Automatically fetch data when the selectedItem changes
   useEffect(() => {
     const reportPaths = ["/report", "/dashboard", "/invoices"];
-    if (reportPaths.includes(location.pathname)) {
+    if (
+      reportPaths.includes(location.pathname) &&
+      modalState.itemType === "Report"
+    ) {
       fetchTasks();
       fetchParts();
     }
-  }, [selectedItem]);
+  }, [modalState.selectedItem]);
 
   return (
     <ReportContext.Provider

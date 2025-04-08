@@ -12,14 +12,17 @@ import { useGlobalContext } from "../contexts/GlobalContext";
 const TaskTemplate = () => {
   const { taskTemplate, loadingTaskTemplate, deleteTaskTemplateWithAlert } =
     useInventoryContext();
-  const { setModalComponent } = useGlobalContext();
+  const { setModalState } = useGlobalContext();
 
   const [filters, setFilters] = useState({
     search: "",
   });
 
   useEffect(() => {
-    setModalComponent(() => TaskTemplateModal);
+    setModalState((prev) => ({
+      ...prev,
+      modalComponent: TaskTemplateModal,
+    }));
   }, []);
 
   return (

@@ -13,7 +13,7 @@ import "../styles/Owner.css";
 
 const Owner = () => {
   const { owners, loadingOwners } = useOwnerContext();
-  const { setModalComponent } = useGlobalContext();
+  const { setModalState } = useGlobalContext();
 
   const [filters, setFilters] = useState({
     name: "",
@@ -21,7 +21,10 @@ const Owner = () => {
   });
 
   useEffect(() => {
-    setModalComponent(() => OwnerModal);
+    setModalState((prev) => ({
+      ...prev,
+      modalComponent: OwnerModal,
+    }));
   }, []);
 
   return (

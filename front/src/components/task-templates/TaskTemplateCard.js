@@ -5,7 +5,7 @@ import { useInventoryContext } from "../../contexts/InventoryContext";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const TaskTemplateCard = ({ item }) => {
-  const itemType = "Task template";
+  const cardItemType = "Task template";
 
   const { deleteTaskTemplateWithAlert } = useInventoryContext();
   const { openModal, openDeleteModal } = useGlobalContext();
@@ -18,7 +18,7 @@ const TaskTemplateCard = ({ item }) => {
       onClick={(e) => {
         // Prevent triggering view mode if clicking on an action button
         if (!e.target.closest(".actions")) {
-          openModal(TaskTemplateModal, item, itemType, true);
+          openModal(TaskTemplateModal, item, cardItemType, true);
         }
       }}
     >
@@ -38,7 +38,9 @@ const TaskTemplateCard = ({ item }) => {
           <button
             title="Edit task"
             className="btn btn-edit"
-            onClick={() => openModal(TaskTemplateModal, item, itemType, false)}
+            onClick={() =>
+              openModal(TaskTemplateModal, item, cardItemType, false)
+            }
           >
             Edit
           </button>
@@ -46,7 +48,11 @@ const TaskTemplateCard = ({ item }) => {
             title="Delete task"
             className="btn btn-delete"
             onClick={() =>
-              openDeleteModal(item, itemType, () => deleteTaskTemplateWithAlert)
+              openDeleteModal(
+                item,
+                cardItemType,
+                () => deleteTaskTemplateWithAlert
+              )
             }
           >
             Delete

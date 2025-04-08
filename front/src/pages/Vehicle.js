@@ -13,7 +13,7 @@ import "../styles/Vehicles.css";
 
 const Vehicle = () => {
   const { vehicles, loadingVehicles } = useVehicleContext();
-  const { setModalComponent } = useGlobalContext();
+  const { setModalState } = useGlobalContext();
 
   const [filters, setFilters] = useState({
     brand: "",
@@ -24,7 +24,10 @@ const Vehicle = () => {
   });
 
   useEffect(() => {
-    setModalComponent(() => VehicleModal);
+    setModalState((prev) => ({
+      ...prev,
+      modalComponent: VehicleModal,
+    }));
   }, []);
 
   return (

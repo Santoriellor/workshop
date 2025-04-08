@@ -4,6 +4,9 @@ import { useState, useEffect, useMemo } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useVehicleContext } from "../../contexts/VehicleContext";
 import { useOwnerContext } from "../../contexts/OwnerContext";
+// Components
+import ModalGenericsClose from "../modalGenerics/ModalGenericsClose";
+import ModalGenericsTitle from "../modalGenerics/ModalGenericsTitle";
 // Utils
 import { Toast } from "../../utils/sweetalert";
 import {
@@ -26,7 +29,7 @@ const VehicleModal = () => {
     owner: "This field is required.",
   });
 
-  const { selectedItem, readonly, setReadonly, openDeleteModal, closeModals } =
+  const { modalState, openDeleteModal, closeModals, toggleReadonly } =
     useGlobalContext();
   const {
     vehicles,
@@ -38,11 +41,11 @@ const VehicleModal = () => {
   const { owners } = useOwnerContext();
 
   const [vehicleData, setVehicleData] = useState({
-    brand: selectedItem?.brand || "",
-    model: selectedItem?.model,
-    year: selectedItem?.year || "",
-    license_plate: selectedItem?.license_plate || "",
-    owner: selectedItem?.owner || "",
+    brand: modalState.selectedItem?.brand || "",
+    model: modalState.selectedItem?.model,
+    year: modalState.selectedItem?.year || "",
+    license_plate: modalState.selectedItem?.license_plate || "",
+    owner: modalState.selectedItem?.owner || "",
   });
 
   const handleVehicleChange = (e) => {
@@ -66,11 +69,6 @@ const VehicleModal = () => {
       brand: value,
       model: "", // Reset model when brand changes
     });
-  };
-
-  const toggleReadonly = (e) => {
-    e.preventDefault();
-    setReadonly(!readonly);
   };
 
   const handleCreateSubmit = async (e) => {
@@ -139,7 +137,7 @@ const VehicleModal = () => {
     }
 
     try {
-      await updateVehicleWithAlert(selectedItem.id, vehicleData);
+      await updateVehicleWithAlert(modalState.selectedItem.id, vehicleData);
     } catch (error) {
       console.error("Error updating vehicle:", error);
       Toast.fire("Error", "Something went wrong.", "error");
@@ -154,8 +152,9 @@ const VehicleModal = () => {
     .map((vehicle) => vehicle.license_plate)
     .filter(
       (plate) =>
-        !selectedItem ||
-        plate.toLowerCase() !== selectedItem.license_plate.toLowerCase()
+        !modalState.selectedItem ||
+        plate.toLowerCase() !==
+          modalState.selectedItem.license_plate.toLowerCase()
     );
 
   useEffect(() => {
@@ -221,29 +220,17 @@ const VehicleModal = () => {
   return (
     <div className="modal-container">
       <div className="modal-card">
-        <svg
-          onClick={closeModals}
-          className="modal-card-close"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            width="100%"
-            height="100%"
-            d="M11.414 10l2.829-2.828a1 1 0 1 0-1.415-1.415L10 8.586 7.172 5.757a1 1 0 0 0-1.415 1.415L8.586 10l-2.829 2.828a1 1 0 0 0 1.415 1.415L10 11.414l2.828 2.829a1 1 0 0 0 1.415-1.415L11.414 10zM10 20C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"
-          />
-        </svg>
-        {readonly ? (
-          <h2>View Vehicle</h2>
-        ) : selectedItem ? (
-          <h2>Edit Vehicle</h2>
-        ) : (
-          <h2>Create Vehicle</h2>
-        )}
+        <ModalGenericsClose onClose={closeModals} />
+        <ModalGenericsTitle
+          readonly={modalState.readonly}
+          selectedItem={modalState.selectedItem}
+          itemType={modalState.itemType}
+        />
         <form
           className="modal-form"
-          onSubmit={selectedItem ? handleEditSubmit : handleCreateSubmit}
+          onSubmit={
+            modalState.selectedItem ? handleEditSubmit : handleCreateSubmit
+          }
         >
           <fieldset>
             <label>
@@ -254,7 +241,7 @@ const VehicleModal = () => {
                 value={vehicleData.brand}
                 onChange={handleBrandChange}
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               >
                 <option value="">Select a brand</option>
                 {brands.map((brand) => (
@@ -274,7 +261,7 @@ const VehicleModal = () => {
                 name="model"
                 value={vehicleData.model}
                 onChange={handleVehicleChange}
-                disabled={!vehicleData.brand || readonly}
+                disabled={!vehicleData.brand || modalState.readonly}
                 required
               >
                 <option value="">Select a model</option>
@@ -301,7 +288,7 @@ const VehicleModal = () => {
                 min="1900"
                 max={new Date().getFullYear()}
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">{errors.year && <>{errors.year}</>}</p>
             </label>
@@ -315,7 +302,7 @@ const VehicleModal = () => {
                 value={vehicleData.license_plate}
                 onChange={handleVehicleChange}
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               />
               <p className="error-text">
                 {errors.license_plate && <>{errors.license_plate}</>}
@@ -329,7 +316,7 @@ const VehicleModal = () => {
                 value={vehicleData.owner}
                 onChange={handleVehicleChange}
                 required
-                disabled={readonly}
+                disabled={modalState.readonly}
               >
                 <option value="">Select an owner</option>
                 {owners.map((owner) => (
@@ -344,16 +331,18 @@ const VehicleModal = () => {
             </label>
           </fieldset>
           <div className="button-group">
-            {selectedItem ? (
+            {modalState.selectedItem ? (
               <>
-                {readonly ? (
+                {modalState.readonly ? (
                   <button type="button" onClick={toggleReadonly}>
                     Edit Vehicle
                   </button>
                 ) : (
                   <button
                     type="submit"
-                    disabled={readonly || !isFormValid || loadingVehicles}
+                    disabled={
+                      modalState.readonly || !isFormValid || loadingVehicles
+                    }
                   >
                     Update Vehicle
                   </button>
@@ -362,8 +351,8 @@ const VehicleModal = () => {
                   type="button"
                   onClick={() =>
                     openDeleteModal(
-                      selectedItem,
-                      itemType,
+                      modalState.selectedItem,
+                      modalState.itemType,
                       () => deleteVehicleWithAlert
                     )
                   }
@@ -374,7 +363,9 @@ const VehicleModal = () => {
             ) : (
               <button
                 type="submit"
-                disabled={readonly || !isFormValid || loadingVehicles}
+                disabled={
+                  modalState.readonly || !isFormValid || loadingVehicles
+                }
               >
                 Create Vehicle
               </button>

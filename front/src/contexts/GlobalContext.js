@@ -1,24 +1,53 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 export const GlobalContext = createContext();
 
 export const GlobalProvider = ({ children }) => {
-  const [selectedItem, setSelectedItem] = useState({});
-  const [itemType, setItemType] = useState({});
-  const [modalComponent, setModalComponent] = useState();
-  const [isModalReady, setIsModalReady] = useState(false);
+  const location = useLocation();
+
+  const [modalState, setModalState] = useState({
+    selectedItem: null,
+    itemType: null,
+    readonly: false,
+    modalComponent: null,
+    showModal: false,
+    showDeleteModal: false,
+    isModalReady: false,
+  });
+
   const [deleteItemWithAlert, setDeleteItemWithAlert] = useState(
     () => () => {}
   );
-  const [showTypeModal, setShowTypeModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [readonly, setReadonly] = useState(false);
+
+  // Automatically set itemType based on pathname
+  useEffect(() => {
+    const pathToType = {
+      "/report": "Report",
+      "/dashboard": "Report",
+      "/owner": "Owner",
+      "/vehicle": "Vehicle",
+      "/invoices": "Invoice",
+      "/inventory": "Part",
+      "/tasktemplate": "Task Template",
+    };
+
+    const matchedType = pathToType[location.pathname] || null;
+
+    setModalState((prev) => ({
+      ...prev,
+      itemType: matchedType,
+    }));
+  }, [location.pathname]);
 
   useEffect(() => {
-    if (modalComponent && selectedItem !== null) {
-      setIsModalReady(true);
+    if (modalState.modalComponent && modalState.selectedItem !== null) {
+      setModalState((prev) => ({
+        ...prev,
+        isModalReady: true,
+      }));
     }
-  }, [modalComponent, selectedItem]);
+  }, [modalState.modalComponent, modalState.selectedItem]);
 
   // Function to open a modal with a specific component
   const openModal = (
@@ -27,67 +56,78 @@ export const GlobalProvider = ({ children }) => {
     type = null,
     isReadonly = false
   ) => {
-    setModalComponent(() => Component);
-    setSelectedItem(item);
-    setItemType(type);
-    setReadonly(isReadonly);
-    setShowTypeModal(true);
-    if (item === null) {
-      setIsModalReady(true);
-    } else {
-      setIsModalReady(false);
-    }
+    setModalState((prev) => ({
+      ...prev,
+      selectedItem: item,
+      itemType: type,
+      readonly: isReadonly,
+      modalComponent: Component,
+      showModal: true,
+      showDeleteModal: false,
+      isModalReady: item === null,
+    }));
   };
 
   // Function to open a modal to confirm deletion
-  const openDeleteModal = (item = null, type = null, deleteFunction) => {
-    setSelectedItem(item);
-    setItemType(type);
+  const openDeleteModal = (item = null, type, deleteFunction) => {
+    setModalState((prev) => ({
+      ...prev,
+      selectedItem: item,
+      itemType: type,
+      showModal: false,
+      showDeleteModal: true,
+    }));
     setDeleteItemWithAlert(deleteFunction);
-    setShowTypeModal(false);
-    setShowDeleteModal(true);
   };
 
   // Function to delete an item after confirmation and close the delete modal
   const handleDeleteConfirm = () => {
     if (typeof deleteItemWithAlert === "function") {
-      deleteItemWithAlert(selectedItem.id);
+      deleteItemWithAlert(modalState.selectedItem.id);
     } else {
       console.error(
-        "deleteItemWithAlert is not a function",
+        "GlobalContext, The argument passed is not a function:",
         deleteItemWithAlert
       );
     }
-    setShowDeleteModal(false);
-    setSelectedItem(null);
-    setItemType(null);
+    setModalState((prev) => ({
+      ...prev,
+      selectedItem: null,
+      itemType: null,
+      showDeleteModal: false,
+    }));
   };
 
   // Function to close modals
   const closeModals = () => {
-    setShowTypeModal(false);
-    setShowDeleteModal(false);
-    setSelectedItem(null);
-    setIsModalReady(false);
-    /* setItemType(null); */
+    setModalState((prev) => ({
+      ...prev,
+      selectedItem: null,
+      isModalReady: false,
+      showModal: false,
+      showDeleteModal: false,
+    }));
+  };
+
+  // Function to toggle the readonly state of the modal
+  const toggleReadonly = (e) => {
+    e.preventDefault();
+    setModalState((prev) => ({
+      ...prev,
+      readonly: !modalState.readonly,
+    }));
   };
 
   return (
     <GlobalContext.Provider
       value={{
-        selectedItem,
-        setSelectedItem,
-        modalComponent,
-        setModalComponent,
-        showTypeModal,
-        isModalReady,
-        showDeleteModal,
-        readonly,
-        setReadonly,
+        modalState,
+        setModalState,
         openModal,
         openDeleteModal,
         handleDeleteConfirm,
         closeModals,
+        toggleReadonly,
         deleteItemWithAlert,
       }}
     >
