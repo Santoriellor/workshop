@@ -17,34 +17,6 @@ Install the following:
 
 ---
 
-## 🛠️ Environment Setup
-
-Create secrets files (.env)
-
-### 1. Backend `.env` (in `back/.env`)
-
-```env
-# back/.env
-SECRET_KEY=your-django-secret-key
-DEBUG=True
-ALLOWED_HOSTS=*
-
-MYSQL_DATABASE=workshop_db
-MYSQL_USER=workshop_user
-MYSQL_PASSWORD=yourpassword
-MYSQL_ROOT_PASSWORD=rootpassword
-MYSQL_HOST=db
-MYSQL_PORT=port
-```
-
-### 2. Frontend `.env` (in `front/.env`)
-
-```env
-REACT_APP_API_URL=http://localhost:8000/api
-```
-
----
-
 ## 🚀 Build & Run
 
 From the project root (`workshop/`):
@@ -77,7 +49,6 @@ This will:
 ```bash
 docker-compose exec backend python manage.py migrate
 docker-compose exec backend python manage.py createsuperuser
-docker-compose exec backend python manage.py populate_db
 ```
 
 ### Restart containers:

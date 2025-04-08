@@ -28,14 +28,13 @@ function Sidebar() {
             <span className="sidebar-company-name">The Garage</span>
 
             <p className="sidebar-welcome">
-              <span className="sidebar-small">Logged in as :</span>
-              <br />
+              <span className="sidebar-small">Logged in as : </span>
               {!loadingAuth
                 ? capitalizeFirstLetter(authenticatedUser.username)
                 : "Loading..."}
             </p>
             <button className="btn logout" onClick={logout} title="Log Out">
-              <p>Log Out</p>
+              <p className="sidebar-logout">Log Out</p>
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -54,7 +53,7 @@ function Sidebar() {
                 disabled={location.pathname === "/dashboard"}
                 aria-disabled={location.pathname === "/dashboard"}
               >
-                Dashboard
+                <span>Dashboard</span>
               </Link>
             </li>
             <li>
@@ -64,7 +63,7 @@ function Sidebar() {
                 disabled={location.pathname === "/report"}
                 aria-disabled={location.pathname === "/report"}
               >
-                Reports
+                <span>Reports</span>
               </Link>
             </li>
             <li>
@@ -74,7 +73,7 @@ function Sidebar() {
                 disabled={location.pathname === "/owner"}
                 aria-disabled={location.pathname === "/owner"}
               >
-                Owners
+                <span>Owners</span>
               </Link>
             </li>
             <li>
@@ -84,7 +83,7 @@ function Sidebar() {
                 disabled={location.pathname === "/vehicle"}
                 aria-disabled={location.pathname === "/vehicle"}
               >
-                Vehicles
+                <span>Vehicles</span>
               </Link>
             </li>
             <li>
@@ -94,7 +93,7 @@ function Sidebar() {
                 disabled={location.pathname === "/invoices"}
                 aria-disabled={location.pathname === "/invoices"}
               >
-                Invoices
+                <span>Invoices</span>
               </Link>
             </li>
             <li>
@@ -104,7 +103,7 @@ function Sidebar() {
                 disabled={location.pathname === "/inventory"}
                 aria-disabled={location.pathname === "/inventory"}
               >
-                Inventory
+                <span>Inventory</span>
               </Link>
             </li>
             <li>
@@ -116,7 +115,7 @@ function Sidebar() {
                 disabled={location.pathname === "/tasktemplate"}
                 aria-disabled={location.pathname === "/tasktemplate"}
               >
-                Task templates
+                <span>Task templates</span>
               </Link>
             </li>
           </ul>
