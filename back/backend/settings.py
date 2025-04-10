@@ -131,6 +131,9 @@ DATABASES = {
         'PASSWORD': MYSQL_PASSWORD,
         'HOST': MYSQL_HOST,
         'PORT': os.getenv('MYSQL_PORT'),
+        'TEST': {
+            'NAME': 'test_workshop_db',  # Use your production DB for testing
+        },
     }
 }
 

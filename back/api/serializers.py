@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.utils.dateformat import format
@@ -69,6 +70,12 @@ class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
         fields = '__all__'
+        
+    def validate_year(self, value):
+        current_year = datetime.now().year
+        if value < 1900 or value > current_year:
+            raise serializers.ValidationError(f"Year must be between 1900 and {current_year}.")
+        return value
 
 class TaskTemplateSerializer(serializers.ModelSerializer):    
     class Meta:
