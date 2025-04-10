@@ -88,7 +88,7 @@ export const ReportProvider = ({ children }) => {
     error: errorParts,
   } = useCRUD("parts", "reports", modalState.selectedItem?.id);
 
-  /*   // Memoized function to fetch reports
+  // Memoized function to fetch reports
   const fetchReportsMemoized = useCallback(() => {
     fetchReports({}, "vehicle__brand,vehicle__model");
   }, [fetchReports]);
@@ -98,7 +98,6 @@ export const ReportProvider = ({ children }) => {
     fetchTasks();
     fetchParts();
   }, [fetchTasks, fetchParts]);
- */
 
   const prevReportLength = useRef(reports.length);
   const prevPathname = useRef(location.pathname);
@@ -110,10 +109,10 @@ export const ReportProvider = ({ children }) => {
       const { filters, ordering, limit, offset } = getReportFilters(
         location.pathname
       );
-      fetchReports({ ...filters, ordering, limit, offset });
+      fetchReportsMemoized({ ...filters, ordering, limit, offset });
     }
     prevPathname.current = location.pathname;
-  }, [location.pathname, reports.length]);
+  }, [location.pathname, reports.length, fetchReportsMemoized]);
 
   // Fetch reports when a report is added and pathname stays the same
   useEffect(() => {
@@ -126,10 +125,10 @@ export const ReportProvider = ({ children }) => {
       const { filters, ordering, limit, offset } = getReportFilters(
         location.pathname
       );
-      fetchReports({ ...filters, ordering, limit, offset });
+      fetchReportsMemoized({ ...filters, ordering, limit, offset });
     }
     prevReportLength.current = reports.length;
-  }, [reports.length]);
+  }, [reports.length, location.pathname, fetchReportsMemoized]);
 
   // Automatically fetch data when the selectedItem changes
   useEffect(() => {
@@ -138,10 +137,14 @@ export const ReportProvider = ({ children }) => {
       reportPaths.includes(location.pathname) &&
       modalState.itemType === "Report"
     ) {
-      fetchTasks();
-      fetchParts();
+      fetchTasksAndPartsMemoized();
     }
-  }, [modalState.selectedItem]);
+  }, [
+    modalState.selectedItem,
+    modalState.itemType,
+    location.pathname,
+    fetchTasksAndPartsMemoized,
+  ]);
 
   return (
     <ReportContext.Provider

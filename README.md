@@ -19,7 +19,7 @@ Install the following:
 
 ## 🚀 Build & Run
 
-From the project root (`workshop/`):
+From the project root :
 
 ```bash
 docker-compose build
