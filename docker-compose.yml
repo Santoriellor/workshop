@@ -12,7 +12,9 @@ services:
     env_file:
       - ./back/.env
     environment:
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_ROOT_PASSWORD: /run/secrets/mysql_root_password
+      # The "[Server] root@localhost is created with an empty password !" log is explained here :
+      # https://github.com/docker-library/mysql/issues/307#issuecomment-313784886
       MYSQL_USER_FILE: /run/secrets/mysql_user
       MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
     ports:

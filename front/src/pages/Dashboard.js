@@ -1,17 +1,17 @@
-import React from "react";
+import React from 'react'
 
 // Components
-import LatestReports from "../components/reports/LatestReports";
-import LowestInventory from "../components/inventory/LowestInventory";
-import LatestInvoices from "../components/invoices/LatestInvoices";
-import ScrollToTopButton from "../components/buttons/ScrollToTopButton";
+import LatestReports from '../components/reports/LatestReports'
+import LowestInventory from '../components/inventory/LowestInventory'
+import LatestInvoices from '../components/invoices/LatestInvoices'
+import ScrollToTopButton from '../components/buttons/ScrollToTopButton'
 // Contexts
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from '../contexts/AuthContext'
 // Styles
-import "../styles/Dashboard.css";
+import '../styles/Dashboard.css'
 
 const Dashboard = () => {
-  const { authenticatedUser } = useAuth();
+  const { authenticatedUser } = useAuth()
 
   return (
     <>
@@ -34,7 +34,7 @@ const Dashboard = () => {
       {/* Floating ScrollToTopButton */}
       <ScrollToTopButton />
     </>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard

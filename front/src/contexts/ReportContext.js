@@ -1,45 +1,39 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useCallback,
-} from "react";
-import { useLocation } from "react-router-dom";
+import React, { createContext, useContext, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 
 // Contexts
-import { useGlobalContext } from "./GlobalContext";
+import { useGlobalContext } from './GlobalContext'
 // Hooks
-import useCRUD from "../hooks/useCRUD";
+import useCRUD from '../hooks/useCRUD'
 // Utils
-import withSuccessAlert from "../utils/successAlert";
+import withSuccessAlert from '../utils/successAlert'
 
-const ReportContext = createContext();
+const ReportContext = createContext()
 
 export const ReportProvider = ({ children }) => {
-  const location = useLocation();
-  const { modalState } = useGlobalContext();
+  const location = useLocation()
+  const { modalState } = useGlobalContext()
 
   const getReportFilters = (pathname) => {
-    let filters = {};
-    let ordering = "vehicle__brand,vehicle__model";
-    let limit = null;
-    let offset = null;
+    let filters = {}
+    let ordering = 'vehicle__brand,vehicle__model'
+    let limit = null
+    let offset = null
 
-    if (pathname.includes("report")) {
-      filters = { status__in: ["pending", "in_progress", "completed"] };
+    if (pathname.includes('report')) {
+      filters = { status__in: ['pending', 'in_progress', 'completed'] }
     }
-    if (pathname.includes("dashboard")) {
-      filters = { status__in: ["pending", "in_progress", "completed"] };
-      ordering = "-created_at";
-      limit = 5;
+    if (pathname.includes('dashboard')) {
+      filters = { status__in: ['pending', 'in_progress', 'completed'] }
+      ordering = '-created_at'
+      limit = 5
     }
-    if (pathname.includes("invoices")) {
-      filters = { status: "completed" };
+    if (pathname.includes('invoices')) {
+      filters = { status: 'completed' }
     }
 
-    return { filters, ordering, limit, offset };
-  };
+    return { filters, ordering, limit, offset }
+  }
 
   const {
     data: reports,
@@ -49,24 +43,18 @@ export const ReportProvider = ({ children }) => {
     deleteItem: deleteReport,
     loading: loadingReports,
     error: errorReports,
-  } = useCRUD("reports");
+  } = useCRUD('reports')
 
   // Create a report with success alert
-  const createReportWithAlert = withSuccessAlert(
-    createReport,
-    "Report created successfully!"
-  );
+  const createReportWithAlert = withSuccessAlert(createReport, 'Report created successfully!')
   // Update a report with success alert
   const updateReportWithAlert = withSuccessAlert(
     updateReport,
-    "Report updated successfully!",
-    "Report exported and PDF generated successfully!"
-  );
+    'Report updated successfully!',
+    'Report exported and PDF generated successfully!',
+  )
   // Delete a report with success alert
-  const deleteReportWithAlert = withSuccessAlert(
-    deleteReport,
-    "Report deleted successfully!"
-  );
+  const deleteReportWithAlert = withSuccessAlert(deleteReport, 'Report deleted successfully!')
 
   const {
     data: tasks,
@@ -76,7 +64,7 @@ export const ReportProvider = ({ children }) => {
     deleteItem: deleteTask,
     loading: loadingTasks,
     error: errorTasks,
-  } = useCRUD("tasks", "reports", modalState.selectedItem?.id);
+  } = useCRUD('tasks', 'reports', modalState.selectedItem?.id)
 
   const {
     data: parts,
@@ -86,65 +74,57 @@ export const ReportProvider = ({ children }) => {
     deleteItem: deletePart,
     loading: loadingParts,
     error: errorParts,
-  } = useCRUD("parts", "reports", modalState.selectedItem?.id);
+  } = useCRUD('parts', 'reports', modalState.selectedItem?.id)
 
-  // Memoized function to fetch reports
+  /* // Memoized function to fetch reports
   const fetchReportsMemoized = useCallback(() => {
     fetchReports({}, "vehicle__brand,vehicle__model");
   }, [fetchReports]);
 
-  // Memoized function to fetch reports
+  // Memoized function to fetch tasks and parts
   const fetchTasksAndPartsMemoized = useCallback(() => {
     fetchTasks();
     fetchParts();
-  }, [fetchTasks, fetchParts]);
+  }, [fetchTasks, fetchParts]); */
 
-  const prevReportLength = useRef(reports.length);
-  const prevPathname = useRef(location.pathname);
+  const prevReportLength = useRef(reports.length)
+  const prevPathname = useRef(location.pathname)
 
   // Fetch reports when the pathname changes
   useEffect(() => {
-    const reportPaths = ["/report", "/dashboard", "/invoices"];
+    const reportPaths = ['/report', '/dashboard', '/invoices']
     if (reportPaths.includes(location.pathname)) {
-      const { filters, ordering, limit, offset } = getReportFilters(
-        location.pathname
-      );
-      fetchReportsMemoized({ ...filters, ordering, limit, offset });
+      const { filters, ordering, limit, offset } = getReportFilters(location.pathname)
+      fetchReports({ ...filters, ordering, limit, offset })
     }
-    prevPathname.current = location.pathname;
-  }, [location.pathname, reports.length, fetchReportsMemoized]);
+    prevPathname.current = location.pathname
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, reports.length])
 
   // Fetch reports when a report is added and pathname stays the same
   useEffect(() => {
-    const reportPaths = ["/report", "/dashboard", "/invoices"];
+    const reportPaths = ['/report', '/dashboard', '/invoices']
     if (
       reportPaths.includes(location.pathname) &&
       location.pathname === prevPathname.current &&
       reports.length > prevReportLength.current
     ) {
-      const { filters, ordering, limit, offset } = getReportFilters(
-        location.pathname
-      );
-      fetchReportsMemoized({ ...filters, ordering, limit, offset });
+      const { filters, ordering, limit, offset } = getReportFilters(location.pathname)
+      fetchReports({ ...filters, ordering, limit, offset })
     }
-    prevReportLength.current = reports.length;
-  }, [reports.length, location.pathname, fetchReportsMemoized]);
+    prevReportLength.current = reports.length
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reports.length, location.pathname])
 
   // Automatically fetch data when the selectedItem changes
   useEffect(() => {
-    const reportPaths = ["/report", "/dashboard", "/invoices"];
-    if (
-      reportPaths.includes(location.pathname) &&
-      modalState.itemType === "Report"
-    ) {
-      fetchTasksAndPartsMemoized();
+    const reportPaths = ['/report', '/dashboard', '/invoices']
+    if (reportPaths.includes(location.pathname) && modalState.itemType === 'Report') {
+      fetchTasks()
+      fetchParts()
     }
-  }, [
-    modalState.selectedItem,
-    modalState.itemType,
-    location.pathname,
-    fetchTasksAndPartsMemoized,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalState.selectedItem, modalState.itemType, location.pathname])
 
   return (
     <ReportContext.Provider
@@ -174,8 +154,8 @@ export const ReportProvider = ({ children }) => {
     >
       {children}
     </ReportContext.Provider>
-  );
-};
+  )
+}
 
 // Custom hook for accessing the ReportContext
-export const useReportContext = () => useContext(ReportContext);
+export const useReportContext = () => useContext(ReportContext)

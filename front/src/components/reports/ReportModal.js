@@ -1,36 +1,35 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from 'react'
 
 // Contexts
-import { useAuth } from "../../contexts/AuthContext";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import { useReportContext } from "../../contexts/ReportContext";
-import { useVehicleContext } from "../../contexts/VehicleContext";
-import { useOwnerContext } from "../../contexts/OwnerContext";
-import { useInventoryContext } from "../../contexts/InventoryContext";
+import { useAuth } from '../../contexts/AuthContext'
+import { useGlobalContext } from '../../contexts/GlobalContext'
+import { useReportContext } from '../../contexts/ReportContext'
+import { useVehicleContext } from '../../contexts/VehicleContext'
+import { useOwnerContext } from '../../contexts/OwnerContext'
+import { useInventoryContext } from '../../contexts/InventoryContext'
 // Components
-import ModalGenericsClose from "../modalGenerics/ModalGenericsClose";
-import ModalGenericsTitle from "../modalGenerics/ModalGenericsTitle";
-import SvgTrash from "../svgGenerics/SvgTrash";
+import ModalGenericsClose from '../modalGenerics/ModalGenericsClose'
+import ModalGenericsTitle from '../modalGenerics/ModalGenericsTitle'
+import SvgTrash from '../svgGenerics/SvgTrash'
 // Utils
-import { Toast } from "../../utils/sweetalert";
-import { isValidQuantityInStock } from "../../utils/validation";
+import { Toast } from '../../utils/sweetalert'
+import { isValidQuantityInStock } from '../../utils/validation'
 // Styles
-import "../../styles/Modal.css";
-import "../../styles/ReportModal.css";
+import '../../styles/Modal.css'
+import '../../styles/ReportModal.css'
 
 const ReportModal = () => {
   // Error messages
   const [errors, setErrors] = useState({
-    vehicle: "",
-    status: "",
-    tasks: "",
-    parts: "",
-    part_quantity: "",
-  });
+    vehicle: '',
+    status: '',
+    tasks: '',
+    parts: '',
+    part_quantity: '',
+  })
 
-  const { authenticatedUser } = useAuth();
-  const { modalState, openDeleteModal, closeModals, toggleReadonly } =
-    useGlobalContext();
+  const { authenticatedUser } = useAuth()
+  const { modalState, openDeleteModal, closeModals, toggleReadonly } = useGlobalContext()
 
   const {
     createReportWithAlert,
@@ -45,132 +44,123 @@ const ReportModal = () => {
     loadingParts,
     createPart,
     deletePart,
-  } = useReportContext();
-  const { vehicles } = useVehicleContext();
-  const { getOwnerNameByVehicleId } = useOwnerContext();
-  const { inventory, taskTemplate } = useInventoryContext();
+  } = useReportContext()
+  const { vehicles } = useVehicleContext()
+  const { getOwnerNameByVehicleId } = useOwnerContext()
+  const { inventory, taskTemplate } = useInventoryContext()
 
   const [reportData, setReportData] = useState({
-    vehicle: modalState.selectedItem?.vehicle || "",
+    vehicle: modalState.selectedItem?.vehicle || '',
     user: authenticatedUser.id,
-    status: modalState.selectedItem?.status || "pending",
-    remarks: modalState.selectedItem?.remarks || "",
-  });
+    status: modalState.selectedItem?.status || 'pending',
+    remarks: modalState.selectedItem?.remarks || '',
+  })
 
-  const [selectedTask, setSelectedTask] = useState("");
-  const [selectedPart, setSelectedPart] = useState("");
-  const [quantityPart, setQuantityPart] = useState("1");
-  const [updatedTasks, setUpdatedTasks] = useState(tasks || []);
-  const [updatedParts, setUpdatedParts] = useState(parts || []);
+  const [selectedTask, setSelectedTask] = useState('')
+  const [selectedPart, setSelectedPart] = useState('')
+  const [quantityPart, setQuantityPart] = useState('1')
+  const [updatedTasks, setUpdatedTasks] = useState(tasks || [])
+  const [updatedParts, setUpdatedParts] = useState(parts || [])
 
   const handleReportChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
 
     setReportData({
       ...reportData,
-      [name]: name === "vehicle" ? Number(value) : value,
-    });
-  };
+      [name]: name === 'vehicle' ? Number(value) : value,
+    })
+  }
   const handleTaskChange = (e) => {
-    setSelectedTask(e.target.value);
-  };
+    setSelectedTask(e.target.value)
+  }
   const handlePartChange = (e) => {
-    setSelectedPart(e.target.value);
-  };
+    setSelectedPart(e.target.value)
+  }
   const handleQuantityChange = (e) => {
-    let value = e.target.value;
+    let value = e.target.value
 
     // Remove leading zero if the second character is not a dot
-    if (value.length > 1 && value.startsWith("0") && value[1] !== ".") {
-      value = value.slice(1);
+    if (value.length > 1 && value.startsWith('0') && value[1] !== '.') {
+      value = value.slice(1)
     }
     // Prevent leading dots by converting ".5" to "0.5"
-    if (value.startsWith(".")) {
-      value = "0" + value;
+    if (value.startsWith('.')) {
+      value = '0' + value
     }
 
     // Allow only numbers with up to 2 decimal places
     if (/^\d*\.?\d{0,2}$/.test(value)) {
-      setQuantityPart(value);
+      setQuantityPart(value)
     }
-  };
+  }
 
   const addTask = () => {
     if (!selectedTask) {
-      Toast.fire("Error", "Please select a repair task.", "error");
-      return;
+      Toast.fire('Error', 'Please select a repair task.', 'error')
+      return
     }
 
-    const taskId = Number(selectedTask);
-    const task = taskTemplate.find((item) => item.id === taskId);
-    if (!task) return;
+    const taskId = Number(selectedTask)
+    const task = taskTemplate.find((item) => item.id === taskId)
+    if (!task) return
 
-    setUpdatedTasks([...updatedTasks, { task_template: task.id }]);
+    setUpdatedTasks([...updatedTasks, { task_template: task.id }])
 
-    setSelectedTask("");
-  };
+    setSelectedTask('')
+  }
   const addPart = () => {
     if (!selectedPart) {
-      Toast.fire("Error", "Please select a repair part.", "error");
-      return;
+      Toast.fire('Error', 'Please select a repair part.', 'error')
+      return
     }
     if (errors.part_quantity) {
-      Toast.fire("Error", "Please give a quantity.", "error");
-      return;
+      Toast.fire('Error', 'Please give a quantity.', 'error')
+      return
     }
 
-    const partId = Number(selectedPart);
-    const part = inventory.find((item) => item.id === partId);
-    if (!part) return;
+    const partId = Number(selectedPart)
+    const part = inventory.find((item) => item.id === partId)
+    if (!part) return
 
-    setUpdatedParts([
-      ...updatedParts,
-      { part: part.id, quantity_used: Number(quantityPart) },
-    ]);
+    setUpdatedParts([...updatedParts, { part: part.id, quantity_used: Number(quantityPart) }])
 
-    setSelectedPart("");
-  };
+    setSelectedPart('')
+  }
   const removeTask = (taskIndex) => {
-    setUpdatedTasks((prevTasks) =>
-      prevTasks.filter((_, index) => index !== taskIndex)
-    );
-  };
+    setUpdatedTasks((prevTasks) => prevTasks.filter((_, index) => index !== taskIndex))
+  }
   const removePart = (partIndex) => {
-    setUpdatedParts((prevParts) =>
-      prevParts.filter((_, index) => index !== partIndex)
-    );
-  };
+    setUpdatedParts((prevParts) => prevParts.filter((_, index) => index !== partIndex))
+  }
   const getTaskById = (taskTemplateId) => {
-    const task = taskTemplate.find((item) => item.id === taskTemplateId);
-    if (!task) return;
-    return task;
-  };
+    const task = taskTemplate.find((item) => item.id === taskTemplateId)
+    if (!task) return
+    return task
+  }
   const getPartById = (partId) => {
-    const part = inventory.find((item) => item.id === partId);
-    if (!part) return;
-    return part;
-  };
+    const part = inventory.find((item) => item.id === partId)
+    if (!part) return
+    return part
+  }
 
   const handleCreateSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!reportData.vehicle) {
-      Toast.fire("Error", "Please select a vehicle.", "error");
-      return;
+      Toast.fire('Error', 'Please select a vehicle.', 'error')
+      return
     }
 
     try {
-      const newReport = await createReportWithAlert(reportData);
+      const newReport = await createReportWithAlert(reportData)
       if (newReport && updatedTasks.length > 0) {
         try {
           await Promise.all(
-            updatedTasks.map((task) =>
-              createTask({ ...task, report: newReport.id })
-            )
-          );
+            updatedTasks.map((task) => createTask({ ...task, report: newReport.id })),
+          )
         } catch (error) {
-          console.error("Error creating tasks:", error);
+          console.error('Error creating tasks:', error)
         } finally {
-          setUpdatedTasks([]);
+          setUpdatedTasks([])
         }
       }
       if (newReport && updatedParts.length > 0) {
@@ -180,75 +170,68 @@ const ReportModal = () => {
               createPart({
                 ...part,
                 report: newReport.id,
-              })
-            )
-          );
+              }),
+            ),
+          )
         } catch (error) {
-          console.error("Error creating parts:", error);
+          console.error('Error creating parts:', error)
         } finally {
-          setUpdatedParts([]);
+          setUpdatedParts([])
         }
       }
-      closeModals();
+      closeModals()
     } catch (error) {
-      console.error("Error creating report:", error);
-      Toast.fire("Error", "Something went wrong.", "error");
+      console.error('Error creating report:', error)
+      Toast.fire('Error', 'Something went wrong.', 'error')
     }
-  };
+  }
 
   const handleEditSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!reportData.vehicle) {
-      Toast.fire("Error", "Please select a vehicle.", "error");
-      return;
+      Toast.fire('Error', 'Please select a vehicle.', 'error')
+      return
     }
 
     try {
-      const updatedReport = await updateReportWithAlert(
-        modalState.selectedItem.id,
-        reportData
-      );
+      const updatedReport = await updateReportWithAlert(modalState.selectedItem.id, reportData)
 
-      if (!updatedReport) return;
+      if (!updatedReport) return
 
       // Handle tasks
       try {
         // Find new tasks that are in updatedTasks but not in tasks
         const newTasks = updatedTasks.filter(
-          (updatedTask) => !tasks.some((task) => task.id === updatedTask.id)
-        );
+          (updatedTask) => !tasks.some((task) => task.id === updatedTask.id),
+        )
 
         // Find deleted tasks that are in tasks but not in updatedTasks
         const deletedTasks = tasks.filter(
-          (task) =>
-            !updatedTasks.some((updatedTask) => updatedTask.id === task.id)
-        );
+          (task) => !updatedTasks.some((updatedTask) => updatedTask.id === task.id),
+        )
         // Handle new tasks and deleted tasks
         if (newTasks.length > 0) {
           await Promise.all(
-            newTasks.map((task) =>
-              createTask({ ...task, report: updatedReport.id })
-            )
-          );
+            newTasks.map((task) => createTask({ ...task, report: updatedReport.id })),
+          )
         }
         if (deletedTasks.length > 0) {
-          await Promise.all(deletedTasks.map((task) => deleteTask(task.id)));
+          await Promise.all(deletedTasks.map((task) => deleteTask(task.id)))
         }
       } catch (error) {
-        console.error("Error updating tasks:", error);
+        console.error('Error updating tasks:', error)
       }
 
       // Handle Parts
       try {
         // Find new parts that are in updatedParts but not in parts
         const newParts = updatedParts.filter(
-          (updatedPart) => !parts.some((part) => part.id === updatedPart.id)
-        );
+          (updatedPart) => !parts.some((part) => part.id === updatedPart.id),
+        )
         // Find deleted parts that are in parts but not in updatedParts
         const deletedParts = parts.filter(
-          (part) =>
-            !updatedParts.some((updatedPart) => updatedPart.id === part.id)
-        );
+          (part) => !updatedParts.some((updatedPart) => updatedPart.id === part.id),
+        )
         // Handle new parts and deleted parts
         if (newParts.length > 0) {
           await Promise.all(
@@ -256,69 +239,67 @@ const ReportModal = () => {
               createPart({
                 ...part,
                 report: updatedReport.id,
-              })
-            )
-          );
+              }),
+            ),
+          )
         }
         if (deletedParts.length > 0) {
-          await Promise.all(deletedParts.map((part) => deletePart(part.id)));
+          await Promise.all(deletedParts.map((part) => deletePart(part.id)))
         }
       } catch (error) {
-        console.error("Error updating parts:", error);
+        console.error('Error updating parts:', error)
       }
     } catch (error) {
-      console.error("Error updating report:", error);
-      Toast.fire("Error", "Something went wrong.", "error");
+      console.error('Error updating report:', error)
+      Toast.fire('Error', 'Something went wrong.', 'error')
     }
-    closeModals();
-  };
+    closeModals()
+  }
 
   useEffect(() => {
     if (tasks) {
-      setUpdatedTasks(tasks);
+      setUpdatedTasks(tasks)
     }
-  }, [tasks]);
+  }, [tasks])
 
   useEffect(() => {
     if (parts) {
-      setUpdatedParts(parts);
+      setUpdatedParts(parts)
     }
-  }, [parts]);
+  }, [parts])
 
   // Live validation
 
   useEffect(() => {
     setErrors((prevErrors) => ({
       ...prevErrors,
-      vehicle: reportData.vehicle ? "" : "This field is required.",
-    }));
-  }, [reportData.vehicle]);
+      vehicle: reportData.vehicle ? '' : 'This field is required.',
+    }))
+  }, [reportData.vehicle])
 
   useEffect(() => {
     const taskError = !updatedTasks.length
-      ? "At least one task is required."
-      : isValidQuantityInStock(quantityPart.toString());
+      ? 'At least one task is required.'
+      : isValidQuantityInStock(quantityPart.toString())
     setErrors((prevErrors) =>
-      prevErrors.tasks !== taskError
-        ? { ...prevErrors, tasks: taskError }
-        : prevErrors
-    );
-  }, [updatedTasks]);
+      prevErrors.tasks !== taskError ? { ...prevErrors, tasks: taskError } : prevErrors,
+    )
+  }, [updatedTasks, quantityPart])
 
   useEffect(() => {
     const quantityError =
       quantityPart === null ||
       quantityPart === undefined ||
-      quantityPart.toString().trim() === "" ||
-      quantityPart === "0"
-        ? "The quantity is required to add a part."
-        : isValidQuantityInStock(quantityPart.toString());
+      quantityPart.toString().trim() === '' ||
+      quantityPart === '0'
+        ? 'The quantity is required to add a part.'
+        : isValidQuantityInStock(quantityPart.toString())
     setErrors((prevErrors) =>
       prevErrors.part_quantity !== quantityError
         ? { ...prevErrors, part_quantity: quantityError }
-        : prevErrors
-    );
-  }, [quantityPart]);
+        : prevErrors,
+    )
+  }, [quantityPart])
 
   const isFormValid = useMemo(
     () =>
@@ -328,8 +309,8 @@ const ReportModal = () => {
       reportData.vehicle &&
       reportData.status &&
       updatedTasks,
-    [errors, reportData, updatedTasks]
-  );
+    [errors, reportData, updatedTasks],
+  )
 
   return (
     <div className="modal-container">
@@ -342,16 +323,14 @@ const ReportModal = () => {
         />
         <form
           className="modal-form"
-          onSubmit={
-            modalState.selectedItem ? handleEditSubmit : handleCreateSubmit
-          }
+          onSubmit={modalState.selectedItem ? handleEditSubmit : handleCreateSubmit}
         >
           <div className="report-form">
             <fieldset>
               <label>
                 <span>Vehicle:</span>
                 <select
-                  className={errors.vehicle ? "invalid" : "valid"}
+                  className={errors.vehicle ? 'invalid' : 'valid'}
                   name="vehicle"
                   value={reportData.vehicle}
                   onChange={handleReportChange}
@@ -365,15 +344,13 @@ const ReportModal = () => {
                     </option>
                   ))}
                 </select>
-                <p className="error-text">
-                  {errors.vehicle && <>{errors.vehicle}</>}
-                </p>
+                <p className="error-text">{errors.vehicle && <>{errors.vehicle}</>}</p>
               </label>
 
               <label>
                 <span>Status:</span>
                 <select
-                  className={errors.status ? "invalid" : "valid"}
+                  className={errors.status ? 'invalid' : 'valid'}
                   name="status"
                   value={reportData.status}
                   onChange={handleReportChange}
@@ -384,9 +361,7 @@ const ReportModal = () => {
                   <option value="in_progress">In Progress</option>
                   <option value="completed">Completed</option>
                 </select>
-                <p className="error-text">
-                  {errors.status && <>{errors.status}</>}
-                </p>
+                <p className="error-text">{errors.status && <>{errors.status}</>}</p>
               </label>
 
               <label>
@@ -407,7 +382,7 @@ const ReportModal = () => {
                 <span>Repair Tasks:</span>
                 <div className="repair-section">
                   <select
-                    className={errors.tasks ? "invalid" : "valid"}
+                    className={errors.tasks ? 'invalid' : 'valid'}
                     value={selectedTask}
                     onChange={handleTaskChange}
                     disabled={modalState.readonly}
@@ -434,12 +409,12 @@ const ReportModal = () => {
                 ) : updatedTasks && updatedTasks?.length > 0 ? (
                   <ul className="repair-list">
                     {updatedTasks?.map((task, index) => {
-                      const taskData = getTaskById(task.task_template);
+                      const taskData = getTaskById(task.task_template)
                       return (
                         <li key={index}>
                           <p>
-                            {taskData ? taskData.name : "Unknown Task"} - €
-                            {taskData ? taskData.price : "N/A"}
+                            {taskData ? taskData.name : 'Unknown Task'} - €
+                            {taskData ? taskData.price : 'N/A'}
                           </p>
                           <button
                             type="button"
@@ -449,15 +424,13 @@ const ReportModal = () => {
                             <SvgTrash />
                           </button>
                         </li>
-                      );
+                      )
                     })}
                   </ul>
                 ) : (
                   <span>No tasks available</span>
                 )}
-                <p className="error-text">
-                  {errors.tasks && <>{errors.tasks}</>}
-                </p>
+                <p className="error-text">{errors.tasks && <>{errors.tasks}</>}</p>
               </div>
               {/* Parts select */}
               <div>
@@ -496,13 +469,13 @@ const ReportModal = () => {
                 ) : updatedParts && updatedParts?.length > 0 ? (
                   <ul className="repair-list">
                     {updatedParts?.map((part, index) => {
-                      const partData = getPartById(part.part);
+                      const partData = getPartById(part.part)
                       return (
                         <li key={index}>
                           <p>
                             {part.quantity_used}x&nbsp;
-                            {partData ? partData.name : "Unknown Part"} - €
-                            {partData ? partData.unit_price : "N/A"}
+                            {partData ? partData.name : 'Unknown Part'} - €
+                            {partData ? partData.unit_price : 'N/A'}
                           </p>
                           <button
                             title="Remove Part"
@@ -513,15 +486,13 @@ const ReportModal = () => {
                             <SvgTrash />
                           </button>
                         </li>
-                      );
+                      )
                     })}
                   </ul>
                 ) : (
                   <span>No parts available</span>
                 )}
-                <p className="error-text">
-                  {errors.part_quantity && <>{errors.part_quantity}</>}
-                </p>
+                <p className="error-text">{errors.part_quantity && <>{errors.part_quantity}</>}</p>
               </div>
             </fieldset>
           </div>
@@ -535,9 +506,7 @@ const ReportModal = () => {
                 ) : (
                   <button
                     type="submit"
-                    disabled={
-                      modalState.readonly || !isFormValid || loadingReports
-                    }
+                    disabled={modalState.readonly || !isFormValid || loadingReports}
                   >
                     Update Report
                   </button>
@@ -548,7 +517,7 @@ const ReportModal = () => {
                     openDeleteModal(
                       modalState.selectedItem,
                       modalState.itemType,
-                      () => deleteReportWithAlert
+                      () => deleteReportWithAlert,
                     )
                   }
                 >
@@ -567,7 +536,7 @@ const ReportModal = () => {
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ReportModal;
+export default ReportModal

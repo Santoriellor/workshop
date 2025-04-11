@@ -1,43 +1,44 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react'
 // Utils
-import getFilterOptions from "../utils/filterBarFilterOptions";
+import getFilterOptions from '../utils/filterBarFilterOptions'
 // Components
-import Page from "../components/Page";
-import OwnerCard from "../components/owners/OwnerCard";
-import OwnerModal from "../components/owners/OwnerModal";
+import Page from '../components/Page'
+import OwnerCard from '../components/owners/OwnerCard'
+import OwnerModal from '../components/owners/OwnerModal'
 // Contexts
-import { useOwnerContext } from "../contexts/OwnerContext";
-import { useGlobalContext } from "../contexts/GlobalContext";
+import { useOwnerContext } from '../contexts/OwnerContext'
+import { useGlobalContext } from '../contexts/GlobalContext'
 // Styles
-import "../styles/Owner.css";
+import '../styles/Owner.css'
 
 const Owner = () => {
-  const { owners, loadingOwners } = useOwnerContext();
-  const { setModalState } = useGlobalContext();
+  const { owners, loadingOwners } = useOwnerContext()
+  const { setModalState } = useGlobalContext()
 
   const [filters, setFilters] = useState({
-    name: "",
-    email: "",
-  });
+    name: '',
+    email: '',
+  })
 
   useEffect(() => {
     setModalState((prev) => ({
       ...prev,
       modalComponent: OwnerModal,
-    }));
-  }, []);
+    }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <Page
       itemType="Owner"
-      filters={{ ...filters, type: "owner" }}
+      filters={{ ...filters, type: 'owner' }}
       setFilters={setFilters}
       filterOptions={getFilterOptions(filters).owners}
       items={owners}
       CardComponent={OwnerCard}
       loadingItem={loadingOwners}
     />
-  );
-};
+  )
+}
 
-export default Owner;
+export default Owner

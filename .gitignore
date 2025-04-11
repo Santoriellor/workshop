@@ -1,13 +1,13 @@
 # Secrets
-/secrets/
-secrets/
+# /secrets/
+# secrets/
 
 # Python & Django
 __pycache__/
 *.py[cod]
 *.sqlite3
 *.log
-.env
+# .env
 env/
 *.bak
 

@@ -1,36 +1,35 @@
-import { useLocation } from "react-router-dom";
+import { useLocation } from 'react-router-dom'
 // Components
-import VehicleModal from "./VehicleModal";
+import VehicleModal from './VehicleModal'
 // Contexts
-import { useOwnerContext } from "../../contexts/OwnerContext";
-import { useVehicleContext } from "../../contexts/VehicleContext";
-import { useReportContext } from "../../contexts/ReportContext";
-import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useOwnerContext } from '../../contexts/OwnerContext'
+import { useVehicleContext } from '../../contexts/VehicleContext'
+import { useReportContext } from '../../contexts/ReportContext'
+import { useGlobalContext } from '../../contexts/GlobalContext'
 
 const VehicleCard = ({ item }) => {
-  const cardItemType = "Vehicle";
+  const cardItemType = 'Vehicle'
 
-  const location = useLocation();
-  const isPathVehicles = location.pathname.includes("vehicle");
+  const location = useLocation()
+  const isPathVehicles = location.pathname.includes('vehicle')
 
-  const { getOwnerNameByVehicleId } = useOwnerContext();
-  const { deleteVehicleWithAlert, getVehicleInfoByVehicleId } =
-    useVehicleContext();
-  const { openModal, openDeleteModal } = useGlobalContext();
-  const { reports } = useReportContext();
+  const { getOwnerNameByVehicleId } = useOwnerContext()
+  const { deleteVehicleWithAlert, getVehicleInfoByVehicleId } = useVehicleContext()
+  const { openModal, openDeleteModal } = useGlobalContext()
+  const { reports } = useReportContext()
 
   // Return the last time a vehicle was used in a report
   const getLastUsedDate = (vehicleId) => {
     const lastReport = reports
       .filter((report) => report.vehicle === vehicleId)
-      .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
-    return lastReport ? lastReport.formatted_created_at : "N/A";
-  };
+      .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
+    return lastReport ? lastReport.formatted_created_at : 'N/A'
+  }
 
   // Return a truncated text
   const truncateText = (text, maxLength = 20) => {
-    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
-  };
+    return text.length > maxLength ? text.slice(0, maxLength) + '...' : text
+  }
 
   return (
     <div
@@ -39,8 +38,8 @@ const VehicleCard = ({ item }) => {
       title="View Vehicle"
       onClick={(e) => {
         // Prevent triggering view mode if clicking on an action button
-        if (!e.target.closest(".actions")) {
-          openModal(VehicleModal, item, cardItemType, true);
+        if (!e.target.closest('.actions')) {
+          openModal(VehicleModal, item, cardItemType, true)
         }
       }}
     >
@@ -70,22 +69,14 @@ const VehicleCard = ({ item }) => {
               <button
                 title="Edit vehicle"
                 className="btn btn-edit"
-                onClick={() =>
-                  openModal(VehicleModal, item, cardItemType, false)
-                }
+                onClick={() => openModal(VehicleModal, item, cardItemType, false)}
               >
                 Edit
               </button>
               <button
                 title="Delete vehicle"
                 className="btn btn-delete"
-                onClick={() =>
-                  openDeleteModal(
-                    item,
-                    cardItemType,
-                    () => deleteVehicleWithAlert
-                  )
-                }
+                onClick={() => openDeleteModal(item, cardItemType, () => deleteVehicleWithAlert)}
               >
                 Delete
               </button>
@@ -94,6 +85,6 @@ const VehicleCard = ({ item }) => {
         </section>
       </div>
     </div>
-  );
-};
-export default VehicleCard;
+  )
+}
+export default VehicleCard

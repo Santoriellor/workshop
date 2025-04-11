@@ -1,32 +1,32 @@
-import { useLocation } from "react-router-dom";
+import { useLocation } from 'react-router-dom'
 // Components
-import ReportModal from "./ReportModal";
-import SvgStatus from "../svgGenerics/SvgStatus";
+import ReportModal from './ReportModal'
+import SvgStatus from '../svgGenerics/SvgStatus'
 // Contexts
-import { useUserContext } from "../../contexts/UserContext";
-import { useOwnerContext } from "../../contexts/OwnerContext";
-import { useVehicleContext } from "../../contexts/VehicleContext";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import { useReportContext } from "../../contexts/ReportContext";
+import { useUserContext } from '../../contexts/UserContext'
+import { useOwnerContext } from '../../contexts/OwnerContext'
+import { useVehicleContext } from '../../contexts/VehicleContext'
+import { useGlobalContext } from '../../contexts/GlobalContext'
+import { useReportContext } from '../../contexts/ReportContext'
 
 const ReportCard = ({ item, handleExportClick }) => {
-  const cardItemType = "Report";
+  const cardItemType = 'Report'
 
-  const location = useLocation();
-  const isPathReports = location.pathname.includes("report");
-  const isPathDashboard = location.pathname.includes("dashboard");
-  const isPathInvoices = location.pathname.includes("invoices");
+  const location = useLocation()
+  const isPathReports = location.pathname.includes('report')
+  const isPathDashboard = location.pathname.includes('dashboard')
+  const isPathInvoices = location.pathname.includes('invoices')
 
-  const { deleteReportWithAlert } = useReportContext();
-  const { openModal, openDeleteModal } = useGlobalContext();
-  const { getUserNameById } = useUserContext();
-  const { getOwnerNameByVehicleId } = useOwnerContext();
-  const { getVehicleInfoByVehicleId } = useVehicleContext();
+  const { deleteReportWithAlert } = useReportContext()
+  const { openModal, openDeleteModal } = useGlobalContext()
+  const { getUserNameById } = useUserContext()
+  const { getOwnerNameByVehicleId } = useOwnerContext()
+  const { getVehicleInfoByVehicleId } = useVehicleContext()
 
   // Return a truncated text
   const truncateText = (text, maxLength = 25) => {
-    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
-  };
+    return text.length > maxLength ? text.slice(0, maxLength) + '...' : text
+  }
 
   return (
     <div
@@ -35,8 +35,8 @@ const ReportCard = ({ item, handleExportClick }) => {
       title="View Report"
       onClick={(e) => {
         // Prevent triggering view mode if clicking on an action button
-        if (!e.target.closest(".actions")) {
-          openModal(ReportModal, item, cardItemType, true);
+        if (!e.target.closest('.actions')) {
+          openModal(ReportModal, item, cardItemType, true)
         }
       }}
     >
@@ -48,9 +48,7 @@ const ReportCard = ({ item, handleExportClick }) => {
 
       <div className="card-content">
         <section>
-          <header>
-            {truncateText(getVehicleInfoByVehicleId(item.vehicle))}
-          </header>
+          <header>{truncateText(getVehicleInfoByVehicleId(item.vehicle))}</header>
           <div>
             {(isPathReports || isPathInvoices || isPathDashboard) && (
               <>
@@ -71,11 +69,11 @@ const ReportCard = ({ item, handleExportClick }) => {
                   <span
                     style={{
                       color:
-                        item.status === "pending"
-                          ? "red"
-                          : item.status === "in_progress"
-                          ? "orange"
-                          : "green",
+                        item.status === 'pending'
+                          ? 'red'
+                          : item.status === 'in_progress'
+                            ? 'orange'
+                            : 'green',
                     }}
                   >
                     {item.status_display}
@@ -95,28 +93,20 @@ const ReportCard = ({ item, handleExportClick }) => {
               <button
                 title="Edit Report"
                 className="btn btn-edit"
-                onClick={() =>
-                  openModal(ReportModal, item, cardItemType, false)
-                }
+                onClick={() => openModal(ReportModal, item, cardItemType, false)}
               >
                 Edit
               </button>
               <button
                 title="Delete Report"
                 className="btn btn-delete"
-                onClick={() =>
-                  openDeleteModal(
-                    item,
-                    cardItemType,
-                    () => deleteReportWithAlert
-                  )
-                }
+                onClick={() => openDeleteModal(item, cardItemType, () => deleteReportWithAlert)}
               >
                 Delete
               </button>
             </>
           )}
-          {isPathInvoices && item.status === "completed" && (
+          {isPathInvoices && item.status === 'completed' && (
             <>
               <button
                 title="Export Report"
@@ -130,6 +120,6 @@ const ReportCard = ({ item, handleExportClick }) => {
         </section>
       </div>
     </div>
-  );
-};
-export default ReportCard;
+  )
+}
+export default ReportCard

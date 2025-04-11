@@ -1,10 +1,10 @@
 // Contexts
-import { useInventoryContext } from "../../contexts/InventoryContext";
+import { useInventoryContext } from '../../contexts/InventoryContext'
 // Components
-import InventoryCard from "./InventoryCard";
+import InventoryCard from './InventoryCard'
 
 const LowestInventory = () => {
-  const { inventory, loadingInventory } = useInventoryContext();
+  const { inventory, loadingInventory } = useInventoryContext()
 
   return (
     <>
@@ -20,6 +20,6 @@ const LowestInventory = () => {
         )}
       </div>
     </>
-  );
-};
-export default LowestInventory;
+  )
+}
+export default LowestInventory
