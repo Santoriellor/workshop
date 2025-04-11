@@ -52,7 +52,7 @@ const Invoices = () => {
     )
 
     return reportsAfterFilter
-  }, [reports, filters])
+  }, [reports, filters, vehicles, getVehicleInfoByVehicleId])
 
   // Filter invoices based on filters
   const filteredInvoices = useMemo(() => {
