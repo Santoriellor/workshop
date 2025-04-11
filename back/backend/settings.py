@@ -54,7 +54,7 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG') == 'True'
+DEBUG = os.getenv('DEBUG', 'True')
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
@@ -132,7 +132,7 @@ DATABASES = {
         'HOST': MYSQL_HOST,
         'PORT': os.getenv('MYSQL_PORT'),
         'TEST': {
-            'NAME': 'test_workshop_db',  # Use your production DB for testing
+            'NAME': f"test_{os.getenv('MYSQL_DATABASE')}",  # Use your production DB for testing
         },
     }
 }

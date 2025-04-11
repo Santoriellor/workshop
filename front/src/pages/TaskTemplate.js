@@ -1,34 +1,34 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react'
 // Utils
-import getFilterOptions from "../utils/filterBarFilterOptions";
+import getFilterOptions from '../utils/filterBarFilterOptions'
 // Components
-import Page from "../components/Page";
-import TaskTemplateCard from "../components/task-templates/TaskTemplateCard";
-import TaskTemplateModal from "../components/task-templates/TaskTemplateModal";
+import Page from '../components/Page'
+import TaskTemplateCard from '../components/task-templates/TaskTemplateCard'
+import TaskTemplateModal from '../components/task-templates/TaskTemplateModal'
 // Contexts
-import { useInventoryContext } from "../contexts/InventoryContext";
-import { useGlobalContext } from "../contexts/GlobalContext";
+import { useInventoryContext } from '../contexts/InventoryContext'
+import { useGlobalContext } from '../contexts/GlobalContext'
 
 const TaskTemplate = () => {
-  const { taskTemplate, loadingTaskTemplate, deleteTaskTemplateWithAlert } =
-    useInventoryContext();
-  const { setModalState } = useGlobalContext();
+  const { taskTemplate, loadingTaskTemplate, deleteTaskTemplateWithAlert } = useInventoryContext()
+  const { setModalState } = useGlobalContext()
 
   const [filters, setFilters] = useState({
-    search: "",
-  });
+    search: '',
+  })
 
   useEffect(() => {
     setModalState((prev) => ({
       ...prev,
       modalComponent: TaskTemplateModal,
-    }));
-  }, []);
+    }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <Page
       itemType="task"
-      filters={{ ...filters, type: "task_template" }}
+      filters={{ ...filters, type: 'task_template' }}
       setFilters={setFilters}
       filterOptions={getFilterOptions(filters).task_template}
       items={taskTemplate}
@@ -37,7 +37,7 @@ const TaskTemplate = () => {
       ModalComponent={TaskTemplateModal}
       loadingItem={loadingTaskTemplate}
     />
-  );
-};
+  )
+}
 
-export default TaskTemplate;
+export default TaskTemplate

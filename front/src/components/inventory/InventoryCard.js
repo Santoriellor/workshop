@@ -1,33 +1,33 @@
-import { useLocation } from "react-router-dom";
+import { useLocation } from 'react-router-dom'
 // Components
-import InventoryModal from "./InventoryModal";
+import InventoryModal from './InventoryModal'
 // Contexts
-import { useInventoryContext } from "../../contexts/InventoryContext";
-import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useInventoryContext } from '../../contexts/InventoryContext'
+import { useGlobalContext } from '../../contexts/GlobalContext'
 
 const InventoryCard = ({ item }) => {
-  const cardItemType = "Inventory part";
+  const cardItemType = 'Inventory part'
 
-  const location = useLocation();
-  const isPathInventory = location.pathname.includes("inventory");
+  const location = useLocation()
+  const isPathInventory = location.pathname.includes('inventory')
 
-  const { deleteInventoryPartWithAlert } = useInventoryContext();
-  const { openModal, openDeleteModal } = useGlobalContext();
+  const { deleteInventoryPartWithAlert } = useInventoryContext()
+  const { openModal, openDeleteModal } = useGlobalContext()
 
   const isLowerThan10 = (item) => {
-    if (item.quantity_in_stock < 10) return true;
-    return false;
-  };
+    if (item.quantity_in_stock < 10) return true
+    return false
+  }
 
   return (
     <div
       key={item.id}
-      className={isLowerThan10(item) ? "card low-inventory" : "card"}
+      className={isLowerThan10(item) ? 'card low-inventory' : 'card'}
       title="View inventory part"
       onClick={(e) => {
         // Prevent triggering view mode if clicking on an action button
-        if (!e.target.closest(".actions")) {
-          openModal(InventoryModal, item, cardItemType, true);
+        if (!e.target.closest('.actions')) {
+          openModal(InventoryModal, item, cardItemType, true)
         }
       }}
     >
@@ -61,9 +61,7 @@ const InventoryCard = ({ item }) => {
               <button
                 title="Edit inventory part"
                 className="btn btn-edit"
-                onClick={() =>
-                  openModal(InventoryModal, item, cardItemType, false)
-                }
+                onClick={() => openModal(InventoryModal, item, cardItemType, false)}
               >
                 Edit
               </button>
@@ -71,11 +69,7 @@ const InventoryCard = ({ item }) => {
                 title="Delete inventory part"
                 className="btn btn-delete"
                 onClick={() =>
-                  openDeleteModal(
-                    item,
-                    cardItemType,
-                    () => deleteInventoryPartWithAlert
-                  )
+                  openDeleteModal(item, cardItemType, () => deleteInventoryPartWithAlert)
                 }
               >
                 Delete
@@ -85,6 +79,6 @@ const InventoryCard = ({ item }) => {
         </section>
       </div>
     </div>
-  );
-};
-export default InventoryCard;
+  )
+}
+export default InventoryCard

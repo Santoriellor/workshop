@@ -1,113 +1,106 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from 'react'
 
 // Contexts
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import { useInventoryContext } from "../../contexts/InventoryContext";
+import { useGlobalContext } from '../../contexts/GlobalContext'
+import { useInventoryContext } from '../../contexts/InventoryContext'
 // Components
-import ModalGenericsClose from "../modalGenerics/ModalGenericsClose";
-import ModalGenericsTitle from "../modalGenerics/ModalGenericsTitle";
+import ModalGenericsClose from '../modalGenerics/ModalGenericsClose'
+import ModalGenericsTitle from '../modalGenerics/ModalGenericsTitle'
 // Utils
-import { Toast } from "../../utils/sweetalert";
-import { isTakenTaskName, isValidPrice } from "../../utils/validation";
+import { Toast } from '../../utils/sweetalert'
+import { isTakenTaskName, isValidPrice } from '../../utils/validation'
 // Styles
-import "../../styles/Modal.css";
+import '../../styles/Modal.css'
 
 const TaskTemplateModal = () => {
-  const itemType = "Task template";
   // Error messages
   const [errors, setErrors] = useState({
-    name: "This field is required.",
-    description: "This field is required.",
-    price: "This field is required.",
-  });
+    name: 'This field is required.',
+    description: 'This field is required.',
+    price: 'This field is required.',
+  })
 
-  const { modalState, openDeleteModal, closeModals, toggleReadonly } =
-    useGlobalContext();
+  const { modalState, openDeleteModal, closeModals, toggleReadonly } = useGlobalContext()
   const {
     createTaskTemplateWithAlert,
     updateTaskTemplateWithAlert,
     deleteTaskTemplateWithAlert,
     taskTemplate,
     loadingTaskTemplate,
-  } = useInventoryContext();
+  } = useInventoryContext()
 
   const [taskTemplateData, setTaskTemplateData] = useState({
-    name: modalState.selectedItem?.name || "",
-    description: modalState.selectedItem?.description || "",
-    price: modalState.selectedItem?.price || "",
-  });
+    name: modalState.selectedItem?.name || '',
+    description: modalState.selectedItem?.description || '',
+    price: modalState.selectedItem?.price || '',
+  })
 
   const handleTaskTemplateChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
 
     setTaskTemplateData({
       ...taskTemplateData,
       [name]: value,
-    });
-  };
+    })
+  }
 
   const handleCreateSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!taskTemplateData.name) {
-      Toast.fire("Error", "Please fill in a task name.", "error");
-      return;
+      Toast.fire('Error', 'Please fill in a task name.', 'error')
+      return
     }
     if (!taskTemplateData.description) {
-      Toast.fire("Error", "Please fill in a description.", "error");
-      return;
+      Toast.fire('Error', 'Please fill in a description.', 'error')
+      return
     }
     if (!taskTemplateData.price) {
-      Toast.fire("Error", "Please fill in a price.", "error");
-      return;
+      Toast.fire('Error', 'Please fill in a price.', 'error')
+      return
     }
 
     try {
-      const newTaskTemplate = await createTaskTemplateWithAlert(
-        taskTemplateData
-      );
+      const newTaskTemplate = await createTaskTemplateWithAlert(taskTemplateData)
       if (newTaskTemplate) {
         setTaskTemplateData({
-          name: "",
-          description: "",
-          price: "",
-        });
+          name: '',
+          description: '',
+          price: '',
+        })
       }
     } catch (error) {
-      console.error("Error creating task template:", error);
-      Toast.fire("Error", "Something went wrong.", "error");
+      console.error('Error creating task template:', error)
+      Toast.fire('Error', 'Something went wrong.', 'error')
     } finally {
-      closeModals();
+      closeModals()
     }
-  };
+  }
 
   const handleEditSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!taskTemplateData.name) {
-      Toast.fire("Error", "Please fill in a task name.", "error");
-      return;
+      Toast.fire('Error', 'Please fill in a task name.', 'error')
+      return
     }
     if (!taskTemplateData.description) {
-      Toast.fire("Error", "Please fill in a description.", "error");
-      return;
+      Toast.fire('Error', 'Please fill in a description.', 'error')
+      return
     }
     if (!taskTemplateData.price) {
-      Toast.fire("Error", "Please fill in a price.", "error");
-      return;
+      Toast.fire('Error', 'Please fill in a price.', 'error')
+      return
     }
 
     try {
-      await updateTaskTemplateWithAlert(
-        modalState.selectedItem.id,
-        taskTemplateData
-      );
+      await updateTaskTemplateWithAlert(modalState.selectedItem.id, taskTemplateData)
     } catch (error) {
-      console.error("Error updating task template:", error);
-      Toast.fire("Error", "Something went wrong.", "error");
+      console.error('Error updating task template:', error)
+      Toast.fire('Error', 'Something went wrong.', 'error')
     } finally {
-      setTaskTemplateData(null);
-      closeModals();
+      setTaskTemplateData(null)
+      closeModals()
     }
-  };
+  }
 
   // Live validation
   const existingTaskNames = taskTemplate
@@ -115,41 +108,37 @@ const TaskTemplateModal = () => {
     .filter(
       (name) =>
         !modalState.selectedItem ||
-        name.toLowerCase() !== modalState.selectedItem.name.toLowerCase()
-    );
+        name.toLowerCase() !== modalState.selectedItem.name.toLowerCase(),
+    )
 
   useEffect(() => {
     const taskTemplateError =
-      taskTemplateData.name.trim() === ""
-        ? "This field is required."
-        : isTakenTaskName(taskTemplateData.name, existingTaskNames);
+      taskTemplateData.name.trim() === ''
+        ? 'This field is required.'
+        : isTakenTaskName(taskTemplateData.name, existingTaskNames)
     setErrors((prevErrors) =>
       prevErrors.name !== taskTemplateError
         ? { ...prevErrors, name: taskTemplateError }
-        : prevErrors
-    );
-  }, [taskTemplateData.name]);
+        : prevErrors,
+    )
+  }, [taskTemplateData.name, existingTaskNames])
 
   useEffect(() => {
     setErrors((prevErrors) => ({
       ...prevErrors,
-      description: taskTemplateData.description
-        ? ""
-        : "This field is required.",
-    }));
-  }, [taskTemplateData.description]);
+      description: taskTemplateData.description ? '' : 'This field is required.',
+    }))
+  }, [taskTemplateData.description])
 
   useEffect(() => {
     const priceError =
-      taskTemplateData.price.trim() === ""
-        ? "This field is required."
-        : isValidPrice(taskTemplateData.price);
+      taskTemplateData.price.trim() === ''
+        ? 'This field is required.'
+        : isValidPrice(taskTemplateData.price)
     setErrors((prevErrors) =>
-      prevErrors.price !== priceError
-        ? { ...prevErrors, price: priceError }
-        : prevErrors
-    );
-  }, [taskTemplateData.price]);
+      prevErrors.price !== priceError ? { ...prevErrors, price: priceError } : prevErrors,
+    )
+  }, [taskTemplateData.price])
 
   const isFormValid = useMemo(
     () =>
@@ -159,8 +148,8 @@ const TaskTemplateModal = () => {
       taskTemplateData.name &&
       taskTemplateData.description &&
       taskTemplateData.price,
-    [errors, taskTemplateData]
-  );
+    [errors, taskTemplateData],
+  )
 
   return (
     <div className="modal-container">
@@ -173,15 +162,13 @@ const TaskTemplateModal = () => {
         />
         <form
           className="modal-form"
-          onSubmit={
-            modalState.selectedItem ? handleEditSubmit : handleCreateSubmit
-          }
+          onSubmit={modalState.selectedItem ? handleEditSubmit : handleCreateSubmit}
         >
           <fieldset>
             <label>
               <span>Name:</span>
               <input
-                className={errors.name ? "invalid" : "valid"}
+                className={errors.name ? 'invalid' : 'valid'}
                 type="text"
                 name="name"
                 value={taskTemplateData.name}
@@ -196,7 +183,7 @@ const TaskTemplateModal = () => {
             <label>
               <span>Description:</span>
               <input
-                className={errors.description ? "invalid" : "valid"}
+                className={errors.description ? 'invalid' : 'valid'}
                 type="textarea"
                 name="description"
                 value={taskTemplateData.description}
@@ -205,15 +192,13 @@ const TaskTemplateModal = () => {
                 required
                 disabled={modalState.readonly}
               />
-              <p className="error-text">
-                {errors.description && <>{errors.description}</>}
-              </p>
+              <p className="error-text">{errors.description && <>{errors.description}</>}</p>
             </label>
 
             <label>
               <span>Price:</span>
               <input
-                className={errors.price ? "invalid" : "valid"}
+                className={errors.price ? 'invalid' : 'valid'}
                 type="text"
                 name="price"
                 value={taskTemplateData.price}
@@ -221,9 +206,7 @@ const TaskTemplateModal = () => {
                 placeholder="Enter price"
                 disabled={modalState.readonly}
               />
-              <p className="error-text">
-                {errors.price && <>{errors.price}</>}
-              </p>
+              <p className="error-text">{errors.price && <>{errors.price}</>}</p>
             </label>
           </fieldset>
           <div className="button-group">
@@ -236,9 +219,7 @@ const TaskTemplateModal = () => {
                 ) : (
                   <button
                     type="submit"
-                    disabled={
-                      modalState.readonly || !isFormValid || loadingTaskTemplate
-                    }
+                    disabled={modalState.readonly || !isFormValid || loadingTaskTemplate}
                   >
                     Update Task
                   </button>
@@ -249,7 +230,7 @@ const TaskTemplateModal = () => {
                     openDeleteModal(
                       modalState.selectedItem,
                       modalState.itemType,
-                      () => deleteTaskTemplateWithAlert
+                      () => deleteTaskTemplateWithAlert,
                     )
                   }
                 >
@@ -259,9 +240,7 @@ const TaskTemplateModal = () => {
             ) : (
               <button
                 type="submit"
-                disabled={
-                  modalState.readonly || !isFormValid || loadingTaskTemplate
-                }
+                disabled={modalState.readonly || !isFormValid || loadingTaskTemplate}
               >
                 Create Task
               </button>
@@ -270,6 +249,6 @@ const TaskTemplateModal = () => {
         </form>
       </div>
     </div>
-  );
-};
-export default TaskTemplateModal;
+  )
+}
+export default TaskTemplateModal

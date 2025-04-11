@@ -1,12 +1,12 @@
-import { useLocation } from "react-router-dom";
+import { useLocation } from 'react-router-dom'
 
 const InvoiceCard = ({ invoice }) => {
-  const location = useLocation();
-  const isPathDashboard = location.pathname.includes("invoices");
+  const location = useLocation()
+  const isPathDashboard = location.pathname.includes('invoices')
 
   return (
     <a
-      href={invoice.pdf ? invoice.pdf : "#"}
+      href={invoice.pdf ? invoice.pdf : '#'}
       target="_blank"
       rel="noopener noreferrer"
       className="card-invoice"
@@ -14,20 +14,14 @@ const InvoiceCard = ({ invoice }) => {
     >
       <section key={invoice.id}>
         <header>{invoice.invoice_number}</header>
-        <div
-          className={isPathDashboard ? "card-invoice-col" : "card-invoice-row"}
-        >
+        <div className={isPathDashboard ? 'card-invoice-col' : 'card-invoice-row'}>
           <p>Issued: {invoice.formatted_issued_date}</p>
           <p>Total Cost: {invoice.total_cost} CHF</p>
 
-          <p>
-            {invoice.pdf
-              ? `Invoice number: ${invoice.invoice_number}`
-              : "No file found"}
-          </p>
+          <p>{invoice.pdf ? `Invoice number: ${invoice.invoice_number}` : 'No file found'}</p>
         </div>
       </section>
     </a>
-  );
-};
-export default InvoiceCard;
+  )
+}
+export default InvoiceCard

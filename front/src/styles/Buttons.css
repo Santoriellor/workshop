@@ -9,7 +9,9 @@
   border-radius: 8px;
   cursor: pointer;
   margin-top: 5px;
-  transition: filter 0.3s ease-in-out, background 0.3s ease-in-out;
+  transition:
+    filter 0.3s ease-in-out,
+    background 0.3s ease-in-out;
 }
 .btn:hover {
   background: #3b8c99;
@@ -41,7 +43,9 @@
   position: fixed;
   bottom: 20px;
   left: 20px;
-  transition: filter 0.3s ease-in-out, background 0.3s ease-in-out;
+  transition:
+    filter 0.3s ease-in-out,
+    background 0.3s ease-in-out;
 }
 
 .btn-float:hover {

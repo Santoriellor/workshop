@@ -1,10 +1,10 @@
 // Contexts
-import { useReportContext } from "../../contexts/ReportContext";
+import { useReportContext } from '../../contexts/ReportContext'
 // Components
-import ReportCard from "./ReportCard";
+import ReportCard from './ReportCard'
 
 const LatestReports = () => {
-  const { reports, loadingReports } = useReportContext();
+  const { reports, loadingReports } = useReportContext()
 
   return (
     <>
@@ -20,6 +20,6 @@ const LatestReports = () => {
         )}
       </div>
     </>
-  );
-};
-export default LatestReports;
+  )
+}
+export default LatestReports

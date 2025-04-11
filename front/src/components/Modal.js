@@ -1,5 +1,5 @@
-import React from "react";
-import "../styles/Modal.css";
+import React from 'react'
+import '../styles/Modal.css'
 
 const Modal = ({ children, onClose }) => {
   return (
@@ -22,7 +22,7 @@ const Modal = ({ children, onClose }) => {
         {children}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Modal;
+export default Modal

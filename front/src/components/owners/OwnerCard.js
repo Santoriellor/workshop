@@ -1,14 +1,14 @@
 // Components
-import OwnerModal from "./OwnerModal";
+import OwnerModal from './OwnerModal'
 // Contexts
-import { useOwnerContext } from "../../contexts/OwnerContext";
-import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useOwnerContext } from '../../contexts/OwnerContext'
+import { useGlobalContext } from '../../contexts/GlobalContext'
 
 const OwnerCard = ({ item }) => {
-  const cardItemType = "Owner";
+  const cardItemType = 'Owner'
 
-  const { deleteOwnerWithAlert } = useOwnerContext();
-  const { openModal, openDeleteModal } = useGlobalContext();
+  const { deleteOwnerWithAlert } = useOwnerContext()
+  const { openModal, openDeleteModal } = useGlobalContext()
 
   return (
     <div
@@ -17,8 +17,8 @@ const OwnerCard = ({ item }) => {
       title="View Owner"
       onClick={(e) => {
         // Prevent triggering view mode if clicking on an action button
-        if (!e.target.closest(".actions")) {
-          openModal(OwnerModal, item, cardItemType, true);
+        if (!e.target.closest('.actions')) {
+          openModal(OwnerModal, item, cardItemType, true)
         }
       }}
     >
@@ -49,15 +49,13 @@ const OwnerCard = ({ item }) => {
           <button
             title="Delete owner"
             className="btn btn-delete"
-            onClick={() =>
-              openDeleteModal(item, cardItemType, () => deleteOwnerWithAlert)
-            }
+            onClick={() => openDeleteModal(item, cardItemType, () => deleteOwnerWithAlert)}
           >
             Delete
           </button>
         </section>
       </div>
     </div>
-  );
-};
-export default OwnerCard;
+  )
+}
+export default OwnerCard

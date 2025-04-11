@@ -1,10 +1,10 @@
 // Contexts
-import { useInvoiceContext } from "../../contexts/InvoiceContext";
+import { useInvoiceContext } from '../../contexts/InvoiceContext'
 // Components
-import InvoiceCard from "./InvoiceCard";
+import InvoiceCard from './InvoiceCard'
 
 const LatestInvoices = () => {
-  const { invoices, loadingInvoices } = useInvoiceContext();
+  const { invoices, loadingInvoices } = useInvoiceContext()
 
   return (
     <>
@@ -14,14 +14,12 @@ const LatestInvoices = () => {
         {loadingInvoices ? (
           <p>Loading invoices...</p>
         ) : invoices.length > 0 ? (
-          invoices.map((invoice) => (
-            <InvoiceCard key={invoice.id} invoice={invoice} />
-          ))
+          invoices.map((invoice) => <InvoiceCard key={invoice.id} invoice={invoice} />)
         ) : (
           <p>No invoices found.</p>
         )}
       </div>
     </>
-  );
-};
-export default LatestInvoices;
+  )
+}
+export default LatestInvoices

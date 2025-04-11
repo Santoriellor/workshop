@@ -1,15 +1,15 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React, { createContext, useContext, useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 // Hooks
-import useCRUD from "../hooks/useCRUD";
+import useCRUD from '../hooks/useCRUD'
 // Utils
-import withSuccessAlert from "../utils/successAlert";
+import withSuccessAlert from '../utils/successAlert'
 
-const VehicleContext = createContext();
+const VehicleContext = createContext()
 
 export const VehicleProvider = ({ children }) => {
-  const location = useLocation();
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const location = useLocation()
+  const [selectedVehicle, setSelectedVehicle] = useState(null)
 
   const {
     data: vehicles,
@@ -19,37 +19,28 @@ export const VehicleProvider = ({ children }) => {
     deleteItem: deleteVehicle,
     loading: loadingVehicles,
     error,
-  } = useCRUD("vehicles");
+  } = useCRUD('vehicles')
 
   // Create a vehicle with success alert
-  const createVehicleWithAlert = withSuccessAlert(
-    createVehicle,
-    "Vehicle created successfully!"
-  );
+  const createVehicleWithAlert = withSuccessAlert(createVehicle, 'Vehicle created successfully!')
   // Update a vehicle with success alert
-  const updateVehicleWithAlert = withSuccessAlert(
-    updateVehicle,
-    "Vehicle updated successfully!"
-  );
+  const updateVehicleWithAlert = withSuccessAlert(updateVehicle, 'Vehicle updated successfully!')
   // Delete a vehicle with success alert
-  const deleteVehicleWithAlert = withSuccessAlert(
-    deleteVehicle,
-    "Vehicle deleted successfully!"
-  );
+  const deleteVehicleWithAlert = withSuccessAlert(deleteVehicle, 'Vehicle deleted successfully!')
 
   // Function to get the vehicle description by vehicle ID
   const getVehicleInfoByVehicleId = (vehicleId) => {
-    const vehicle = vehicles.find((vehicle) => vehicle.id === vehicleId);
-    return vehicle ? vehicle.__str__ : "Unknown";
-  };
+    const vehicle = vehicles.find((vehicle) => vehicle.id === vehicleId)
+    return vehicle ? vehicle.__str__ : 'Unknown'
+  }
 
   // Automatically fetch data when pathname changes
   useEffect(() => {
-    const vehiclePaths = ["/vehicle", "/report", "/dashboard", "/invoices"];
+    const vehiclePaths = ['/vehicle', '/report', '/dashboard', '/invoices']
     if (vehiclePaths.includes(location.pathname)) {
-      fetchVehicles({}, "brand, model");
+      fetchVehicles({}, 'brand, model')
     }
-  }, [location.pathname, vehicles.length]);
+  }, [location.pathname, vehicles.length])
 
   return (
     <VehicleContext.Provider
@@ -67,8 +58,8 @@ export const VehicleProvider = ({ children }) => {
     >
       {children}
     </VehicleContext.Provider>
-  );
-};
+  )
+}
 
 // Custom hook for accessing the VehicleContext
-export const useVehicleContext = () => useContext(VehicleContext);
+export const useVehicleContext = () => useContext(VehicleContext)

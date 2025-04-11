@@ -1,14 +1,14 @@
 // Components
-import TaskTemplateModal from "./TaskTemplateModal";
+import TaskTemplateModal from './TaskTemplateModal'
 // Contexts
-import { useInventoryContext } from "../../contexts/InventoryContext";
-import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useInventoryContext } from '../../contexts/InventoryContext'
+import { useGlobalContext } from '../../contexts/GlobalContext'
 
 const TaskTemplateCard = ({ item }) => {
-  const cardItemType = "Task template";
+  const cardItemType = 'Task template'
 
-  const { deleteTaskTemplateWithAlert } = useInventoryContext();
-  const { openModal, openDeleteModal } = useGlobalContext();
+  const { deleteTaskTemplateWithAlert } = useInventoryContext()
+  const { openModal, openDeleteModal } = useGlobalContext()
 
   return (
     <div
@@ -17,8 +17,8 @@ const TaskTemplateCard = ({ item }) => {
       title="View task template"
       onClick={(e) => {
         // Prevent triggering view mode if clicking on an action button
-        if (!e.target.closest(".actions")) {
-          openModal(TaskTemplateModal, item, cardItemType, true);
+        if (!e.target.closest('.actions')) {
+          openModal(TaskTemplateModal, item, cardItemType, true)
         }
       }}
     >
@@ -38,28 +38,20 @@ const TaskTemplateCard = ({ item }) => {
           <button
             title="Edit task"
             className="btn btn-edit"
-            onClick={() =>
-              openModal(TaskTemplateModal, item, cardItemType, false)
-            }
+            onClick={() => openModal(TaskTemplateModal, item, cardItemType, false)}
           >
             Edit
           </button>
           <button
             title="Delete task"
             className="btn btn-delete"
-            onClick={() =>
-              openDeleteModal(
-                item,
-                cardItemType,
-                () => deleteTaskTemplateWithAlert
-              )
-            }
+            onClick={() => openDeleteModal(item, cardItemType, () => deleteTaskTemplateWithAlert)}
           >
             Delete
           </button>
         </section>
       </div>
     </div>
-  );
-};
-export default TaskTemplateCard;
+  )
+}
+export default TaskTemplateCard

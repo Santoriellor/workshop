@@ -1,56 +1,54 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 
 // Contexts
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from '../../contexts/AuthContext'
 // Utils
-import { isValidEmail, isValidPassword } from "../../utils/validation";
+import { isValidEmail, isValidPassword } from '../../utils/validation'
 // Styles
-import "../../styles/Auth.css";
+import '../../styles/Auth.css'
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { login, loading } = useAuth();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const { login, loading } = useAuth()
+  const navigate = useNavigate()
 
   // Error messages
   const [errors, setErrors] = useState({
-    email: "",
-    password: "",
-  });
+    email: '',
+    password: '',
+  })
 
   // Live validation
   useEffect(() => {
-    const emailError = isValidEmail(email);
+    const emailError = isValidEmail(email)
     setErrors((prevErrors) =>
-      prevErrors.email !== emailError
-        ? { ...prevErrors, email: emailError }
-        : prevErrors
-    );
-  }, [email]);
+      prevErrors.email !== emailError ? { ...prevErrors, email: emailError } : prevErrors,
+    )
+  }, [email])
 
   useEffect(() => {
-    const passwordError = isValidPassword(password);
+    const passwordError = isValidPassword(password)
     setErrors((prevErrors) =>
       prevErrors.password !== passwordError
         ? { ...prevErrors, password: passwordError }
-        : prevErrors
-    );
-  }, [password]);
+        : prevErrors,
+    )
+  }, [password])
 
   const isFormValid = useMemo(
     () => !errors.email && !errors.password && email && password,
-    [errors, email, password]
-  );
+    [errors, email, password],
+  )
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const isLoggedIn = await login(email, password);
+    e.preventDefault()
+    const isLoggedIn = await login(email, password)
     if (isLoggedIn) {
-      navigate("/dashboard");
+      navigate('/dashboard')
     }
-  };
+  }
 
   return (
     <div className="auth-container">
@@ -64,7 +62,7 @@ const Login = () => {
             title="Email is required"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className={errors.email ? "invalid" : "valid"}
+            className={errors.email ? 'invalid' : 'valid'}
             required
           />
           <p className="error-text">{errors.email && <>{errors.email}</>}</p>
@@ -76,23 +74,21 @@ const Login = () => {
             title="Password is required"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className={errors.password ? "invalid" : "valid"}
+            className={errors.password ? 'invalid' : 'valid'}
             required
           />
-          <p className="error-text">
-            {errors.password && <>{errors.password}</>}
-          </p>
+          <p className="error-text">{errors.password && <>{errors.password}</>}</p>
 
           <button type="submit" disabled={!isFormValid || loading}>
-            {loading ? "Logging in..." : "Login"}
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
         <p className="bottomline">
-          Don't have an account? <Link to="/register">Register</Link>
+          Don&apos;t have an account? <Link to="/register">Register</Link>
         </p>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

@@ -22,8 +22,7 @@ Install the following:
 From the project root :
 
 ```bash
-docker-compose build
-docker-compose up
+docker-compose up --build
 ```
 
 This will:
@@ -49,6 +48,7 @@ This will:
 ```bash
 docker-compose exec backend python manage.py migrate
 docker-compose exec backend python manage.py createsuperuser
+docker-compose exec backend python manage.py test
 ```
 
 ### Restart containers:

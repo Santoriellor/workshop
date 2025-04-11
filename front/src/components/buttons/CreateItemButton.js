@@ -1,54 +1,39 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 
 // Contexts
-import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useGlobalContext } from '../../contexts/GlobalContext'
 // Styles
-import "../../styles/CreateItemButton.css";
+import '../../styles/CreateItemButton.css'
 
 const CreateItemButton = () => {
-  const location = useLocation();
-  const { modalState, openModal } = useGlobalContext();
-  const [visible, setVisible] = useState(false);
-
-  // Define the paths where the button should be visible
-  const allowedPaths = [
-    "/report",
-    "/owner",
-    "/vehicle",
-    "/inventory",
-    "/tasktemplate",
-  ];
+  const location = useLocation()
+  const { modalState, openModal } = useGlobalContext()
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
+    // Define the paths where the button should be visible
+    const allowedPaths = ['/report', '/owner', '/vehicle', '/inventory', '/tasktemplate']
     if (allowedPaths.includes(location.pathname)) {
       if (modalState.showModal || modalState.showDeleteModal) {
-        setVisible(false);
+        setVisible(false)
       } else {
-        setVisible(true);
+        setVisible(true)
       }
     } else {
-      setVisible(false);
+      setVisible(false)
     }
-  }, [location.pathname, modalState.showModal, modalState.showDeleteModal]);
+  }, [location.pathname, modalState.showModal, modalState.showDeleteModal])
 
   return (
-    <div
-      className={`create-item-button-container${
-        visible ? " slide-in" : " slide-out"
-      }`}
-    >
+    <div className={`create-item-button-container${visible ? ' slide-in' : ' slide-out'}`}>
       <button
         title={`Create new ${
-          typeof modalState.itemType === "string"
-            ? modalState.itemType.toLowerCase()
-            : "item"
+          typeof modalState.itemType === 'string' ? modalState.itemType.toLowerCase() : 'item'
         }`}
         type="button"
         className="create-item-button"
-        onClick={() =>
-          openModal(modalState.modalComponent, null, modalState.itemType, false)
-        }
+        onClick={() => openModal(modalState.modalComponent, null, modalState.itemType, false)}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -67,7 +52,7 @@ const CreateItemButton = () => {
         </svg>
       </button>
     </div>
-  );
-};
+  )
+}
 
-export default CreateItemButton;
+export default CreateItemButton

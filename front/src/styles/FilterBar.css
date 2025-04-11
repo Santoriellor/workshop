@@ -30,7 +30,9 @@
   font-size: 16px;
   background-color: white;
   outline: none;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .filter-group input:focus,

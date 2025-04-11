@@ -9,6 +9,6 @@ const ModalGenericsTitle = ({ readonly, selectedItem, itemType }) => {
         <h2>Create {itemType}</h2>
       )}
     </>
-  );
-};
-export default ModalGenericsTitle;
+  )
+}
+export default ModalGenericsTitle
