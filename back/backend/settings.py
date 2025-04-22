@@ -132,7 +132,7 @@ DATABASES = {
         'HOST': MYSQL_HOST,
         'PORT': os.getenv('MYSQL_PORT'),
         'TEST': {
-            'NAME': f"test_{os.getenv('MYSQL_DATABASE')}",  # Use your production DB for testing
+            'NAME': f"test_{os.getenv('MYSQL_DATABASE')}",
         },
     }
 }

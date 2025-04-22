@@ -3,13 +3,15 @@ import { useMemo } from 'react'
 // Components
 import FilterBar from './FilterBar'
 import ScrollToTopButton from './buttons/ScrollToTopButton'
+// Zustand
+import useVehicleStore from '../stores/useVehicleStore'
 // Contexts
 import { useGlobalContext } from '../contexts/GlobalContext'
-import { useVehicleContext } from '../contexts/VehicleContext'
 // Styles
 import '../styles/Cards.css'
 // Utils
 import { filterItems } from '../utils/pageItemFilter'
+import { getVehicleInfoByVehicleId } from '../utils/getVehicleInfoByVehicleId'
 
 const Page = ({
   itemType,
@@ -21,7 +23,7 @@ const Page = ({
   loadingItem,
 }) => {
   const { openViewModal, openEditModal, openDeleteModal } = useGlobalContext()
-  const { vehicles, getVehicleInfoByVehicleId } = useVehicleContext()
+  const { vehicles } = useVehicleStore()
 
   const handleFilterChange = (name, value) => {
     setFilters((prevFilters) => ({
@@ -32,6 +34,9 @@ const Page = ({
 
   // Filter items based on filters
   const filteredItems = useMemo(() => {
+    // If there are no items, return an empty array
+    if (!Array.isArray(items)) return []
+
     // Filter the items
     let itemsAfterFilter = items.filter((item) =>
       filterItems(item, filters, vehicles, getVehicleInfoByVehicleId),

@@ -5,12 +5,13 @@ import getFilterOptions from '../utils/filterBarFilterOptions'
 import Page from '../components/Page'
 import TaskTemplateCard from '../components/task-templates/TaskTemplateCard'
 import TaskTemplateModal from '../components/task-templates/TaskTemplateModal'
+// Zustand
+import useTaskTemplateStore from '../stores/useTaskTemplateStore'
 // Contexts
-import { useInventoryContext } from '../contexts/InventoryContext'
 import { useGlobalContext } from '../contexts/GlobalContext'
 
 const TaskTemplate = () => {
-  const { taskTemplate, loadingTaskTemplate, deleteTaskTemplateWithAlert } = useInventoryContext()
+  const { taskTemplates, loading } = useTaskTemplateStore()
   const { setModalState } = useGlobalContext()
 
   const [filters, setFilters] = useState({
@@ -31,11 +32,9 @@ const TaskTemplate = () => {
       filters={{ ...filters, type: 'task_template' }}
       setFilters={setFilters}
       filterOptions={getFilterOptions(filters).task_template}
-      items={taskTemplate}
-      deleteItemWithAlert={deleteTaskTemplateWithAlert}
+      items={taskTemplates}
       CardComponent={TaskTemplateCard}
-      ModalComponent={TaskTemplateModal}
-      loadingItem={loadingTaskTemplate}
+      loadingItem={loading}
     />
   )
 }

@@ -1,12 +1,13 @@
 import { useEffect, useState, useMemo } from 'react'
-
+// Zustand
+import useVehicleStore from '../../stores/useVehicleStore'
+import useOwnerStore from '../../stores/useOwnerStore'
+import useInventoryStore from '../../stores/useInventoryStore'
+import useTaskTemplateStore from '../../stores/useTaskTemplateStore'
+import useReportStore from '../../stores/useReportStore'
 // Contexts
 import { useAuth } from '../../contexts/AuthContext'
 import { useGlobalContext } from '../../contexts/GlobalContext'
-import { useReportContext } from '../../contexts/ReportContext'
-import { useVehicleContext } from '../../contexts/VehicleContext'
-import { useOwnerContext } from '../../contexts/OwnerContext'
-import { useInventoryContext } from '../../contexts/InventoryContext'
 // Components
 import ModalGenericsClose from '../modalGenerics/ModalGenericsClose'
 import ModalGenericsTitle from '../modalGenerics/ModalGenericsTitle'
@@ -14,6 +15,8 @@ import SvgTrash from '../svgGenerics/SvgTrash'
 // Utils
 import { Toast } from '../../utils/sweetalert'
 import { isValidQuantityInStock } from '../../utils/validation'
+import { getOwnerNameByVehicleId } from '../../utils/getOwnerNameByVehicleId'
+import withSuccessAlert from '../../utils/successAlert'
 // Styles
 import '../../styles/Modal.css'
 import '../../styles/ReportModal.css'
@@ -32,22 +35,23 @@ const ReportModal = () => {
   const { modalState, openDeleteModal, closeModals, toggleReadonly } = useGlobalContext()
 
   const {
-    createReportWithAlert,
-    updateReportWithAlert,
-    deleteReportWithAlert,
-    loadingReports,
-    tasks,
+    createReport,
+    updateReport,
+    deleteReport,
+    loading,
     loadingTasks,
+    loadingParts,
+    tasks,
     createTask,
     deleteTask,
     parts,
-    loadingParts,
     createPart,
     deletePart,
-  } = useReportContext()
-  const { vehicles } = useVehicleContext()
-  const { getOwnerNameByVehicleId } = useOwnerContext()
-  const { inventory, taskTemplate } = useInventoryContext()
+  } = useReportStore()
+  const { vehicles } = useVehicleStore()
+  const { owners } = useOwnerStore()
+  const { inventory } = useInventoryStore()
+  const { taskTemplates } = useTaskTemplateStore()
 
   const [reportData, setReportData] = useState({
     vehicle: modalState.selectedItem?.vehicle || '',
@@ -61,6 +65,11 @@ const ReportModal = () => {
   const [quantityPart, setQuantityPart] = useState('1')
   const [updatedTasks, setUpdatedTasks] = useState(tasks || [])
   const [updatedParts, setUpdatedParts] = useState(parts || [])
+
+  // Create, update, delete reports with alert
+  const createReportWithAlert = withSuccessAlert(createReport, 'Report created successfully!')
+  const updateReportWithAlert = withSuccessAlert(updateReport, 'Report updated successfully!')
+  const deleteReportWithAlert = withSuccessAlert(deleteReport, 'Report deleted successfully!')
 
   const handleReportChange = (e) => {
     const { name, value } = e.target
@@ -101,7 +110,7 @@ const ReportModal = () => {
     }
 
     const taskId = Number(selectedTask)
-    const task = taskTemplate.find((item) => item.id === taskId)
+    const task = taskTemplates.find((item) => item.id === taskId)
     if (!task) return
 
     setUpdatedTasks([...updatedTasks, { task_template: task.id }])
@@ -133,12 +142,12 @@ const ReportModal = () => {
     setUpdatedParts((prevParts) => prevParts.filter((_, index) => index !== partIndex))
   }
   const getTaskById = (taskTemplateId) => {
-    const task = taskTemplate.find((item) => item.id === taskTemplateId)
+    const task = taskTemplates?.find((item) => item.id === taskTemplateId)
     if (!task) return
     return task
   }
   const getPartById = (partId) => {
-    const part = inventory.find((item) => item.id === partId)
+    const part = inventory?.find((item) => item.id === partId)
     if (!part) return
     return part
   }
@@ -257,16 +266,29 @@ const ReportModal = () => {
   }
 
   useEffect(() => {
-    if (tasks) {
-      setUpdatedTasks(tasks)
+    if (!modalState.selectedItem) {
+      setUpdatedTasks([])
+      setUpdatedParts([])
+      setReportData({
+        vehicle: '',
+        user: authenticatedUser.id,
+        status: 'pending',
+        remarks: '',
+      })
     }
-  }, [tasks])
+  }, [modalState.selectedItem])
 
   useEffect(() => {
-    if (parts) {
+    if (modalState.selectedItem && tasks) {
+      setUpdatedTasks(tasks)
+    }
+  }, [modalState.selectedItem, tasks])
+
+  useEffect(() => {
+    if (modalState.selectedItem && parts) {
       setUpdatedParts(parts)
     }
-  }, [parts])
+  }, [modalState.selectedItem, parts])
 
   // Live validation
 
@@ -340,7 +362,7 @@ const ReportModal = () => {
                   <option value="">Select a vehicle</option>
                   {vehicles.map((vehicle) => (
                     <option key={vehicle.id} value={vehicle.id}>
-                      {vehicle.__str__} - {getOwnerNameByVehicleId(vehicle.id)}
+                      {vehicle.__str__} - {getOwnerNameByVehicleId(vehicle.id, vehicles, owners)}
                     </option>
                   ))}
                 </select>
@@ -388,7 +410,7 @@ const ReportModal = () => {
                     disabled={modalState.readonly}
                   >
                     <option value="">Select a repair task</option>
-                    {taskTemplate.map((task) => (
+                    {taskTemplates?.map((task) => (
                       <option key={task.id} value={task.id}>
                         {task.name} - €{task.price}
                       </option>
@@ -504,10 +526,7 @@ const ReportModal = () => {
                     Edit Report
                   </button>
                 ) : (
-                  <button
-                    type="submit"
-                    disabled={modalState.readonly || !isFormValid || loadingReports}
-                  >
+                  <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
                     Update Report
                   </button>
                 )}
@@ -525,10 +544,7 @@ const ReportModal = () => {
                 </button>
               </>
             ) : (
-              <button
-                type="submit"
-                disabled={modalState.readonly || !isFormValid || loadingReports}
-              >
+              <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
                 Create Report
               </button>
             )}

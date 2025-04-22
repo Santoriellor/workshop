@@ -1,11 +1,16 @@
 import { useLocation } from 'react-router-dom'
 // Components
 import VehicleModal from './VehicleModal'
+// Zustand
+import useVehicleStore from '../../stores/useVehicleStore'
+import useOwnerStore from '../../stores/useOwnerStore'
+import useReportStore from '../../stores/useReportStore'
 // Contexts
-import { useOwnerContext } from '../../contexts/OwnerContext'
-import { useVehicleContext } from '../../contexts/VehicleContext'
-import { useReportContext } from '../../contexts/ReportContext'
 import { useGlobalContext } from '../../contexts/GlobalContext'
+// Utils
+import withSuccessAlert from '../../utils/successAlert'
+import { getVehicleInfoByVehicleId } from '../../utils/getVehicleInfoByVehicleId'
+import { getOwnerNameByVehicleId } from '../../utils/getOwnerNameByVehicleId'
 
 const VehicleCard = ({ item }) => {
   const cardItemType = 'Vehicle'
@@ -13,10 +18,13 @@ const VehicleCard = ({ item }) => {
   const location = useLocation()
   const isPathVehicles = location.pathname.includes('vehicle')
 
-  const { getOwnerNameByVehicleId } = useOwnerContext()
-  const { deleteVehicleWithAlert, getVehicleInfoByVehicleId } = useVehicleContext()
+  const { owners } = useOwnerStore()
+  const { vehicles, deleteVehicle } = useVehicleStore()
   const { openModal, openDeleteModal } = useGlobalContext()
-  const { reports } = useReportContext()
+  const { reports } = useReportStore()
+
+  // Delete vehicle with alert
+  const deleteVehicleWithAlert = withSuccessAlert(deleteVehicle, 'Vehicle deleted successfully!')
 
   // Return the last time a vehicle was used in a report
   const getLastUsedDate = (vehicleId) => {
@@ -45,7 +53,7 @@ const VehicleCard = ({ item }) => {
     >
       <div className="card-content">
         <section>
-          <header>{truncateText(getVehicleInfoByVehicleId(item.id))}</header>
+          <header>{truncateText(getVehicleInfoByVehicleId(item.id, vehicles))}</header>
           <div>
             {isPathVehicles && (
               <p>
@@ -54,7 +62,7 @@ const VehicleCard = ({ item }) => {
             )}
             <p>
               <strong>Owner:</strong>&nbsp;
-              {getOwnerNameByVehicleId(item.id)}
+              {getOwnerNameByVehicleId(item.id, vehicles, owners)}
             </p>
             {!isPathVehicles && (
               <p>

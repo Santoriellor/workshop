@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+// Utils
+import { setAxiosToken } from '../utils/axiosInstance'
 
 const apiURL = process.env.REACT_APP_API_URL
 
@@ -29,6 +31,8 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token')
     if (token) {
       fetchUserData(token).finally(() => setLoadingAuth(false))
+      // Set the token for axios headers
+      setAxiosToken(token)
     } else {
       setLoadingAuth(false)
     }
@@ -45,6 +49,9 @@ export const AuthProvider = ({ children }) => {
       // Store tokens
       localStorage.setItem('token', response.data.access)
       localStorage.setItem('refreshToken', response.data.refresh)
+
+      // Set the token for axios headers
+      setAxiosToken(response.data.access)
 
       // Fetch user data
       await fetchUserData(response.data.access)
@@ -140,6 +147,9 @@ export const AuthProvider = ({ children }) => {
       if (response.data.refresh) {
         localStorage.setItem('refreshToken', response.data.refresh)
       }
+
+      // Set the token for axios headers
+      setAxiosToken(response.data.access)
 
       // Update user data
       await fetchUserData(response.data.access)

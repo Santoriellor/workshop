@@ -1,17 +1,17 @@
-// Contexts
-import { useReportContext } from '../../contexts/ReportContext'
+// Zustand stores
+import useReportStore from '../../stores/useReportStore'
 // Components
 import ReportCard from './ReportCard'
 
 const LatestReports = () => {
-  const { reports, loadingReports } = useReportContext()
+  const { reports, loading } = useReportStore()
 
   return (
     <>
       <h3>Latest Reports</h3>
       {/* latest reports list with card display */}
       <div className="list">
-        {loadingReports ? (
+        {loading ? (
           <p>Loading reports...</p>
         ) : reports.length > 0 ? (
           reports.map((item) => <ReportCard key={item.id} item={item} />)

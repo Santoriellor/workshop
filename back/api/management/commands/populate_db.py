@@ -36,6 +36,7 @@ def populate_inventory():
 
 def populate_task_templates():
     for item in tasks_data:
+        # Avoid duplicate entries
         task, created = TaskTemplate.objects.get_or_create(name=item["name"], defaults=item)
         if created:
             print(f"Added TaskTemplate: {task.name}")
@@ -105,27 +106,26 @@ def populate_reports(users, vehicles):
         populate_task_templates()
         
     for vehicle in vehicles:
-        if random.choice([True, False]):
-            report = Report.objects.create(
-                vehicle=vehicle,
-                user=random.choice(users),
-                remarks=fake.sentence(),
-                status=fake.random_element(['pending', 'completed', 'in_progress']),
-                created_at=fake.date_time()
-            )
+        report = Report.objects.create(
+            vehicle=vehicle,
+            user=random.choice(users),
+            remarks=fake.sentence(),
+            status=fake.random_element(['pending', 'completed', 'in_progress']),
+            created_at=fake.date_time()
+        )
+        
+        # Add 1 to 3 tasks to the report
+        tasks = TaskTemplate.objects.order_by('?')[:random.randint(1, 3)]
+        for task_template in tasks:
+            Task.objects.create(report=report, task_template=task_template)
+        
+        # Add 0 to 3 parts to the report
+        parts = Inventory.objects.order_by('?')[:random.randint(0, 3)]
+        for part in parts:
+            if part.quantity_in_stock > 5:
+                Part.objects.create(report=report, part=part, quantity_used=random.randint(1, 5))
             
-            # Add 1 to 3 tasks to the report
-            tasks = TaskTemplate.objects.order_by('?')[:random.randint(1, 3)]
-            for task_template in tasks:
-                Task.objects.create(report=report, task_template=task_template)
-            
-            # Add 0 to 2 parts to the report
-            parts = Inventory.objects.order_by('?')[:random.randint(0, 2)]
-            for part in parts:
-                if part.quantity_in_stock > 5:
-                    Part.objects.create(report=report, part=part, quantity_used=random.randint(1, 5))
-                
-            print(f'Created report for vehicle {vehicle.license_plate}')
+        print(f'Created report for vehicle {vehicle.license_plate}')
 
 class Command(BaseCommand):
     help = 'Populate the database with fake data'

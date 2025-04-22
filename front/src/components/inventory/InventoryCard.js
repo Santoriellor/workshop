@@ -1,9 +1,12 @@
 import { useLocation } from 'react-router-dom'
 // Components
 import InventoryModal from './InventoryModal'
+// Zustand
+import useInventoryStore from '../../stores/useInventoryStore'
 // Contexts
-import { useInventoryContext } from '../../contexts/InventoryContext'
 import { useGlobalContext } from '../../contexts/GlobalContext'
+// Utils
+import withSuccessAlert from '../../utils/successAlert'
 
 const InventoryCard = ({ item }) => {
   const cardItemType = 'Inventory part'
@@ -11,8 +14,14 @@ const InventoryCard = ({ item }) => {
   const location = useLocation()
   const isPathInventory = location.pathname.includes('inventory')
 
-  const { deleteInventoryPartWithAlert } = useInventoryContext()
+  const { deleteInventory } = useInventoryStore()
   const { openModal, openDeleteModal } = useGlobalContext()
+
+  // Delete part with alert
+  const deleteInventoryPartWithAlert = withSuccessAlert(
+    deleteInventory,
+    'Vehicle deleted successfully!',
+  )
 
   const isLowerThan10 = (item) => {
     if (item.quantity_in_stock < 10) return true

@@ -1,14 +1,20 @@
 // Components
 import OwnerModal from './OwnerModal'
+// Zustand
+import useOwnerStore from '../../stores/useOwnerStore'
 // Contexts
-import { useOwnerContext } from '../../contexts/OwnerContext'
 import { useGlobalContext } from '../../contexts/GlobalContext'
+// Utils
+import withSuccessAlert from '../../utils/successAlert'
 
 const OwnerCard = ({ item }) => {
   const cardItemType = 'Owner'
 
-  const { deleteOwnerWithAlert } = useOwnerContext()
+  const { deleteOwner } = useOwnerStore()
   const { openModal, openDeleteModal } = useGlobalContext()
+
+  // Delete owner with alert
+  const deleteOwnerWithAlert = withSuccessAlert(deleteOwner, 'Owner deleted successfully!')
 
   return (
     <div

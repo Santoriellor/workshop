@@ -5,14 +5,17 @@ import getFilterOptions from '../utils/filterBarFilterOptions'
 import Page from '../components/Page'
 import VehicleCard from '../components/vehicles/VehicleCard'
 import VehicleModal from '../components/vehicles/VehicleModal'
+// Zustand
+import useVehicleStore from '../stores/useVehicleStore'
 // Contexts
-import { useVehicleContext } from '../contexts/VehicleContext'
 import { useGlobalContext } from '../contexts/GlobalContext'
 // Styles
 import '../styles/Vehicles.css'
 
 const Vehicle = () => {
-  const { vehicles, loadingVehicles } = useVehicleContext()
+  // const { vehicles, loadingVehicles } = useVehicleContext()
+  const { vehicles, loading } = useVehicleStore()
+
   const { setModalState } = useGlobalContext()
 
   const [filters, setFilters] = useState({
@@ -39,7 +42,7 @@ const Vehicle = () => {
       filterOptions={getFilterOptions(filters).vehicles}
       items={vehicles}
       CardComponent={VehicleCard}
-      loadingItem={loadingVehicles}
+      loadingItem={loading}
     />
   )
 }
