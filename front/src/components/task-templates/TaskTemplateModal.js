@@ -1,14 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
-
+// Zustand
+import useTaskTemplateStore from '../../stores/useTaskTemplateStore'
 // Contexts
 import { useGlobalContext } from '../../contexts/GlobalContext'
-import { useInventoryContext } from '../../contexts/InventoryContext'
 // Components
 import ModalGenericsClose from '../modalGenerics/ModalGenericsClose'
 import ModalGenericsTitle from '../modalGenerics/ModalGenericsTitle'
 // Utils
 import { Toast } from '../../utils/sweetalert'
 import { isTakenTaskName, isValidPrice } from '../../utils/validation'
+import withSuccessAlert from '../../utils/successAlert'
 // Styles
 import '../../styles/Modal.css'
 
@@ -21,19 +22,28 @@ const TaskTemplateModal = () => {
   })
 
   const { modalState, openDeleteModal, closeModals, toggleReadonly } = useGlobalContext()
-  const {
-    createTaskTemplateWithAlert,
-    updateTaskTemplateWithAlert,
-    deleteTaskTemplateWithAlert,
-    taskTemplate,
-    loadingTaskTemplate,
-  } = useInventoryContext()
+  const { createTaskTemplate, updateTaskTemplate, deleteTaskTemplate, taskTemplates, loading } =
+    useTaskTemplateStore()
 
   const [taskTemplateData, setTaskTemplateData] = useState({
     name: modalState.selectedItem?.name || '',
     description: modalState.selectedItem?.description || '',
     price: modalState.selectedItem?.price || '',
   })
+
+  // Create, Update, Delete task with alert
+  const createTaskTemplateWithAlert = withSuccessAlert(
+    createTaskTemplate,
+    'Vehicle created successfully!',
+  )
+  const updateTaskTemplateWithAlert = withSuccessAlert(
+    updateTaskTemplate,
+    'Vehicle updated successfully!',
+  )
+  const deleteTaskTemplateWithAlert = withSuccessAlert(
+    deleteTaskTemplate,
+    'Vehicle deleted successfully!',
+  )
 
   const handleTaskTemplateChange = (e) => {
     const { name, value } = e.target
@@ -103,7 +113,7 @@ const TaskTemplateModal = () => {
   }
 
   // Live validation
-  const existingTaskNames = taskTemplate
+  const existingTaskNames = taskTemplates
     .map((task) => task.name)
     .filter(
       (name) =>
@@ -217,10 +227,7 @@ const TaskTemplateModal = () => {
                     Edit Task
                   </button>
                 ) : (
-                  <button
-                    type="submit"
-                    disabled={modalState.readonly || !isFormValid || loadingTaskTemplate}
-                  >
+                  <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
                     Update Task
                   </button>
                 )}
@@ -238,10 +245,7 @@ const TaskTemplateModal = () => {
                 </button>
               </>
             ) : (
-              <button
-                type="submit"
-                disabled={modalState.readonly || !isFormValid || loadingTaskTemplate}
-              >
+              <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
                 Create Task
               </button>
             )}

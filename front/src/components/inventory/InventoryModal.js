@@ -1,14 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
-
+// Zustand
+import useInventoryStore from '../../stores/useInventoryStore'
 // Contexts
 import { useGlobalContext } from '../../contexts/GlobalContext'
-import { useInventoryContext } from '../../contexts/InventoryContext'
 // Components
 import ModalGenericsClose from '../modalGenerics/ModalGenericsClose'
 import ModalGenericsTitle from '../modalGenerics/ModalGenericsTitle'
 // Utils
 import { Toast } from '../../utils/sweetalert'
 import { isValidReferenceCode, isValidQuantityInStock, isValidPrice } from '../../utils/validation'
+import withSuccessAlert from '../../utils/successAlert'
 // Styles
 import '../../styles/Modal.css'
 
@@ -38,13 +39,8 @@ const InventoryModal = () => {
   })
 
   const { modalState, openDeleteModal, closeModals, toggleReadonly } = useGlobalContext()
-  const {
-    inventory,
-    createInventoryPartWithAlert,
-    updateInventoryPartWithAlert,
-    deleteInventoryPartWithAlert,
-    loadingInventory,
-  } = useInventoryContext()
+  const { inventory, createInventory, updateInventory, deleteInventory, loading } =
+    useInventoryStore()
 
   const [inventoryData, setInventoryData] = useState({
     name: modalState.selectedItem?.name || '',
@@ -53,6 +49,20 @@ const InventoryModal = () => {
     quantity_in_stock: modalState.selectedItem?.quantity_in_stock || '',
     unit_price: modalState.selectedItem?.unit_price || '',
   })
+
+  // Create, Update, Delete part with alert
+  const createInventoryPartWithAlert = withSuccessAlert(
+    createInventory,
+    'Vehicle created successfully!',
+  )
+  const updateInventoryPartWithAlert = withSuccessAlert(
+    updateInventory,
+    'Vehicle updated successfully!',
+  )
+  const deleteInventoryPartWithAlert = withSuccessAlert(
+    deleteInventory,
+    'Vehicle deleted successfully!',
+  )
 
   const handleInventoryChange = (e) => {
     const { name, value } = e.target
@@ -312,10 +322,7 @@ const InventoryModal = () => {
                     Edit Part
                   </button>
                 ) : (
-                  <button
-                    type="submit"
-                    disabled={modalState.readonly || !isFormValid || loadingInventory}
-                  >
+                  <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
                     Update Part
                   </button>
                 )}
@@ -333,10 +340,7 @@ const InventoryModal = () => {
                 </button>
               </>
             ) : (
-              <button
-                type="submit"
-                disabled={modalState.readonly || !isFormValid || loadingInventory}
-              >
+              <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
                 Create Part
               </button>
             )}

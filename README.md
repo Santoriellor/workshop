@@ -37,6 +37,7 @@ This will:
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
+- **Backend Django Admin**: http://127.0.0.1:8000/admin/
 - **MySQL**: port 3306 (internal)
 
 ---

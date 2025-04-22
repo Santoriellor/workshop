@@ -1,4 +1,9 @@
-export const filterItems = (item, filters, vehicles, getVehicleInfoByVehicleId) => {
+export const filterItems = (
+  item,
+  filters,
+  vehicles = [],
+  getVehicleInfoByVehicleId = () => 'Unknown',
+) => {
   if (!item) return false
 
   // Handle different entity types
@@ -7,7 +12,7 @@ export const filterItems = (item, filters, vehicles, getVehicleInfoByVehicleId) 
     const vehicle = vehicles.find((v) => v.id === item.vehicle)
     // Get the owner ID from the vehicle (if it exists)
     const ownerId = vehicle ? vehicle.owner : null
-    const vehicleInfo = getVehicleInfoByVehicleId(item.vehicle) || ''
+    const vehicleInfo = getVehicleInfoByVehicleId(item.vehicle, vehicles) || ''
 
     return (
       (filters.vehicle === '' ||

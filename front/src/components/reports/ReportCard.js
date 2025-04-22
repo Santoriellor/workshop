@@ -2,12 +2,17 @@ import { useLocation } from 'react-router-dom'
 // Components
 import ReportModal from './ReportModal'
 import SvgStatus from '../svgGenerics/SvgStatus'
+// Zustand
+import useVehicleStore from '../../stores/useVehicleStore'
+import useOwnerStore from '../../stores/useOwnerStore'
+import useReportStore from '../../stores/useReportStore'
+import useUserStore from '../../stores/useUserStore'
 // Contexts
-import { useUserContext } from '../../contexts/UserContext'
-import { useOwnerContext } from '../../contexts/OwnerContext'
-import { useVehicleContext } from '../../contexts/VehicleContext'
 import { useGlobalContext } from '../../contexts/GlobalContext'
-import { useReportContext } from '../../contexts/ReportContext'
+// Utils
+import { getVehicleInfoByVehicleId } from '../../utils/getVehicleInfoByVehicleId'
+import { getOwnerNameByVehicleId } from '../../utils/getOwnerNameByVehicleId'
+import withSuccessAlert from '../../utils/successAlert'
 
 const ReportCard = ({ item, handleExportClick }) => {
   const cardItemType = 'Report'
@@ -17,11 +22,19 @@ const ReportCard = ({ item, handleExportClick }) => {
   const isPathDashboard = location.pathname.includes('dashboard')
   const isPathInvoices = location.pathname.includes('invoices')
 
-  const { deleteReportWithAlert } = useReportContext()
   const { openModal, openDeleteModal } = useGlobalContext()
-  const { getUserNameById } = useUserContext()
-  const { getOwnerNameByVehicleId } = useOwnerContext()
-  const { getVehicleInfoByVehicleId } = useVehicleContext()
+  const { deleteReport } = useReportStore()
+  const { owners } = useOwnerStore()
+  const { vehicles } = useVehicleStore()
+  const { users } = useUserStore()
+
+  // Delete reports with alert
+  const deleteReportWithAlert = withSuccessAlert(deleteReport, 'Report deleted successfully!')
+
+  // Get the user name by ID
+  const getUserNameById = (userId) => {
+    return users.find((user) => user.id === userId)?.username || 'Unknown User'
+  }
 
   // Return a truncated text
   const truncateText = (text, maxLength = 25) => {
@@ -48,7 +61,7 @@ const ReportCard = ({ item, handleExportClick }) => {
 
       <div className="card-content">
         <section>
-          <header>{truncateText(getVehicleInfoByVehicleId(item.vehicle))}</header>
+          <header>{truncateText(getVehicleInfoByVehicleId(item.vehicle, vehicles))}</header>
           <div>
             {(isPathReports || isPathInvoices || isPathDashboard) && (
               <>
@@ -58,7 +71,7 @@ const ReportCard = ({ item, handleExportClick }) => {
                 </p>
                 <p>
                   <strong>Owner:</strong>&nbsp;
-                  {getOwnerNameByVehicleId(item.vehicle)}
+                  {getOwnerNameByVehicleId(item.vehicle, vehicles, owners)}
                 </p>
               </>
             )}

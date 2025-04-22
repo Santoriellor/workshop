@@ -5,14 +5,16 @@ import getFilterOptions from '../utils/filterBarFilterOptions'
 import Page from '../components/Page'
 import OwnerCard from '../components/owners/OwnerCard'
 import OwnerModal from '../components/owners/OwnerModal'
+// Zustand
+import useOwnerStore from '../stores/useOwnerStore'
 // Contexts
-import { useOwnerContext } from '../contexts/OwnerContext'
+//import { useOwnerContext } from '../contexts/OwnerContext'
 import { useGlobalContext } from '../contexts/GlobalContext'
 // Styles
 import '../styles/Owner.css'
 
 const Owner = () => {
-  const { owners, loadingOwners } = useOwnerContext()
+  const { owners, loading } = useOwnerStore()
   const { setModalState } = useGlobalContext()
 
   const [filters, setFilters] = useState({
@@ -36,7 +38,7 @@ const Owner = () => {
       filterOptions={getFilterOptions(filters).owners}
       items={owners}
       CardComponent={OwnerCard}
-      loadingItem={loadingOwners}
+      loadingItem={loading}
     />
   )
 }

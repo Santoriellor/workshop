@@ -5,12 +5,12 @@ const withSuccessAlert = (fn, successMessage, customMessage = null) => {
     try {
       const result = await fn(...args)
 
-      // Check if the result contains a 'status' field, and if it's 'exported'
-      if (result.status === 'exported') {
-        Toast.fire('Success', customMessage, 'success')
-      } else {
-        Toast.fire('Success', successMessage, 'success')
-      }
+      const messageToShow =
+        result.status === 'exported'
+          ? customMessage || 'Report exported successfully!'
+          : successMessage
+
+      Toast.fire('Success', messageToShow, 'success')
 
       return result
     } catch (error) {

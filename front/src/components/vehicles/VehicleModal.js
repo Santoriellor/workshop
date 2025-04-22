@@ -1,15 +1,16 @@
 import { useState, useEffect, useMemo } from 'react'
-
+// Zustand
+import useVehicleStore from '../../stores/useVehicleStore'
+import useOwnerStore from '../../stores/useOwnerStore'
 // Contexts
 import { useGlobalContext } from '../../contexts/GlobalContext'
-import { useVehicleContext } from '../../contexts/VehicleContext'
-import { useOwnerContext } from '../../contexts/OwnerContext'
 // Components
 import ModalGenericsClose from '../modalGenerics/ModalGenericsClose'
 import ModalGenericsTitle from '../modalGenerics/ModalGenericsTitle'
 // Utils
 import { Toast } from '../../utils/sweetalert'
 import { isValidOrTakenLicensePlate, isValidYear } from '../../utils/validation'
+import withSuccessAlert from '../../utils/successAlert'
 // Styles
 import '../../styles/Modal.css'
 // Data
@@ -26,14 +27,8 @@ const VehicleModal = () => {
   })
 
   const { modalState, openDeleteModal, closeModals, toggleReadonly } = useGlobalContext()
-  const {
-    vehicles,
-    createVehicleWithAlert,
-    updateVehicleWithAlert,
-    deleteVehicleWithAlert,
-    loadingVehicles,
-  } = useVehicleContext()
-  const { owners } = useOwnerContext()
+  const { vehicles, createVehicle, updateVehicle, deleteVehicle, loading } = useVehicleStore()
+  const { owners } = useOwnerStore()
 
   const [vehicleData, setVehicleData] = useState({
     brand: modalState.selectedItem?.brand || '',
@@ -42,6 +37,11 @@ const VehicleModal = () => {
     license_plate: modalState.selectedItem?.license_plate || '',
     owner: modalState.selectedItem?.owner || '',
   })
+
+  // Create, Update, Delete vehicle with alert
+  const createVehicleWithAlert = withSuccessAlert(createVehicle, 'Vehicle created successfully!')
+  const updateVehicleWithAlert = withSuccessAlert(updateVehicle, 'Vehicle updated successfully!')
+  const deleteVehicleWithAlert = withSuccessAlert(deleteVehicle, 'Vehicle deleted successfully!')
 
   const handleVehicleChange = (e) => {
     const { name, value } = e.target
@@ -314,10 +314,7 @@ const VehicleModal = () => {
                     Edit Vehicle
                   </button>
                 ) : (
-                  <button
-                    type="submit"
-                    disabled={modalState.readonly || !isFormValid || loadingVehicles}
-                  >
+                  <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
                     Update Vehicle
                   </button>
                 )}
@@ -335,10 +332,7 @@ const VehicleModal = () => {
                 </button>
               </>
             ) : (
-              <button
-                type="submit"
-                disabled={modalState.readonly || !isFormValid || loadingVehicles}
-              >
+              <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
                 Create Vehicle
               </button>
             )}

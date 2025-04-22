@@ -5,12 +5,13 @@ import getFilterOptions from '../utils/filterBarFilterOptions'
 import Page from '../components/Page'
 import InventoryCard from '../components/inventory/InventoryCard'
 import InventoryModal from '../components/inventory/InventoryModal'
+// Zustand
+import useInventoryStore from '../stores/useInventoryStore'
 // Contexts
-import { useInventoryContext } from '../contexts/InventoryContext'
 import { useGlobalContext } from '../contexts/GlobalContext'
 
 const Inventory = () => {
-  const { inventory, loadingInventory, deleteInventoryPartWithAlert } = useInventoryContext()
+  const { inventory, loading } = useInventoryStore()
   const { setModalState } = useGlobalContext()
 
   const [filters, setFilters] = useState({
@@ -37,10 +38,8 @@ const Inventory = () => {
       setFilters={setFilters}
       filterOptions={getFilterOptions(filters).inventory}
       items={inventory}
-      deleteItemWithAlert={deleteInventoryPartWithAlert}
       CardComponent={InventoryCard}
-      ModalComponent={InventoryModal}
-      loadingItem={loadingInventory}
+      loadingItem={loading}
     />
   )
 }

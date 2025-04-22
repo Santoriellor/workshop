@@ -1,31 +1,37 @@
-// Contexts
-import { useUserContext } from '../contexts/UserContext'
-import { useOwnerContext } from '../contexts/OwnerContext'
-import { useReportContext } from '../contexts/ReportContext'
-import { useVehicleContext } from '../contexts/VehicleContext'
-import { useInventoryContext } from '../contexts/InventoryContext'
-import { useInvoiceContext } from '../contexts/InvoiceContext'
+import { useMemo } from 'react'
+// Zustand
+import useVehicleStore from '../stores/useVehicleStore'
+import useOwnerStore from '../stores/useOwnerStore'
+import useInventoryStore from '../stores/useInventoryStore'
+import useInvoiceStore from '../stores/useInvoiceStore'
+import useReportStore from '../stores/useReportStore'
+import useUserStore from '../stores/useUserStore'
 // Styles
 import '../styles/FilterBar.css'
 
 const FilterBar = ({ filterOptions, onFilterChange }) => {
-  const { users } = useUserContext()
-  const { owners } = useOwnerContext()
-  const { reports } = useReportContext()
-  const { vehicles } = useVehicleContext()
-  const { inventory } = useInventoryContext()
-  const { invoices } = useInvoiceContext()
+  const { owners } = useOwnerStore()
+  const { reports } = useReportStore()
+  const { vehicles } = useVehicleStore()
+  const { inventory } = useInventoryStore()
+  const { invoices } = useInvoiceStore()
+  const { users } = useUserStore()
 
   /* ------------ REPORT FILTER AND SORT ----------------- */
+  // Get unique users that created a report and sort them
+  const sortedUniqueUsers = useMemo(() => {
+    if (!users?.length || !reports?.length) return []
+    return [...new Set(reports.map((r) => r.user))]
+      .map((id) => users.find((u) => u.id === id))
+      .filter(Boolean)
+      .sort((a, b) => a.username.localeCompare(b.username))
+  }, [users, reports])
+
   // Get unique report dates and sort
   const sortedUniqueDates = [...new Set(reports.map((report) => report.formatted_created_at))].sort(
     (a, b) => new Date(b) - new Date(a),
   )
-  // Get unique users who created reports and sort
-  const sortedUniqueUsers = [...new Set(reports.map((report) => report.user))]
-    .map((userId) => users.find((user) => user.id === userId))
-    .filter(Boolean)
-    .sort((a, b) => a.username.localeCompare(b.username))
+
   // Get unique report statuses
   const uniqueStatuses = new Map(
     reports
@@ -46,9 +52,15 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
   ].sort((a, b) => a[1].localeCompare(b[1]))
 
   /* ------------ INVENTORY FILTER AND SORT ----------------- */
-  const sortedUniquesCategories = [...new Set(inventory.map((item) => item.category))].sort()
+  const inventoryItems = Array.isArray(inventory)
+    ? inventory
+    : Array.isArray(inventory?.results)
+      ? inventory.results
+      : []
+
+  const sortedUniquesCategories = [...new Set(inventoryItems.map((item) => item.category))].sort()
   const sortedUniqueUpdatedDates = [
-    ...new Set(inventory.map((item) => item.formatted_updated_at)),
+    ...new Set(inventoryItems.map((item) => item.formatted_updated_at)),
   ].sort((a, b) => new Date(b) - new Date(a))
 
   function capitalizeFirstLetter(str) {

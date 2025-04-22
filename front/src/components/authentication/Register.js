@@ -1,29 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { useUserContext } from '../../contexts/UserContext'
 import {
   isValidUsername,
-  isTakenUsername,
   isValidEmail,
-  isTakenEmail,
   isValidPassword,
   passwordsMatch,
 } from '../../utils/validation'
 import '../../styles/Auth.css'
 
+const apiURL = process.env.REACT_APP_API_URL
+
 const Register = () => {
-  const { users } = useUserContext()
-  const existingUsernames = users.map((user) => user.username)
-  const existingEmails = users.map((user) => user.email)
   const navigate = useNavigate()
+  const { register, loading } = useAuth()
 
   // Form fields
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const { register, loading } = useAuth()
 
   // Error messages
   const [errors, setErrors] = useState({
@@ -33,21 +29,42 @@ const Register = () => {
     confirmPassword: '',
   })
 
+  // Check availability of username and email with the backend
+  const checkAvailability = async (field, value) => {
+    try {
+      const res = await fetch(`${apiURL}/users/check_availability/?${field}=${value}`)
+      const data = await res.json()
+      return data[`${field}_taken`] ? `${field} is already taken` : ''
+    } catch (err) {
+      return `Error checking ${field}`
+    }
+  }
+
   // Live validation
   useEffect(() => {
-    const usernameError = isValidUsername(username) || isTakenUsername(username, existingUsernames)
-    setErrors((prevErrors) =>
-      prevErrors.username !== usernameError
-        ? { ...prevErrors, username: usernameError }
-        : prevErrors,
-    )
-  }, [username, existingUsernames])
+    const validate = async () => {
+      const formatError = isValidUsername(username)
+      const availabilityError = username ? await checkAvailability('username', username) : ''
+      setErrors((prev) => ({
+        ...prev,
+        username: formatError || availabilityError,
+      }))
+    }
+    if (username) validate()
+  }, [username])
+
   useEffect(() => {
-    const emailError = isValidEmail(email) || isTakenEmail(email, existingEmails)
-    setErrors((prevErrors) =>
-      prevErrors.email !== emailError ? { ...prevErrors, email: emailError } : prevErrors,
-    )
-  }, [email, existingEmails])
+    const validate = async () => {
+      const formatError = isValidEmail(email)
+      const availabilityError = email ? await checkAvailability('email', email) : ''
+      setErrors((prev) => ({
+        ...prev,
+        email: formatError || availabilityError,
+      }))
+    }
+    if (email) validate()
+  }, [email])
+
   useEffect(() => {
     const passwordError = isValidPassword(password)
     setErrors((prevErrors) =>
@@ -56,6 +73,7 @@ const Register = () => {
         : prevErrors,
     )
   }, [password])
+
   useEffect(() => {
     const confirmPasswordError = passwordsMatch(password, confirmPassword)
     setErrors((prevErrors) =>

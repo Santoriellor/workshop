@@ -1,14 +1,23 @@
 // Components
 import TaskTemplateModal from './TaskTemplateModal'
+// Zustand
+import useTaskTemplateStore from '../../stores/useTaskTemplateStore'
 // Contexts
-import { useInventoryContext } from '../../contexts/InventoryContext'
 import { useGlobalContext } from '../../contexts/GlobalContext'
+// Utils
+import withSuccessAlert from '../../utils/successAlert'
 
 const TaskTemplateCard = ({ item }) => {
   const cardItemType = 'Task template'
 
-  const { deleteTaskTemplateWithAlert } = useInventoryContext()
+  const { deleteTaskTemplate } = useTaskTemplateStore()
   const { openModal, openDeleteModal } = useGlobalContext()
+
+  // Delete part with alert
+  const deleteTaskTemplateWithAlert = withSuccessAlert(
+    deleteTaskTemplate,
+    'Vehicle deleted successfully!',
+  )
 
   return (
     <div

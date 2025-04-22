@@ -14,15 +14,17 @@ import Vehicle from './pages/Vehicle'
 import Invoices from './pages/Invoices'
 import Inventory from './pages/Inventory'
 import TaskTemplate from './pages/TaskTemplate'
+// Zustand fetchers
+import VehicleFetcher from './components/fetchers/VehicleFetcher'
+import OwnerFetcher from './components/fetchers/OwnerFetcher'
+import InventoryFetcher from './components/fetchers/InventoryFetcher'
+import TaskTemplateFetcher from './components/fetchers/TaskTemplateFetcher'
+import InvoiceFetcher from './components/fetchers/InvoiceFetcher'
+import ReportFetcher from './components/fetchers/ReportFetcher'
+import UserFetcher from './components/fetchers/UserFetcher'
 // Contexts
 import { AuthProvider, useAuth } from './contexts/AuthContext'
-import { UserProvider } from './contexts/UserContext'
 import { GlobalProvider, useGlobalContext } from './contexts/GlobalContext'
-import { ReportProvider } from './contexts/ReportContext'
-import { OwnerProvider } from './contexts/OwnerContext'
-import { VehicleProvider } from './contexts/VehicleContext'
-import { InventoryProvider } from './contexts/InventoryContext'
-import { InvoiceProvider } from './contexts/InvoiceContext'
 // Styles
 import './App.css'
 import './styles/Buttons.css'
@@ -47,47 +49,44 @@ const Main = () => {
   if (loadingAuth) return <p>Loading...</p>
 
   return (
-    <UserProvider>
+    <>
       {authenticatedUser ? (
-        <VehicleProvider>
-          <OwnerProvider>
-            <ReportProvider>
-              <InventoryProvider>
-                <InvoiceProvider>
-                  <div className="container">
-                    <div className="left-menu">
-                      <Sidebar />
-                    </div>
-                    <div className="main">
-                      <div className="content">
-                        <Routes>
-                          {/* Private Routes */}
-                          <Route element={<PrivateRoute />}>
-                            <Route path="/dashboard" element={<Dashboard />} />
-                            <Route path="/report" element={<Report />} />
-                            <Route path="/owner" element={<Owner />} />
-                            <Route path="/vehicle" element={<Vehicle />} />
-                            <Route path="/invoices" element={<Invoices />} />
-                            <Route path="/inventory" element={<Inventory />} />
-                            <Route path="/tasktemplate" element={<TaskTemplate />} />
-                          </Route>
+        <>
+          <UserFetcher />
+          <ReportFetcher />
+          <InvoiceFetcher />
+          <VehicleFetcher />
+          <OwnerFetcher />
+          <InventoryFetcher />
+          <TaskTemplateFetcher />
+          <div className="container">
+            <div className="left-menu">
+              <Sidebar />
+            </div>
+            <div className="main">
+              <div className="content">
+                <Routes>
+                  {/* Private Routes */}
+                  <Route element={<PrivateRoute />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/report" element={<Report />} />
+                    <Route path="/owner" element={<Owner />} />
+                    <Route path="/vehicle" element={<Vehicle />} />
+                    <Route path="/invoices" element={<Invoices />} />
+                    <Route path="/inventory" element={<Inventory />} />
+                    <Route path="/tasktemplate" element={<TaskTemplate />} />
+                  </Route>
 
-                          {/* Redirect to dashboard by default */}
-                          <Route path="*" element={<Navigate to="/dashboard" />} />
-                        </Routes>
-                      </div>
-                    </div>
-                  </div>
-                  {modalState.isModalReady && modalState.showModal && ModalComponent && (
-                    <ModalComponent />
-                  )}
+                  {/* Redirect to dashboard by default */}
+                  <Route path="*" element={<Navigate to="/dashboard" />} />
+                </Routes>
+              </div>
+            </div>
+          </div>
+          {modalState.isModalReady && modalState.showModal && ModalComponent && <ModalComponent />}
 
-                  {modalState.showDeleteModal && <DeleteModal />}
-                </InvoiceProvider>
-              </InventoryProvider>
-            </ReportProvider>
-          </OwnerProvider>
-        </VehicleProvider>
+          {modalState.showDeleteModal && <DeleteModal />}
+        </>
       ) : (
         <Routes>
           {/* Public Routes */}
@@ -96,7 +95,7 @@ const Main = () => {
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       )}
-    </UserProvider>
+    </>
   )
 }
 

@@ -1,9 +1,8 @@
 import { useState, useMemo } from 'react'
-
-// Contexts
-import { useInvoiceContext } from '../contexts/InvoiceContext'
-import { useReportContext } from '../contexts/ReportContext'
-import { useVehicleContext } from '../contexts/VehicleContext'
+// Zustand
+import useVehicleStore from '../stores/useVehicleStore'
+import useInvoiceStore from '../stores/useInvoiceStore'
+import useReportStore from '../stores/useReportStore'
 // Components
 import ReportCard from '../components/reports/ReportCard'
 import InvoiceCard from '../components/invoices/InvoiceCard'
@@ -12,6 +11,8 @@ import FilterBar from '../components/FilterBar'
 import { Toast } from '../utils/sweetalert'
 import getFilterOptions from '../utils/filterBarFilterOptions'
 import { filterItems } from '../utils/pageItemFilter'
+import { getVehicleInfoByVehicleId } from '../utils/getVehicleInfoByVehicleId'
+import withSuccessAlert from '../utils/successAlert'
 // Styles
 import '../styles/Cards.css'
 import '../styles/Invoices.css'
@@ -32,9 +33,12 @@ const Invoices = () => {
     setFilters({ ...filters, [name]: value })
   }
 
-  const { invoices, fetchInvoices, loadingInvoices } = useInvoiceContext()
-  const { reports, fetchReports, loadingReports, updateReportWithAlert } = useReportContext()
-  const { vehicles, getVehicleInfoByVehicleId } = useVehicleContext()
+  const { invoices, fetchInvoices, loading: loadingInvoices } = useInvoiceStore()
+  const { reports, fetchReports, loading: loadingReports, updateReport } = useReportStore()
+  const { vehicles } = useVehicleStore()
+
+  // Update reports with alert
+  const updateReportWithAlert = withSuccessAlert(updateReport, 'Report updated successfully!')
 
   // Filter reports based on filters
   const filteredReports = useMemo(() => {

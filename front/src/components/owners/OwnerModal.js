@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
-
+// Zustand
+import useOwnerStore from '../../stores/useOwnerStore'
 // Contexts
 import { useGlobalContext } from '../../contexts/GlobalContext'
-import { useOwnerContext } from '../../contexts/OwnerContext'
 // Components
 import ModalGenericsClose from '../modalGenerics/ModalGenericsClose'
 import ModalGenericsTitle from '../modalGenerics/ModalGenericsTitle'
@@ -14,6 +14,7 @@ import {
   isValidPhone,
   isValidAddress,
 } from '../../utils/validation'
+import withSuccessAlert from '../../utils/successAlert'
 // Styles
 import '../../styles/Modal.css'
 import '../../styles/Auth.css'
@@ -28,13 +29,7 @@ const OwnerModal = () => {
   })
 
   const { modalState, openDeleteModal, closeModals, toggleReadonly } = useGlobalContext()
-  const {
-    owners,
-    createOwnerWithAlert,
-    updateOwnerWithAlert,
-    deleteOwnerWithAlert,
-    loadingOwners,
-  } = useOwnerContext()
+  const { owners, createOwner, updateOwner, deleteOwner, loading } = useOwnerStore()
 
   const [ownerData, setOwnerData] = useState({
     full_name: modalState.selectedItem?.full_name || '',
@@ -42,6 +37,11 @@ const OwnerModal = () => {
     phone: modalState.selectedItem?.phone || '',
     address: modalState.selectedItem?.address || '',
   })
+
+  // Create, Update, Delete owner with alert
+  const createOwnerWithAlert = withSuccessAlert(createOwner, 'Owner created successfully!')
+  const updateOwnerWithAlert = withSuccessAlert(updateOwner, 'Owner updated successfully!')
+  const deleteOwnerWithAlert = withSuccessAlert(deleteOwner, 'Owner deleted successfully!')
 
   const handleOwnerChange = (e) => {
     const { name, value } = e.target
@@ -261,10 +261,7 @@ const OwnerModal = () => {
                     Edit Owner
                   </button>
                 ) : (
-                  <button
-                    type="submit"
-                    disabled={modalState.readonly || !isFormValid || loadingOwners}
-                  >
+                  <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
                     Update Owner
                   </button>
                 )}
@@ -282,7 +279,7 @@ const OwnerModal = () => {
                 </button>
               </>
             ) : (
-              <button type="submit" disabled={modalState.readonly || !isFormValid || loadingOwners}>
+              <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
                 Create Owner
               </button>
             )}

@@ -65,6 +65,19 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         """Returns the currently logged-in user"""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=["get"])
+    def check_availability(self, request):
+        username = request.query_params.get("username")
+        email = request.query_params.get("email")
+
+        response_data = {}
+        if username is not None:
+            response_data["username_taken"] = User.objects.filter(username=username).exists()
+        if email is not None:
+            response_data["email_taken"] = User.objects.filter(email=email).exists()
+
+        return Response(response_data)
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
