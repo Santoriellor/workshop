@@ -203,7 +203,10 @@ const ReportModal = () => {
     }
 
     try {
-      const updatedReport = await updateReportWithAlert(modalState.selectedItem.id, reportData)
+      const updatedReport = await updateReportWithAlert(modalState.selectedItem.id, {
+        ...reportData,
+        updated_at: modalState.selectedItem.updated_at, // Concurrency check
+      })
 
       if (!updatedReport) return
 
@@ -259,8 +262,16 @@ const ReportModal = () => {
         console.error('Error updating parts:', error)
       }
     } catch (error) {
-      console.error('Error updating report:', error)
-      Toast.fire('Error', 'Something went wrong.', 'error')
+      if (error.response?.status === 409) {
+        Toast.fire(
+          'Error',
+          'This report was updated by another user. Please reload and try again.',
+          'error',
+        )
+      } else {
+        console.error('Error updating report:', error)
+        Toast.fire('Error', 'Something went wrong.', 'error')
+      }
     }
     closeModals()
   }

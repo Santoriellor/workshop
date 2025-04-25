@@ -61,6 +61,7 @@ class OwnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Owner
         fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 class VehicleSerializer(serializers.ModelSerializer):
     __str__ = serializers.SerializerMethodField()
@@ -70,6 +71,7 @@ class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
         fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
         
     def validate_year(self, value):
         current_year = datetime.now().year
@@ -81,6 +83,7 @@ class TaskTemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaskTemplate
         fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 class TaskSerializer(serializers.ModelSerializer):
     task_template = serializers.PrimaryKeyRelatedField(queryset=TaskTemplate.objects.all())
@@ -117,6 +120,7 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
         
     def get_formatted_created_at(self, obj):
         return format(obj.created_at, "F j, Y")

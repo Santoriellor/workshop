@@ -4,11 +4,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.core.files.base import ContentFile
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import is_aware, make_aware
 from weasyprint import HTML
 from decimal import Decimal
 from .models import (
@@ -103,6 +106,20 @@ class OwnerViewSet(viewsets.ModelViewSet):
         """Allow partial updates while keeping existing values for missing fields."""
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
+        
+        # Compare updated_at for concurrency control
+        client_updated_at = request.data.get('updated_at')
+        if client_updated_at:
+            parsed_client_time = parse_datetime(client_updated_at)
+            if parsed_client_time and not is_aware(parsed_client_time):
+                parsed_client_time = make_aware(parsed_client_time)
+
+            if parsed_client_time and parsed_client_time != instance.updated_at:
+                return Response(
+                    {"detail": "This report has been modified by another user. Please refresh."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+                
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
         if serializer.is_valid():
@@ -126,6 +143,20 @@ class VehicleViewSet(viewsets.ModelViewSet):
         """Allow partial updates while keeping existing values for missing fields."""
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
+        
+        # Compare updated_at for concurrency control
+        client_updated_at = request.data.get('updated_at')
+        if client_updated_at:
+            parsed_client_time = parse_datetime(client_updated_at)
+            if parsed_client_time and not is_aware(parsed_client_time):
+                parsed_client_time = make_aware(parsed_client_time)
+
+            if parsed_client_time and parsed_client_time != instance.updated_at:
+                return Response(
+                    {"detail": "This report has been modified by another user. Please refresh."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+                
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
         if serializer.is_valid():
@@ -177,6 +208,19 @@ class ReportViewSet(viewsets.ModelViewSet):
         # Get the current status before updating
         previous_status = instance.status
         
+        # Compare updated_at for concurrency control
+        client_updated_at = request.data.get('updated_at')
+        if client_updated_at:
+            parsed_client_time = parse_datetime(client_updated_at)
+            if parsed_client_time and not is_aware(parsed_client_time):
+                parsed_client_time = make_aware(parsed_client_time)
+
+            if parsed_client_time and parsed_client_time != instance.updated_at:
+                return Response(
+                    {"detail": "This report has been modified by another user. Please refresh."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+    
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
         if serializer.is_valid():
@@ -302,6 +346,32 @@ class TaskTemplateViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['name', 'description']
     ordering_fields = ['name']
+    
+    def update(self, request, *args, **kwargs):
+        """Allow partial updates while keeping existing values for missing fields."""
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        
+        # Compare updated_at for concurrency control
+        client_updated_at = request.data.get('updated_at')
+        if client_updated_at:
+            parsed_client_time = parse_datetime(client_updated_at)
+            if parsed_client_time and not is_aware(parsed_client_time):
+                parsed_client_time = make_aware(parsed_client_time)
+
+            if parsed_client_time and parsed_client_time != instance.updated_at:
+                return Response(
+                    {"detail": "This report has been modified by another user. Please refresh."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+                
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
 
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
@@ -353,6 +423,20 @@ class InventoryViewSet(viewsets.ModelViewSet):
         """Allow partial updates while keeping existing values for missing fields."""
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
+        
+        # Compare updated_at for concurrency control
+        client_updated_at = request.data.get('updated_at')
+        if client_updated_at:
+            parsed_client_time = parse_datetime(client_updated_at)
+            if parsed_client_time and not is_aware(parsed_client_time):
+                parsed_client_time = make_aware(parsed_client_time)
+
+            if parsed_client_time and parsed_client_time != instance.updated_at:
+                return Response(
+                    {"detail": "This report has been modified by another user. Please refresh."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+                
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
         if serializer.is_valid():
