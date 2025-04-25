@@ -128,10 +128,21 @@ const VehicleModal = () => {
     }
 
     try {
-      await updateVehicleWithAlert(modalState.selectedItem.id, vehicleData)
+      await updateVehicleWithAlert(modalState.selectedItem.id, {
+        ...vehicleData,
+        updated_at: modalState.selectedItem.updated_at, // Concurrency check
+      })
     } catch (error) {
-      console.error('Error updating vehicle:', error)
-      Toast.fire('Error', 'Something went wrong.', 'error')
+      if (error.response?.status === 409) {
+        Toast.fire(
+          'Error',
+          'This vehicle was updated by another user. Please reload and try again.',
+          'error',
+        )
+      } else {
+        console.error('Error updating vehicle:', error)
+        Toast.fire('Error', 'Something went wrong.', 'error')
+      }
     } finally {
       setVehicleData(null)
       closeModals()

@@ -102,10 +102,21 @@ const TaskTemplateModal = () => {
     }
 
     try {
-      await updateTaskTemplateWithAlert(modalState.selectedItem.id, taskTemplateData)
+      await updateTaskTemplateWithAlert(modalState.selectedItem.id, {
+        ...taskTemplateData,
+        updated_at: modalState.selectedItem.updated_at, // Concurrency check
+      })
     } catch (error) {
-      console.error('Error updating task template:', error)
-      Toast.fire('Error', 'Something went wrong.', 'error')
+      if (error.response?.status === 409) {
+        Toast.fire(
+          'Error',
+          'This task was updated by another user. Please reload and try again.',
+          'error',
+        )
+      } else {
+        console.error('Error updating task:', error)
+        Toast.fire('Error', 'Something went wrong.', 'error')
+      }
     } finally {
       setTaskTemplateData(null)
       closeModals()

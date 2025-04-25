@@ -15,7 +15,7 @@ const withSuccessAlert = (fn, successMessage, customMessage = null) => {
       return result
     } catch (error) {
       console.error('Error:', error)
-      Toast.fire('Error', 'Something went wrong.', 'error')
+      throw error
     }
   }
 }
