@@ -7,6 +7,7 @@ import useReportStore from '../stores/useReportStore'
 import ReportCard from '../components/reports/ReportCard'
 import InvoiceCard from '../components/invoices/InvoiceCard'
 import FilterBar from '../components/FilterBar'
+import LoadingScreen from '../components/LoadingScreen'
 // Utils
 import { Toast } from '../utils/sweetalert'
 import getFilterOptions from '../utils/filterBarFilterOptions'
@@ -56,7 +57,7 @@ const Invoices = () => {
     )
 
     return reportsAfterFilter
-  }, [reports, filters, vehicles, getVehicleInfoByVehicleId])
+  }, [reports, filters, vehicles])
 
   // Filter invoices based on filters
   const filteredInvoices = useMemo(() => {
@@ -90,7 +91,7 @@ const Invoices = () => {
       <div className="invoices">
         <div className="invoices-list">
           {loadingReports ? (
-            <p>Loading reports...</p>
+            <LoadingScreen fullscreen={false} />
           ) : filteredReports.length > 0 ? (
             filteredReports.map((report) => (
               <ReportCard
@@ -106,7 +107,7 @@ const Invoices = () => {
         <div className="invoices-divider"></div>
         <div className="invoices-list">
           {loadingInvoices ? (
-            <p>Loading invoices...</p>
+            <LoadingScreen fullscreen={false} />
           ) : filteredInvoices.length > 0 ? (
             filteredInvoices.map((invoice) => <InvoiceCard key={invoice.id} invoice={invoice} />)
           ) : (

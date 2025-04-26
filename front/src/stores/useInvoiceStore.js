@@ -3,7 +3,7 @@ import axiosInstance from '../utils/axiosInstance'
 
 const INVOICE_API_URL = process.env.REACT_APP_API_URL + '/invoices/'
 
-const useInvoiceStore = create((set, get) => ({
+const useInvoiceStore = create((set) => ({
   invoices: [],
   pagination: null,
   loading: false,

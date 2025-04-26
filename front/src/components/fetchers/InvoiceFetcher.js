@@ -25,7 +25,7 @@ const InvoiceFetcher = () => {
 
       fetchInvoices({ ...filters, ordering, limit, offset })
     }
-  }, [location.pathname, invoices.length])
+  }, [location.pathname, invoices.length, fetchInvoices])
 
   return null
 }

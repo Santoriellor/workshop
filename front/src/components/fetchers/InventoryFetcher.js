@@ -24,7 +24,7 @@ const InventoryFetcher = () => {
         fetchInventory({ ...filters, ordering, limit, offset })
       }
     }
-  }, [location.pathname, inventory.length])
+  }, [location.pathname, inventory.length, fetchInventory])
 
   return null
 }

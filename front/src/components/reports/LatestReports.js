@@ -2,6 +2,7 @@
 import useReportStore from '../../stores/useReportStore'
 // Components
 import ReportCard from './ReportCard'
+import LoadingScreen from '../LoadingScreen'
 
 const LatestReports = () => {
   const { reports, loading } = useReportStore()
@@ -12,7 +13,7 @@ const LatestReports = () => {
       {/* latest reports list with card display */}
       <div className="list">
         {loading ? (
-          <p>Loading reports...</p>
+          <LoadingScreen fullscreen={false} />
         ) : reports.length > 0 ? (
           reports.map((item) => <ReportCard key={item.id} item={item} />)
         ) : (

@@ -6,6 +6,7 @@ import Login from './components/authentication/Login'
 import Register from './components/authentication/Register'
 import PrivateRoute from './components/authentication/PrivateRoute'
 import DeleteModal from './components/DeleteModal'
+import LoadingScreen from './components/LoadingScreen'
 // Pages
 import Dashboard from './pages/Dashboard'
 import Report from './pages/Report'
@@ -46,7 +47,7 @@ const Main = () => {
   const { modalState } = useGlobalContext()
   const ModalComponent = modalState.modalComponent
 
-  if (loadingAuth) return <p>Loading...</p>
+  if (loadingAuth) return <LoadingScreen fullscreen />
 
   return (
     <>

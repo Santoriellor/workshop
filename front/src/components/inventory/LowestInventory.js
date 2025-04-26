@@ -2,6 +2,7 @@
 import useInventoryStore from '../../stores/useInventoryStore'
 // Components
 import InventoryCard from './InventoryCard'
+import LoadingScreen from '../LoadingScreen'
 
 const LowestInventory = () => {
   const { inventory, loading } = useInventoryStore()
@@ -12,7 +13,7 @@ const LowestInventory = () => {
       {/* latest reports list with card display */}
       <div className="list">
         {loading ? (
-          <p>Loading inventory...</p>
+          <LoadingScreen fullscreen={false} />
         ) : inventory.length > 0 ? (
           inventory.map((item) => <InventoryCard key={item.id} item={item} />)
         ) : (

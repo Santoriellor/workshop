@@ -13,7 +13,7 @@ const OwnerFetcher = () => {
     if (paths.includes(location.pathname)) {
       fetchOwners({}, 'full_name')
     }
-  }, [location.pathname, owners.length])
+  }, [location.pathname, owners.length, fetchOwners])
 
   return null
 }

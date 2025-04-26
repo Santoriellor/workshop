@@ -17,7 +17,7 @@ const TaskTemplateFetcher = () => {
 
       fetchTaskTemplates({ ...filters, ordering, limit, offset })
     }
-  }, [location.pathname, taskTemplates.length])
+  }, [location.pathname, taskTemplates.length, fetchTaskTemplates])
 
   return null
 }

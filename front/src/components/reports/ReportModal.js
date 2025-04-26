@@ -287,7 +287,7 @@ const ReportModal = () => {
         remarks: '',
       })
     }
-  }, [modalState.selectedItem])
+  }, [modalState.selectedItem, authenticatedUser.id])
 
   useEffect(() => {
     if (modalState.selectedItem && tasks) {

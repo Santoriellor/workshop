@@ -5,7 +5,7 @@ const REPORT_API_URL = process.env.REACT_APP_API_URL + '/reports/'
 const TASK_API_URL = process.env.REACT_APP_API_URL + '/tasks/'
 const PART_API_URL = process.env.REACT_APP_API_URL + '/parts/'
 
-const useReportStore = create((set, get) => ({
+const useReportStore = create((set) => ({
   reports: [],
   tasks: [],
   parts: [],
