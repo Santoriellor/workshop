@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 // Components
 import FilterBar from './FilterBar'
 import ScrollToTopButton from './buttons/ScrollToTopButton'
+import LoadingScreen from './LoadingScreen'
 // Zustand
 import useVehicleStore from '../stores/useVehicleStore'
 // Contexts
@@ -48,7 +49,7 @@ const Page = ({
     }
 
     return itemsAfterFilter
-  }, [items, filters, vehicles, getVehicleInfoByVehicleId])
+  }, [items, filters, vehicles])
 
   return (
     <>
@@ -58,7 +59,7 @@ const Page = ({
       {/* Items list with card display */}
       <div className="list">
         {loadingItem ? (
-          <p>Loading {itemType.toLowerCase()}...</p>
+          <LoadingScreen fullscreen={false} />
         ) : filteredItems.length > 0 ? (
           filteredItems.map((item) => (
             <CardComponent

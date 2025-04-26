@@ -3,7 +3,7 @@ import axiosInstance from '../utils/axiosInstance'
 
 const OWNER_API_URL = process.env.REACT_APP_API_URL + '/owners/'
 
-const useOwnerStore = create((set, get) => ({
+const useOwnerStore = create((set) => ({
   owners: [],
   loading: false,
   error: null,

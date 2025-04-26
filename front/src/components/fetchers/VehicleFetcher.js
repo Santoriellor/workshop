@@ -13,7 +13,7 @@ const VehicleFetcher = () => {
     if (paths.includes(location.pathname)) {
       fetchVehicles({}, 'brand, model')
     }
-  }, [location.pathname, vehicles.length])
+  }, [location.pathname, vehicles.length, fetchVehicles])
 
   return null
 }

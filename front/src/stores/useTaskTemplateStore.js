@@ -3,7 +3,7 @@ import axiosInstance from '../utils/axiosInstance'
 
 const TASKTEMPLATE_API_URL = process.env.REACT_APP_API_URL + '/task-templates/'
 
-const useTaskTemplateStore = create((set, get) => ({
+const useTaskTemplateStore = create((set) => ({
   taskTemplates: [],
   loading: false,
   error: null,

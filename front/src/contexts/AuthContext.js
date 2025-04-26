@@ -4,9 +4,9 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 // Utils
 import { setAxiosToken } from '../utils/axiosInstance'
+import { logout as utilsLogout } from '../utils/authUtils'
 
 const apiURL = process.env.REACT_APP_API_URL
-
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
@@ -36,6 +36,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoadingAuth(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const login = async (email, password) => {
@@ -81,21 +82,8 @@ export const AuthProvider = ({ children }) => {
   }
 
   const logout = () => {
-    // Remove tokens
-    localStorage.removeItem('token')
-    localStorage.removeItem('refreshToken')
-
-    // Clear user data
+    utilsLogout()
     setAuthenticatedUser(null)
-
-    // Alert the user on success
-    Swal.fire({
-      icon: 'success',
-      title: 'Logout Successful',
-      text: 'You have been logged out successfully!',
-    })
-
-    // Redirect to login
     navigate('/login')
   }
 
@@ -133,42 +121,6 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const refreshToken = async () => {
-    setLoadingAuth(true)
-    try {
-      const refreshToken = localStorage.getItem('refreshToken')
-      if (!refreshToken) throw new Error('No refresh token available')
-
-      const response = await axios.post(`${apiURL}/token/refresh/`, {
-        refresh: refreshToken,
-      })
-
-      localStorage.setItem('token', response.data.access)
-      if (response.data.refresh) {
-        localStorage.setItem('refreshToken', response.data.refresh)
-      }
-
-      // Set the token for axios headers
-      setAxiosToken(response.data.access)
-
-      // Update user data
-      await fetchUserData(response.data.access)
-
-      return response.data.access
-    } catch (error) {
-      console.error('Token refresh failed:', error)
-
-      if (error.response?.status === 401) {
-        console.error('Refresh token expired, logging out...')
-        logout()
-      }
-
-      return null
-    } finally {
-      setLoadingAuth(false)
-    }
-  }
-
   return (
     <AuthContext.Provider
       value={{
@@ -176,7 +128,6 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         register,
-        refreshToken,
         loadingAuth,
       }}
     >

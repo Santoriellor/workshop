@@ -19,22 +19,7 @@ const ReportFetcher = () => {
       const { filters, ordering, limit, offset } = getReportFilters(location.pathname)
       fetchReports({ ...filters, ordering, limit, offset })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname, reports.length])
-
-  // Fetch reports when a report is added and pathname stays the same
-  /* useEffect(() => {
-    const reportPaths = ['/report', '/dashboard', '/invoices']
-    if (
-      reportPaths.includes(location.pathname) &&
-      location.pathname === prevPathname.current &&
-      reports.length > prevReportLength.current
-    ) {
-      const { filters, ordering, limit, offset } = getReportFilters(location.pathname)
-      fetchReports({ ...filters, ordering, limit, offset })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reports.length, location.pathname]) */
+  }, [location.pathname, reports.length, fetchReports])
 
   // Automatically fetch data when the selectedItem changes
   useEffect(() => {

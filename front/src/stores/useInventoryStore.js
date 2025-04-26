@@ -3,7 +3,7 @@ import axiosInstance from '../utils/axiosInstance'
 
 const INVENTORY_API_URL = process.env.REACT_APP_API_URL + '/inventory/'
 
-const useInventoryStore = create((set, get) => ({
+const useInventoryStore = create((set) => ({
   inventory: [],
   pagination: null,
   loading: false,

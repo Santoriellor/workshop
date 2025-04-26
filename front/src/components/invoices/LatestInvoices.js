@@ -2,6 +2,7 @@
 import useInvoiceStore from '../../stores/useInvoiceStore'
 // Components
 import InvoiceCard from './InvoiceCard'
+import LoadingScreen from '../LoadingScreen'
 
 const LatestInvoices = () => {
   const { invoices, loading } = useInvoiceStore()
@@ -12,7 +13,7 @@ const LatestInvoices = () => {
       {/* latest invoices list with card display */}
       <div className="list">
         {loading ? (
-          <p>Loading invoices...</p>
+          <LoadingScreen fullscreen={false} />
         ) : invoices.length > 0 ? (
           invoices.map((invoice) => <InvoiceCard key={invoice.id} invoice={invoice} />)
         ) : (

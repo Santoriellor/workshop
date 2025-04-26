@@ -3,7 +3,7 @@ import axiosInstance from '../utils/axiosInstance'
 
 const USER_API_URL = process.env.REACT_APP_API_URL + '/users/'
 
-const useUserStore = create((set, get) => ({
+const useUserStore = create((set) => ({
   users: [],
   loading: false,
   error: null,

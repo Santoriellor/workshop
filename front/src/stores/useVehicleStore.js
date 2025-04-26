@@ -3,7 +3,7 @@ import axiosInstance from '../utils/axiosInstance'
 
 const VEHICLE_API_URL = process.env.REACT_APP_API_URL + '/vehicles/'
 
-const useVehicleStore = create((set, get) => ({
+const useVehicleStore = create((set) => ({
   vehicles: [],
   selectedVehicle: null,
   loading: false,
