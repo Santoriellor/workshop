@@ -19,18 +19,24 @@ const TaskTemplateCard = ({ item }) => {
     'Vehicle deleted successfully!',
   )
 
+  // Open viewing modal
+  const handleCardClick = (e) => {
+    // Prevent triggering view mode if clicking on an action button
+    if (!e.target.closest('.actions')) {
+      openModal(TaskTemplateModal, item, cardItemType, true)
+    }
+  }
+  // Open editing modal
+  const handleEditClick = () => {
+    openModal(TaskTemplateModal, item, cardItemType, false)
+  }
+  // Open delete confirmation modal
+  const handleDeleteClick = () => {
+    openDeleteModal(item, cardItemType, () => deleteTaskTemplateWithAlert)
+  }
+
   return (
-    <div
-      key={item.id}
-      className="card"
-      title="View task template"
-      onClick={(e) => {
-        // Prevent triggering view mode if clicking on an action button
-        if (!e.target.closest('.actions')) {
-          openModal(TaskTemplateModal, item, cardItemType, true)
-        }
-      }}
-    >
+    <div key={item.id} className="card" title="View task template" onClick={handleCardClick}>
       <div className="card-content">
         <section>
           <header>{item.name}</header>
@@ -44,18 +50,10 @@ const TaskTemplateCard = ({ item }) => {
           </div>
         </section>
         <section className="actions">
-          <button
-            title="Edit task"
-            className="btn btn-edit"
-            onClick={() => openModal(TaskTemplateModal, item, cardItemType, false)}
-          >
+          <button title="Edit task" className="btn btn-edit" onClick={handleEditClick}>
             Edit
           </button>
-          <button
-            title="Delete task"
-            className="btn btn-delete"
-            onClick={() => openDeleteModal(item, cardItemType, () => deleteTaskTemplateWithAlert)}
-          >
+          <button title="Delete task" className="btn btn-delete" onClick={handleDeleteClick}>
             Delete
           </button>
         </section>

@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 // Components
 import ReportModal from './ReportModal'
@@ -13,6 +14,7 @@ import { useGlobalContext } from '../../contexts/GlobalContext'
 import { getVehicleInfoByVehicleId } from '../../utils/getVehicleInfoByVehicleId'
 import { getOwnerNameByVehicleId } from '../../utils/getOwnerNameByVehicleId'
 import withSuccessAlert from '../../utils/successAlert'
+import { truncateText } from '../../utils/stringUtils'
 
 const ReportCard = ({ item, handleExportClick }) => {
   const cardItemType = 'Report'
@@ -31,28 +33,40 @@ const ReportCard = ({ item, handleExportClick }) => {
   // Delete reports with alert
   const deleteReportWithAlert = withSuccessAlert(deleteReport, 'Report deleted successfully!')
 
-  // Get the user name by ID
+  // Get user name by user Id
   const getUserNameById = (userId) => {
     return users.find((user) => user.id === userId)?.username || 'Unknown User'
   }
 
-  // Return a truncated text
-  const truncateText = (text, maxLength = 25) => {
-    return text.length > maxLength ? text.slice(0, maxLength) + '...' : text
+  // Memoized values
+  const vehicleInfo = useMemo(
+    () => getVehicleInfoByVehicleId(item.vehicle, vehicles),
+    [item.id, vehicles],
+  )
+  const ownerName = useMemo(
+    () => getOwnerNameByVehicleId(item.vehicle, vehicles, owners),
+    [item.id, vehicles, owners],
+  )
+  const userName = useMemo(() => getUserNameById(item.user), [item.user, users])
+
+  // Open viewing modal
+  const handleCardClick = (e) => {
+    // Prevent triggering view mode if clicking on an action button
+    if (!e.target.closest('.actions')) {
+      openModal(ReportModal, item, cardItemType, true)
+    }
+  }
+  // Open editing modal
+  const handleEditClick = () => {
+    openModal(ReportModal, item, cardItemType, false)
+  }
+  // Open delete confirmation modal
+  const handleDeleteClick = () => {
+    openDeleteModal(item, cardItemType, () => deleteReportWithAlert)
   }
 
   return (
-    <div
-      key={item.id}
-      className="card"
-      title="View Report"
-      onClick={(e) => {
-        // Prevent triggering view mode if clicking on an action button
-        if (!e.target.closest('.actions')) {
-          openModal(ReportModal, item, cardItemType, true)
-        }
-      }}
-    >
+    <div key={item.id} className="card" title="View Report" onClick={handleCardClick}>
       {!isPathInvoices && (
         <div className="status">
           <SvgStatus status={item.status} />
@@ -61,7 +75,7 @@ const ReportCard = ({ item, handleExportClick }) => {
 
       <div className="card-content">
         <section>
-          <header>{truncateText(getVehicleInfoByVehicleId(item.vehicle, vehicles))}</header>
+          <header>{truncateText(vehicleInfo, 30)}</header>
           <div>
             {(isPathReports || isPathInvoices || isPathDashboard) && (
               <>
@@ -71,7 +85,7 @@ const ReportCard = ({ item, handleExportClick }) => {
                 </p>
                 <p>
                   <strong>Owner:</strong>&nbsp;
-                  {getOwnerNameByVehicleId(item.vehicle, vehicles, owners)}
+                  {ownerName}
                 </p>
               </>
             )}
@@ -94,7 +108,7 @@ const ReportCard = ({ item, handleExportClick }) => {
                 </p>
                 <p>
                   <strong>Created By:</strong>&nbsp;
-                  {getUserNameById(item.user)}
+                  {userName}
                 </p>
               </>
             )}
@@ -103,18 +117,10 @@ const ReportCard = ({ item, handleExportClick }) => {
         <section className="actions">
           {isPathReports && (
             <>
-              <button
-                title="Edit Report"
-                className="btn btn-edit"
-                onClick={() => openModal(ReportModal, item, cardItemType, false)}
-              >
+              <button title="Edit Report" className="btn btn-edit" onClick={handleEditClick}>
                 Edit
               </button>
-              <button
-                title="Delete Report"
-                className="btn btn-delete"
-                onClick={() => openDeleteModal(item, cardItemType, () => deleteReportWithAlert)}
-              >
+              <button title="Delete Report" className="btn btn-delete" onClick={handleDeleteClick}>
                 Delete
               </button>
             </>

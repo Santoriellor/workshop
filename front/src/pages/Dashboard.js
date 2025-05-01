@@ -9,6 +9,8 @@ import ScrollToTopButton from '../components/buttons/ScrollToTopButton'
 import { useAuth } from '../contexts/AuthContext'
 // Styles
 import '../styles/Dashboard.css'
+// Utils
+import { capitalizeFirstLetter } from '../utils/stringUtils'
 
 const Dashboard = () => {
   const { authenticatedUser } = useAuth()
@@ -16,7 +18,7 @@ const Dashboard = () => {
   return (
     <>
       <div className="dashboard-header">
-        Dashboard - You are logged in as {authenticatedUser.username}
+        Dashboard - You are logged in as {capitalizeFirstLetter(authenticatedUser.username)}
       </div>
       <div className="dashboard">
         <section className="lowest-inventory">

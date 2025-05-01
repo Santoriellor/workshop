@@ -117,6 +117,13 @@ class ReportSerializer(serializers.ModelSerializer):
     formatted_updated_at = serializers.SerializerMethodField()
     status_display = serializers.SerializerMethodField()
     
+    # Allow tasks and parts to be passed in the report request body
+    tasks = serializers.ListField(write_only=True, child=serializers.IntegerField(), required=False)
+    parts = serializers.ListField(write_only=True, child=serializers.DictField(), required=False)
+    # Allow tasks and parts to be passed in the report response body
+    tasks_data = TaskSerializer(many=True, source='task_set', read_only=True)
+    parts_data = PartSerializer(many=True, source='part_set', read_only=True)
+    
     class Meta:
         model = Report
         fields = '__all__'
@@ -128,6 +135,49 @@ class ReportSerializer(serializers.ModelSerializer):
         return format(obj.updated_at, "F j, Y")
     def get_status_display(self, obj):
         return obj.get_status_display()
+    
+    def create(self, validated_data):
+        tasks = validated_data.pop('tasks', [])
+        parts = validated_data.pop('parts', [])
+
+        report = Report.objects.create(**validated_data)
+
+        Task.objects.bulk_create([
+            Task(report=report, task_template_id=task_id) for task_id in tasks
+        ])
+
+        Part.objects.bulk_create([
+            Part(report=report, part_id=part_data["part"], quantity_used=part_data["quantity_used"])
+            for part_data in parts
+        ])
+
+        return report
+    
+    def update(self, instance, validated_data):
+        tasks = validated_data.pop('tasks', None)
+        parts = validated_data.pop('parts', None)
+
+        instance = super().update(instance, validated_data)
+
+        # Handle tasks
+        if tasks is not None:
+            instance.task_set.all().delete()
+            Task.objects.bulk_create([
+                Task(report=instance, task_template_id=task_id) for task_id in tasks
+            ])
+
+        # Handle parts
+        if parts is not None:
+            instance.part_set.all().delete()
+            Part.objects.bulk_create([
+                Part(
+                    report=instance,
+                    part_id=part_data["part"],
+                    quantity_used=part_data["quantity_used"]
+                ) for part_data in parts
+            ])
+
+        return instance
 
 
 class InvoiceSerializer(serializers.ModelSerializer):

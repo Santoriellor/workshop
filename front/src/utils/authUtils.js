@@ -29,5 +29,5 @@ export const refreshToken = async () => {
 export const logout = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('refreshToken')
-  window.location.href = '/login' // fallback way to redirect
+  // window.location.href = '/login' // fallback way to redirect
 }

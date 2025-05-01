@@ -373,23 +373,6 @@ class TaskTemplateViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.errors, status=400)
 
-class TaskViewSet(viewsets.ModelViewSet):
-    queryset = Task.objects.all()
-    serializer_class = TaskSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def update(self, request, *args, **kwargs):
-        """Allow partial updates while keeping existing values for missing fields."""
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=400)
-
 class InventoryViewSet(viewsets.ModelViewSet):
     queryset = Inventory.objects.all()
     serializer_class = InventorySerializer
@@ -437,23 +420,6 @@ class InventoryViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_409_CONFLICT,
                 )
                 
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=400)
-
-class PartViewSet(viewsets.ModelViewSet):
-    queryset = Part.objects.all()
-    serializer_class = PartSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def update(self, request, *args, **kwargs):
-        """Allow partial updates while keeping existing values for missing fields."""
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
         if serializer.is_valid():

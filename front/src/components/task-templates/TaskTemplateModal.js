@@ -1,111 +1,66 @@
-import { useState, useEffect, useMemo } from 'react'
-// Zustand
-import useTaskTemplateStore from '../../stores/useTaskTemplateStore'
 // Contexts
 import { useGlobalContext } from '../../contexts/GlobalContext'
+// Zustand
+import useTaskTemplateStore from '../../stores/useTaskTemplateStore'
 // Components
 import ModalGenericsClose from '../modalGenerics/ModalGenericsClose'
 import ModalGenericsTitle from '../modalGenerics/ModalGenericsTitle'
+import FormField from '../formHelper/FormField'
+// Hooks
+import { useTaskTemplateForm } from '../../hooks/useTaskTemplateForm'
 // Utils
-import { Toast } from '../../utils/sweetalert'
-import { isTakenTaskName, isValidPrice } from '../../utils/validation'
 import withSuccessAlert from '../../utils/successAlert'
+import { Toast } from '../../utils/sweetalert'
 // Styles
 import '../../styles/Modal.css'
 
 const TaskTemplateModal = () => {
-  // Error messages
-  const [errors, setErrors] = useState({
-    name: 'This field is required.',
-    description: 'This field is required.',
-    price: 'This field is required.',
-  })
-
   const { modalState, openDeleteModal, closeModals, toggleReadonly } = useGlobalContext()
   const { createTaskTemplate, updateTaskTemplate, deleteTaskTemplate, taskTemplates, loading } =
     useTaskTemplateStore()
 
-  const [taskTemplateData, setTaskTemplateData] = useState({
+  const initialData = {
     name: modalState.selectedItem?.name || '',
     description: modalState.selectedItem?.description || '',
     price: modalState.selectedItem?.price || '',
-  })
+  }
+
+  const { data, setData, errors, handleChange, isValid } = useTaskTemplateForm(
+    initialData,
+    taskTemplates,
+    modalState.selectedItem,
+  )
 
   // Create, Update, Delete task with alert
   const createTaskTemplateWithAlert = withSuccessAlert(
     createTaskTemplate,
-    'Vehicle created successfully!',
+    'Task created successfully!',
   )
   const updateTaskTemplateWithAlert = withSuccessAlert(
     updateTaskTemplate,
-    'Vehicle updated successfully!',
+    'Task updated successfully!',
   )
   const deleteTaskTemplateWithAlert = withSuccessAlert(
     deleteTaskTemplate,
-    'Vehicle deleted successfully!',
+    'Task deleted successfully!',
   )
 
-  const handleTaskTemplateChange = (e) => {
-    const { name, value } = e.target
-
-    setTaskTemplateData({
-      ...taskTemplateData,
-      [name]: value,
-    })
-  }
-
-  const handleCreateSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!taskTemplateData.name) {
-      Toast.fire('Error', 'Please fill in a task name.', 'error')
+    if (!isValid) {
+      Toast.fire('Error', 'Please correct the errors.', 'error')
       return
     }
-    if (!taskTemplateData.description) {
-      Toast.fire('Error', 'Please fill in a description.', 'error')
-      return
-    }
-    if (!taskTemplateData.price) {
-      Toast.fire('Error', 'Please fill in a price.', 'error')
-      return
-    }
-
     try {
-      const newTaskTemplate = await createTaskTemplateWithAlert(taskTemplateData)
-      if (newTaskTemplate) {
-        setTaskTemplateData({
-          name: '',
-          description: '',
-          price: '',
+      if (modalState.selectedItem) {
+        await updateTaskTemplateWithAlert(modalState.selectedItem.id, {
+          ...data,
+          updated_at: modalState.selectedItem.updated_at,
         })
+      } else {
+        await createTaskTemplateWithAlert(data)
+        setData(initialData)
       }
-    } catch (error) {
-      console.error('Error creating task template:', error)
-      Toast.fire('Error', 'Something went wrong.', 'error')
-    } finally {
-      closeModals()
-    }
-  }
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault()
-    if (!taskTemplateData.name) {
-      Toast.fire('Error', 'Please fill in a task name.', 'error')
-      return
-    }
-    if (!taskTemplateData.description) {
-      Toast.fire('Error', 'Please fill in a description.', 'error')
-      return
-    }
-    if (!taskTemplateData.price) {
-      Toast.fire('Error', 'Please fill in a price.', 'error')
-      return
-    }
-
-    try {
-      await updateTaskTemplateWithAlert(modalState.selectedItem.id, {
-        ...taskTemplateData,
-        updated_at: modalState.selectedItem.updated_at, // Concurrency check
-      })
     } catch (error) {
       if (error.response?.status === 409) {
         Toast.fire(
@@ -118,59 +73,14 @@ const TaskTemplateModal = () => {
         Toast.fire('Error', 'Something went wrong.', 'error')
       }
     } finally {
-      setTaskTemplateData(null)
       closeModals()
     }
   }
 
-  // Live validation
-  const existingTaskNames = taskTemplates
-    .map((task) => task.name)
-    .filter(
-      (name) =>
-        !modalState.selectedItem ||
-        name.toLowerCase() !== modalState.selectedItem.name.toLowerCase(),
-    )
-
-  useEffect(() => {
-    const taskTemplateError =
-      taskTemplateData.name.trim() === ''
-        ? 'This field is required.'
-        : isTakenTaskName(taskTemplateData.name, existingTaskNames)
-    setErrors((prevErrors) =>
-      prevErrors.name !== taskTemplateError
-        ? { ...prevErrors, name: taskTemplateError }
-        : prevErrors,
-    )
-  }, [taskTemplateData.name, existingTaskNames])
-
-  useEffect(() => {
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      description: taskTemplateData.description ? '' : 'This field is required.',
-    }))
-  }, [taskTemplateData.description])
-
-  useEffect(() => {
-    const priceError =
-      taskTemplateData.price.trim() === ''
-        ? 'This field is required.'
-        : isValidPrice(taskTemplateData.price)
-    setErrors((prevErrors) =>
-      prevErrors.price !== priceError ? { ...prevErrors, price: priceError } : prevErrors,
-    )
-  }, [taskTemplateData.price])
-
-  const isFormValid = useMemo(
-    () =>
-      !errors.name &&
-      !errors.description &&
-      !errors.price &&
-      taskTemplateData.name &&
-      taskTemplateData.description &&
-      taskTemplateData.price,
-    [errors, taskTemplateData],
-  )
+  // Open delete confirmation modal
+  const handleDeleteClick = () => {
+    openDeleteModal(modalState.selectedItem, modalState.itemType, () => deleteTaskTemplateWithAlert)
+  }
 
   return (
     <div className="modal-container">
@@ -181,55 +91,47 @@ const TaskTemplateModal = () => {
           selectedItem={modalState.selectedItem}
           itemType={modalState.itemType}
         />
-        <form
-          className="modal-form"
-          onSubmit={modalState.selectedItem ? handleEditSubmit : handleCreateSubmit}
-        >
+        <form className="modal-form" onSubmit={handleSubmit}>
           <fieldset>
-            <label>
-              <span>Name:</span>
+            <FormField label="Name" error={errors.name}>
               <input
                 className={errors.name ? 'invalid' : 'valid'}
                 type="text"
                 name="name"
-                value={taskTemplateData.name}
-                onChange={handleTaskTemplateChange}
+                value={data.name}
+                onChange={handleChange}
                 placeholder="Enter name"
                 required
                 disabled={modalState.readonly}
               />
-              <p className="error-text">{errors.name && <>{errors.name}</>}</p>
-            </label>
+            </FormField>
 
-            <label>
-              <span>Description:</span>
+            <FormField label="Description" error={errors.description}>
               <input
                 className={errors.description ? 'invalid' : 'valid'}
                 type="textarea"
                 name="description"
-                value={taskTemplateData.description}
-                onChange={handleTaskTemplateChange}
+                value={data.description}
+                onChange={handleChange}
                 placeholder="Please describe the task"
                 required
                 disabled={modalState.readonly}
               />
-              <p className="error-text">{errors.description && <>{errors.description}</>}</p>
-            </label>
+            </FormField>
 
-            <label>
-              <span>Price:</span>
+            <FormField label="Price" error={errors.price}>
               <input
                 className={errors.price ? 'invalid' : 'valid'}
                 type="text"
                 name="price"
-                value={taskTemplateData.price}
-                onChange={handleTaskTemplateChange}
+                value={data.price}
+                onChange={handleChange}
                 placeholder="Enter price"
                 disabled={modalState.readonly}
               />
-              <p className="error-text">{errors.price && <>{errors.price}</>}</p>
-            </label>
+            </FormField>
           </fieldset>
+
           <div className="button-group">
             {modalState.selectedItem ? (
               <>
@@ -238,25 +140,16 @@ const TaskTemplateModal = () => {
                     Edit Task
                   </button>
                 ) : (
-                  <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
+                  <button type="submit" disabled={modalState.readonly || !isValid || loading}>
                     Update Task
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() =>
-                    openDeleteModal(
-                      modalState.selectedItem,
-                      modalState.itemType,
-                      () => deleteTaskTemplateWithAlert,
-                    )
-                  }
-                >
+                <button type="button" onClick={handleDeleteClick}>
                   Delete
                 </button>
               </>
             ) : (
-              <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
+              <button type="submit" disabled={modalState.readonly || !isValid || loading}>
                 Create Task
               </button>
             )}

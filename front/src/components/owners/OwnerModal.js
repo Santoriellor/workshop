@@ -1,118 +1,58 @@
-import { useState, useEffect, useMemo } from 'react'
-// Zustand
-import useOwnerStore from '../../stores/useOwnerStore'
 // Contexts
 import { useGlobalContext } from '../../contexts/GlobalContext'
+// Zustand
+import useOwnerStore from '../../stores/useOwnerStore'
 // Components
 import ModalGenericsClose from '../modalGenerics/ModalGenericsClose'
 import ModalGenericsTitle from '../modalGenerics/ModalGenericsTitle'
+import FormField from '../formHelper/FormField'
+// Hooks
+import { useOwnerForm } from '../../hooks/useOwnerForm'
 // Utils
 import { Toast } from '../../utils/sweetalert'
-import {
-  isValidEmail,
-  isTakenOwnerName,
-  isValidPhone,
-  isValidAddress,
-} from '../../utils/validation'
 import withSuccessAlert from '../../utils/successAlert'
 // Styles
 import '../../styles/Modal.css'
 import '../../styles/Auth.css'
 
 const OwnerModal = () => {
-  // Error messages
-  const [errors, setErrors] = useState({
-    full_name: '',
-    email: '',
-    address: '',
-    phone: '',
-  })
-
   const { modalState, openDeleteModal, closeModals, toggleReadonly } = useGlobalContext()
   const { owners, createOwner, updateOwner, deleteOwner, loading } = useOwnerStore()
 
-  const [ownerData, setOwnerData] = useState({
+  const initialData = {
     full_name: modalState.selectedItem?.full_name || '',
     email: modalState.selectedItem?.email || '',
     phone: modalState.selectedItem?.phone || '',
     address: modalState.selectedItem?.address || '',
-  })
+  }
+
+  const { data, setData, errors, handleChange, isValid } = useOwnerForm(
+    initialData,
+    owners,
+    modalState.selectedItem,
+  )
 
   // Create, Update, Delete owner with alert
   const createOwnerWithAlert = withSuccessAlert(createOwner, 'Owner created successfully!')
   const updateOwnerWithAlert = withSuccessAlert(updateOwner, 'Owner updated successfully!')
   const deleteOwnerWithAlert = withSuccessAlert(deleteOwner, 'Owner deleted successfully!')
 
-  const handleOwnerChange = (e) => {
-    const { name, value } = e.target
-
-    setOwnerData({
-      ...ownerData,
-      [name]: value,
-    })
-  }
-
-  const handleCreateSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!ownerData.full_name) {
-      Toast.fire('Error', 'Please fill in a full name.', 'error')
+    if (!isValid) {
+      Toast.fire('Error', 'Please correct the errors.', 'error')
       return
     }
-    if (!ownerData.email) {
-      Toast.fire('Error', 'Please select a email.', 'error')
-      return
-    }
-    if (!ownerData.address) {
-      Toast.fire('Error', 'Please select an address.', 'error')
-      return
-    }
-    if (!ownerData.phone) {
-      Toast.fire('Error', 'Please fill in a phone number.', 'error')
-      return
-    }
-
     try {
-      const newOwner = await createOwnerWithAlert(ownerData)
-      if (newOwner) {
-        setOwnerData({
-          full_name: '',
-          email: '',
-          phone: '',
-          address: '',
+      if (modalState.selectedItem) {
+        await updateOwnerWithAlert(modalState.selectedItem.id, {
+          ...data,
+          updated_at: modalState.selectedItem.updated_at,
         })
+      } else {
+        await createOwnerWithAlert(data)
+        setData(initialData)
       }
-    } catch (error) {
-      console.error('Error creating owner:', error)
-      Toast.fire('Error', 'Something went wrong.', 'error')
-    } finally {
-      closeModals()
-    }
-  }
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault()
-    if (!ownerData.full_name) {
-      Toast.fire('Error', 'Please fill in a full name.', 'error')
-      return
-    }
-    if (!ownerData.email) {
-      Toast.fire('Error', 'Please select a email.', 'error')
-      return
-    }
-    if (!ownerData.address) {
-      Toast.fire('Error', 'Please select an address.', 'error')
-      return
-    }
-    if (!ownerData.phone) {
-      Toast.fire('Error', 'Please fill in a phone number.', 'error')
-      return
-    }
-
-    try {
-      await updateOwnerWithAlert(modalState.selectedItem.id, {
-        ...ownerData,
-        updated_at: modalState.selectedItem.updated_at, // Concurrency check
-      })
     } catch (error) {
       if (error.response?.status === 409) {
         Toast.fire(
@@ -125,70 +65,14 @@ const OwnerModal = () => {
         Toast.fire('Error', 'Something went wrong.', 'error')
       }
     } finally {
-      setOwnerData(null)
       closeModals()
     }
   }
 
-  // Live validation
-  const existingOwnerNames = owners
-    .map((owner) => owner.full_name)
-    .filter(
-      (name) =>
-        !modalState.selectedItem ||
-        name.toLowerCase() !== modalState.selectedItem.full_name.toLowerCase(),
-    )
-
-  useEffect(() => {
-    const fullNameError =
-      ownerData.full_name.trim() === ''
-        ? 'This field is required.'
-        : isTakenOwnerName(ownerData.full_name, existingOwnerNames)
-    setErrors((prevErrors) =>
-      prevErrors.full_name !== fullNameError
-        ? { ...prevErrors, full_name: fullNameError }
-        : prevErrors,
-    )
-  }, [ownerData.full_name, existingOwnerNames])
-
-  useEffect(() => {
-    const emailError =
-      ownerData.email.trim() === '' ? 'This field is required.' : isValidEmail(ownerData.email)
-    setErrors((prevErrors) =>
-      prevErrors.email !== emailError ? { ...prevErrors, email: emailError } : prevErrors,
-    )
-  }, [ownerData.email])
-
-  useEffect(() => {
-    const addressError =
-      ownerData.address.trim() === ''
-        ? 'This field is required.'
-        : isValidAddress(ownerData.address)
-    setErrors((prevErrors) =>
-      prevErrors.address !== addressError ? { ...prevErrors, address: addressError } : prevErrors,
-    )
-  }, [ownerData.address])
-
-  useEffect(() => {
-    const phoneError =
-      ownerData.phone.trim() === '' ? 'This field is required.' : isValidPhone(ownerData.phone)
-    setErrors((prevErrors) =>
-      prevErrors.phone !== phoneError ? { ...prevErrors, phone: phoneError } : prevErrors,
-    )
-  }, [ownerData.phone])
-
-  const isFormValid = useMemo(
-    () =>
-      !errors.email &&
-      !errors.full_name &&
-      !errors.address &&
-      !errors.phone &&
-      ownerData.email &&
-      ownerData.full_name &&
-      ownerData.address &&
-      ownerData.phone,
-    [errors, ownerData],
-  )
+  // Open delete confirmation modal
+  const handleDeleteClick = () => {
+    openDeleteModal(modalState.selectedItem, modalState.itemType, () => deleteOwnerWithAlert)
+  }
 
   return (
     <div className="modal-container">
@@ -199,70 +83,59 @@ const OwnerModal = () => {
           selectedItem={modalState.selectedItem}
           itemType={modalState.itemType}
         />
-        <form
-          className="modal-form"
-          onSubmit={modalState.selectedItem ? handleEditSubmit : handleCreateSubmit}
-        >
+        <form className="modal-form" onSubmit={handleSubmit}>
           <fieldset>
-            <label>
-              <span>Full Name:</span>
+            <FormField label="Full name" error={errors.full_name}>
               <input
                 className={errors.full_name ? 'invalid' : 'valid'}
                 type="text"
                 name="full_name"
-                value={ownerData.full_name}
-                onChange={handleOwnerChange}
+                value={data.full_name}
+                onChange={handleChange}
                 placeholder="Enter full name"
                 required
                 disabled={modalState.readonly}
               />
-              <p className="error-text">{errors.full_name && <>{errors.full_name}</>}</p>
-            </label>
+            </FormField>
 
-            <label>
-              <span>Email:</span>
+            <FormField label="Email" error={errors.email}>
               <input
                 className={errors.email ? 'invalid' : 'valid'}
                 type="email"
                 name="email"
-                value={ownerData.email}
-                onChange={handleOwnerChange}
+                value={data.email}
+                onChange={handleChange}
                 placeholder="Enter email"
                 required
                 disabled={modalState.readonly}
               />
-              <p className="error-text">{errors.email && <>{errors.email}</>}</p>
-            </label>
+            </FormField>
 
-            <label>
-              <span>Address:</span>
+            <FormField label="Address" error={errors.address}>
               <input
                 className={errors.address ? 'invalid' : 'valid'}
                 type="text"
                 name="address"
-                value={ownerData.address}
-                onChange={handleOwnerChange}
+                value={data.address}
+                onChange={handleChange}
                 placeholder="Enter address"
                 required
                 disabled={modalState.readonly}
               />
-              <p className="error-text">{errors.address && <>{errors.address}</>}</p>
-            </label>
+            </FormField>
 
-            <label>
-              <span>Phone:</span>
+            <FormField label="Phone" error={errors.phone}>
               <input
                 className={errors.phone ? 'invalid' : 'valid'}
                 type="text"
                 name="phone"
-                value={ownerData.phone}
-                onChange={handleOwnerChange}
+                value={data.phone}
+                onChange={handleChange}
                 placeholder="Enter phone"
                 required
                 disabled={modalState.readonly}
               />
-              <p className="error-text">{errors.phone && <>{errors.phone}</>}</p>
-            </label>
+            </FormField>
           </fieldset>
           <div className="button-group">
             {modalState.selectedItem ? (
@@ -272,25 +145,16 @@ const OwnerModal = () => {
                     Edit Owner
                   </button>
                 ) : (
-                  <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
+                  <button type="submit" disabled={modalState.readonly || !isValid || loading}>
                     Update Owner
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() =>
-                    openDeleteModal(
-                      modalState.selectedItem,
-                      modalState.itemType,
-                      () => deleteOwnerWithAlert,
-                    )
-                  }
-                >
+                <button type="button" onClick={handleDeleteClick}>
                   Delete
                 </button>
               </>
             ) : (
-              <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
+              <button type="submit" disabled={modalState.readonly || !isValid || loading}>
                 Create Owner
               </button>
             )}

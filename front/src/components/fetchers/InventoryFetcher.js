@@ -15,14 +15,7 @@ const InventoryFetcher = () => {
       let limit = null
       let offset = null
 
-      if (location.pathname.includes('inventory') || location.pathname.includes('report')) {
-        fetchInventory({ ...filters, ordering, limit, offset })
-      }
-      if (location.pathname.includes('dashboard')) {
-        ordering = 'quantity_in_stock'
-        limit = 5
-        fetchInventory({ ...filters, ordering, limit, offset })
-      }
+      fetchInventory({ ...filters, ordering, limit, offset })
     }
   }, [location.pathname, inventory.length, fetchInventory])
 

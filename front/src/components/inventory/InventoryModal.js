@@ -1,14 +1,15 @@
-import { useState, useEffect, useMemo } from 'react'
-// Zustand
-import useInventoryStore from '../../stores/useInventoryStore'
 // Contexts
 import { useGlobalContext } from '../../contexts/GlobalContext'
+// Zustand
+import useInventoryStore from '../../stores/useInventoryStore'
 // Components
 import ModalGenericsClose from '../modalGenerics/ModalGenericsClose'
 import ModalGenericsTitle from '../modalGenerics/ModalGenericsTitle'
+import FormField from '../formHelper/FormField'
+// Hooks
+import { useInventoryForm } from '../../hooks/useInventoryForm'
 // Utils
 import { Toast } from '../../utils/sweetalert'
-import { isValidReferenceCode, isValidQuantityInStock, isValidPrice } from '../../utils/validation'
 import withSuccessAlert from '../../utils/successAlert'
 // Styles
 import '../../styles/Modal.css'
@@ -29,208 +30,78 @@ const categories = [
 ]
 
 const InventoryModal = () => {
-  // Error messages
-  const [errors, setErrors] = useState({
-    name: '',
-    reference_code: '',
-    category: '',
-    quantity_in_stock: '',
-    unit_price: '',
-  })
-
   const { modalState, openDeleteModal, closeModals, toggleReadonly } = useGlobalContext()
   const { inventory, createInventory, updateInventory, deleteInventory, loading } =
     useInventoryStore()
 
-  const [inventoryData, setInventoryData] = useState({
+  const initialData = {
     name: modalState.selectedItem?.name || '',
     reference_code: modalState.selectedItem?.reference_code || '',
     category: modalState.selectedItem?.category || '',
     quantity_in_stock: modalState.selectedItem?.quantity_in_stock || '',
     unit_price: modalState.selectedItem?.unit_price || '',
-  })
+  }
+
+  const { data, setData, errors, handleChange, isValid } = useInventoryForm(
+    initialData,
+    inventory,
+    modalState.selectedItem,
+  )
 
   // Create, Update, Delete part with alert
   const createInventoryPartWithAlert = withSuccessAlert(
     createInventory,
-    'Vehicle created successfully!',
+    'Part created successfully!',
   )
   const updateInventoryPartWithAlert = withSuccessAlert(
     updateInventory,
-    'Vehicle updated successfully!',
+    'Part updated successfully!',
   )
   const deleteInventoryPartWithAlert = withSuccessAlert(
     deleteInventory,
-    'Vehicle deleted successfully!',
+    'Part deleted successfully!',
   )
 
-  const handleInventoryChange = (e) => {
-    const { name, value } = e.target
-
-    setInventoryData({
-      ...inventoryData,
-      [name]: value,
-    })
-  }
-
-  const handleCreateSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!inventoryData.name) {
-      Toast.fire('Error', 'Please fill in a part name.', 'error')
+    if (!isValid) {
+      Toast.fire('Error', 'Please correct the errors.', 'error')
       return
     }
-    if (!inventoryData.reference_code) {
-      Toast.fire('Error', 'Please fill in a reference code.', 'error')
-      return
-    }
-    if (!inventoryData.category) {
-      Toast.fire('Error', 'Please select a category.', 'error')
-      return
-    }
-    if (!inventoryData.quantity_in_stock) {
-      Toast.fire('Error', 'Please fill in a quantity.', 'error')
-      return
-    }
-    if (!inventoryData.unit_price) {
-      Toast.fire('Error', 'Please fill in a unit price.', 'error')
-      return
-    }
-
     try {
-      const newInventory = await createInventoryPartWithAlert(inventoryData)
-      if (newInventory) {
-        setInventoryData({
-          name: '',
-          reference_code: '',
-          category: '',
-          quantity_in_stock: '',
-          unit_price: '',
+      if (modalState.selectedItem) {
+        await updateInventoryPartWithAlert(modalState.selectedItem.id, {
+          ...data,
+          updated_at: modalState.selectedItem.updated_at,
         })
+      } else {
+        await createInventoryPartWithAlert(data)
+        setData(initialData)
       }
-    } catch (error) {
-      console.error('Error creating inventory part:', error)
-      Toast.fire('Error', 'Something went wrong.', 'error')
-    } finally {
-      closeModals()
-    }
-  }
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault()
-    if (!inventoryData.name) {
-      Toast.fire('Error', 'Please fill in a part name.', 'error')
-      return
-    }
-    if (!inventoryData.reference_code) {
-      Toast.fire('Error', 'Please fill in a reference code.', 'error')
-      return
-    }
-    if (!inventoryData.category) {
-      Toast.fire('Error', 'Please select a category.', 'error')
-      return
-    }
-    if (!inventoryData.quantity_in_stock) {
-      Toast.fire('Error', 'Please fill in a quantity.', 'error')
-      return
-    }
-    if (!inventoryData.unit_price) {
-      Toast.fire('Error', 'Please fill in a unit price.', 'error')
-      return
-    }
-
-    try {
-      await updateInventoryPartWithAlert(modalState.selectedItem.id, {
-        ...inventoryData,
-        updated_at: modalState.selectedItem.updated_at, // Concurrency check
-      })
     } catch (error) {
       if (error.response?.status === 409) {
         Toast.fire(
           'Error',
-          'This inventory part was updated by another user. Please reload and try again.',
+          'This part was updated by another user. Please reload and try again.',
           'error',
         )
       } else {
-        console.error('Error updating inventory part:', error)
+        console.error('Error updating part:', error)
         Toast.fire('Error', 'Something went wrong.', 'error')
       }
     } finally {
-      setInventoryData(null)
       closeModals()
     }
   }
 
-  // Live validation
-  const existingReferenceCodes = inventory
-    .map((part) => part.reference_code)
-    .filter(
-      (reference) =>
-        !modalState.selectedItem ||
-        reference.toLowerCase() !== modalState.selectedItem.reference_code.toLowerCase(),
+  // Open delete confirmation modal
+  const handleDeleteClick = () => {
+    openDeleteModal(
+      modalState.selectedItem,
+      modalState.itemType,
+      () => deleteInventoryPartWithAlert,
     )
-
-  useEffect(() => {
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      name: inventoryData.name ? '' : 'This field is required.',
-    }))
-  }, [inventoryData.name])
-
-  useEffect(() => {
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      category: inventoryData.category ? '' : 'This field is required.',
-    }))
-  }, [inventoryData.category])
-
-  useEffect(() => {
-    const referenceCodeError =
-      inventoryData.reference_code.trim() === ''
-        ? 'This field is required.'
-        : isValidReferenceCode(inventoryData.reference_code, existingReferenceCodes)
-    setErrors((prevErrors) =>
-      prevErrors.reference_code !== referenceCodeError
-        ? { ...prevErrors, reference_code: referenceCodeError }
-        : prevErrors,
-    )
-  }, [inventoryData.reference_code, existingReferenceCodes])
-
-  useEffect(() => {
-    const quantityError =
-      inventoryData.quantity_in_stock.toString().trim() === ''
-        ? 'This field is required.'
-        : isValidQuantityInStock(inventoryData.quantity_in_stock.toString())
-    setErrors((prevErrors) =>
-      prevErrors.quantity_in_stock !== quantityError
-        ? { ...prevErrors, quantity_in_stock: quantityError }
-        : prevErrors,
-    )
-  }, [inventoryData.quantity_in_stock])
-
-  useEffect(() => {
-    const priceError =
-      inventoryData.unit_price.toString().trim() === ''
-        ? 'This field is required.'
-        : isValidPrice(inventoryData.unit_price.toString())
-    setErrors((prevErrors) =>
-      prevErrors.unit_price !== priceError ? { ...prevErrors, unit_price: priceError } : prevErrors,
-    )
-  }, [inventoryData.unit_price])
-
-  const isFormValid = useMemo(
-    () =>
-      !errors.name &&
-      !errors.reference_code &&
-      !errors.category &&
-      !errors.quantity_in_stock &&
-      !errors.unit_price &&
-      inventoryData.name &&
-      inventoryData.reference_code &&
-      inventoryData.category &&
-      inventoryData.quantity_in_stock &&
-      inventoryData.unit_price,
-    [errors, inventoryData],
-  )
+  }
 
   return (
     <div className="modal-container">
@@ -241,48 +112,40 @@ const InventoryModal = () => {
           selectedItem={modalState.selectedItem}
           itemType={modalState.itemType}
         />
-        <form
-          className="modal-form"
-          onSubmit={modalState.selectedItem ? handleEditSubmit : handleCreateSubmit}
-        >
+        <form className="modal-form" onSubmit={handleSubmit}>
           <fieldset>
-            <label>
-              <span>Name:</span>
+            <FormField label="Name" error={errors.name}>
               <input
                 className={errors.name ? 'invalid' : 'valid'}
                 type="text"
                 name="name"
-                value={inventoryData.name}
-                onChange={handleInventoryChange}
+                value={data.name}
+                onChange={handleChange}
                 placeholder="Enter name"
                 required
                 disabled={modalState.readonly}
               />
-              <p className="error-text">{errors.name && <>{errors.name}</>}</p>
-            </label>
+            </FormField>
 
-            <label>
-              <span>Reference code:</span>
+            <FormField label="Reference code" error={errors.reference_code}>
               <input
                 className={errors.reference_code ? 'invalid' : 'valid'}
                 type="text"
                 name="reference_code"
-                value={inventoryData.reference_code}
-                onChange={handleInventoryChange}
+                value={data.reference_code}
+                onChange={handleChange}
                 placeholder="Enter reference code"
                 required
                 disabled={modalState.readonly}
               />
-              <p className="error-text">{errors.reference_code && <>{errors.reference_code}</>}</p>
-            </label>
+            </FormField>
 
-            <label>
-              <span>Category:</span>
+            <FormField label="Category" error={errors.category}>
               <select
                 className={errors.category ? 'invalid' : 'valid'}
                 name="category"
-                value={inventoryData.category}
-                onChange={handleInventoryChange}
+                value={data.category}
+                onChange={handleChange}
                 required
                 disabled={modalState.readonly}
               >
@@ -293,37 +156,31 @@ const InventoryModal = () => {
                   </option>
                 ))}
               </select>
-              <p className="error-text">{errors.category && <>{errors.category}</>}</p>
-            </label>
+            </FormField>
 
-            <label>
-              <span>Quantity in stock:</span>
+            <FormField label="Quantity in stock" error={errors.quantity_in_stock}>
               <input
                 className={errors.quantity_in_stock ? 'invalid' : 'valid'}
                 type="text"
                 name="quantity_in_stock"
-                value={inventoryData.quantity_in_stock}
-                onChange={handleInventoryChange}
+                value={data.quantity_in_stock}
+                onChange={handleChange}
                 placeholder="Enter quantity in stock"
                 disabled={modalState.readonly}
               />
-              <p className="error-text">
-                {errors.quantity_in_stock && <>{errors.quantity_in_stock}</>}
-              </p>
-            </label>
-            <label>
-              <span>Unit price:</span>
+            </FormField>
+
+            <FormField label="Unit price" error={errors.unit_price}>
               <input
                 className={errors.unit_price ? 'invalid' : 'valid'}
                 type="text"
                 name="unit_price"
-                value={inventoryData.unit_price}
-                onChange={handleInventoryChange}
+                value={data.unit_price}
+                onChange={handleChange}
                 placeholder="Enter unit price"
                 disabled={modalState.readonly}
               />
-              <p className="error-text">{errors.unit_price && <>{errors.unit_price}</>}</p>
-            </label>
+            </FormField>
           </fieldset>
           <div className="button-group">
             {modalState.selectedItem ? (
@@ -333,25 +190,16 @@ const InventoryModal = () => {
                     Edit Part
                   </button>
                 ) : (
-                  <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
+                  <button type="submit" disabled={modalState.readonly || !isValid || loading}>
                     Update Part
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() =>
-                    openDeleteModal(
-                      modalState.selectedItem,
-                      modalState.itemType,
-                      () => deleteInventoryPartWithAlert,
-                    )
-                  }
-                >
+                <button type="button" onClick={handleDeleteClick}>
                   Delete
                 </button>
               </>
             ) : (
-              <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
+              <button type="submit" disabled={modalState.readonly || !isValid || loading}>
                 Create Part
               </button>
             )}

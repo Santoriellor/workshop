@@ -1,349 +1,145 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
+// Contexts
+import { useAuth } from '../../contexts/AuthContext'
+import { useGlobalContext } from '../../contexts/GlobalContext'
 // Zustand
 import useVehicleStore from '../../stores/useVehicleStore'
 import useOwnerStore from '../../stores/useOwnerStore'
 import useInventoryStore from '../../stores/useInventoryStore'
 import useTaskTemplateStore from '../../stores/useTaskTemplateStore'
 import useReportStore from '../../stores/useReportStore'
-// Contexts
-import { useAuth } from '../../contexts/AuthContext'
-import { useGlobalContext } from '../../contexts/GlobalContext'
 // Components
 import ModalGenericsClose from '../modalGenerics/ModalGenericsClose'
 import ModalGenericsTitle from '../modalGenerics/ModalGenericsTitle'
-import SvgTrash from '../svgGenerics/SvgTrash'
+import FormField from '../formHelper/FormField'
+import TaskFieldset from './taskandpart/TaskFieldset'
+import PartFieldset from './taskandpart/PartFieldset'
+// Hooks
+import { useReportModal } from '../../hooks/useReportModal'
+import { useReportForm } from '../../hooks/useReportForm'
 // Utils
 import { Toast } from '../../utils/sweetalert'
-import { isValidQuantityInStock } from '../../utils/validation'
 import { getOwnerNameByVehicleId } from '../../utils/getOwnerNameByVehicleId'
 import withSuccessAlert from '../../utils/successAlert'
+import { formatQuantity } from '../../utils/stringUtils'
 // Styles
 import '../../styles/Modal.css'
 import '../../styles/ReportModal.css'
 
 const ReportModal = () => {
-  // Error messages
-  const [errors, setErrors] = useState({
-    vehicle: '',
-    status: '',
-    tasks: '',
-    parts: '',
-    part_quantity: '',
-  })
-
   const { authenticatedUser } = useAuth()
   const { modalState, openDeleteModal, closeModals, toggleReadonly } = useGlobalContext()
 
-  const {
-    createReport,
-    updateReport,
-    deleteReport,
-    loading,
-    loadingTasks,
-    loadingParts,
-    tasks,
-    createTask,
-    deleteTask,
-    parts,
-    createPart,
-    deletePart,
-  } = useReportStore()
   const { vehicles } = useVehicleStore()
   const { owners } = useOwnerStore()
   const { inventory } = useInventoryStore()
   const { taskTemplates } = useTaskTemplateStore()
+  const { createReport, updateReport, deleteReport, loading } = useReportStore()
 
-  const [reportData, setReportData] = useState({
-    vehicle: modalState.selectedItem?.vehicle || '',
-    user: authenticatedUser.id,
-    status: modalState.selectedItem?.status || 'pending',
-    remarks: modalState.selectedItem?.remarks || '',
-  })
+  const selectedReport = useMemo(() => modalState.selectedItem, [modalState.selectedItem])
 
-  const [selectedTask, setSelectedTask] = useState('')
-  const [selectedPart, setSelectedPart] = useState('')
-  const [quantityPart, setQuantityPart] = useState('1')
-  const [updatedTasks, setUpdatedTasks] = useState(tasks || [])
-  const [updatedParts, setUpdatedParts] = useState(parts || [])
+  const initialData = useMemo(
+    () => ({
+      vehicle: selectedReport?.vehicle ?? '',
+      user: authenticatedUser.id,
+      status: selectedReport?.status ?? 'pending',
+      remarks: selectedReport?.remarks ?? '',
+    }),
+    [selectedReport, authenticatedUser.id],
+  )
+
+  const {
+    taskIds,
+    partsUsed,
+    selectedTaskId,
+    selectedPartId,
+    quantityPart,
+    setQuantityPart,
+    handleTaskChange,
+    handlePartChange,
+    addTask,
+    removeTask,
+    addPart,
+    removePart,
+  } = useReportModal(
+    taskTemplates,
+    inventory,
+    selectedReport?.tasks_data ?? [],
+    selectedReport?.parts_data ?? [],
+    Boolean(selectedReport),
+    modalState.showModal,
+  )
+
+  const { data, errors, handleChange, isValid } = useReportForm(
+    initialData,
+    taskIds,
+    partsUsed,
+    quantityPart,
+  )
 
   // Create, update, delete reports with alert
   const createReportWithAlert = withSuccessAlert(createReport, 'Report created successfully!')
   const updateReportWithAlert = withSuccessAlert(updateReport, 'Report updated successfully!')
   const deleteReportWithAlert = withSuccessAlert(deleteReport, 'Report deleted successfully!')
 
-  const handleReportChange = (e) => {
-    const { name, value } = e.target
+  const handleQuantityChange = useCallback(
+    (e) => {
+      const controlledValue = formatQuantity(e.target.value)
+      if (controlledValue !== null) {
+        setQuantityPart(controlledValue)
+      }
+    },
+    [setQuantityPart],
+  )
 
-    setReportData({
-      ...reportData,
-      [name]: name === 'vehicle' ? Number(value) : value,
-    })
-  }
-  const handleTaskChange = (e) => {
-    setSelectedTask(e.target.value)
-  }
-  const handlePartChange = (e) => {
-    setSelectedPart(e.target.value)
-  }
-  const handleQuantityChange = (e) => {
-    let value = e.target.value
-
-    // Remove leading zero if the second character is not a dot
-    if (value.length > 1 && value.startsWith('0') && value[1] !== '.') {
-      value = value.slice(1)
-    }
-    // Prevent leading dots by converting ".5" to "0.5"
-    if (value.startsWith('.')) {
-      value = '0' + value
-    }
-
-    // Allow only numbers with up to 2 decimal places
-    if (/^\d*\.?\d{0,2}$/.test(value)) {
-      setQuantityPart(value)
-    }
-  }
-
-  const addTask = () => {
-    if (!selectedTask) {
-      Toast.fire('Error', 'Please select a repair task.', 'error')
-      return
-    }
-
-    const taskId = Number(selectedTask)
-    const task = taskTemplates.find((item) => item.id === taskId)
-    if (!task) return
-
-    setUpdatedTasks([...updatedTasks, { task_template: task.id }])
-
-    setSelectedTask('')
-  }
-  const addPart = () => {
-    if (!selectedPart) {
-      Toast.fire('Error', 'Please select a repair part.', 'error')
-      return
-    }
-    if (errors.part_quantity) {
-      Toast.fire('Error', 'Please give a quantity.', 'error')
-      return
-    }
-
-    const partId = Number(selectedPart)
-    const part = inventory.find((item) => item.id === partId)
-    if (!part) return
-
-    setUpdatedParts([...updatedParts, { part: part.id, quantity_used: Number(quantityPart) }])
-
-    setSelectedPart('')
-  }
-  const removeTask = (taskIndex) => {
-    setUpdatedTasks((prevTasks) => prevTasks.filter((_, index) => index !== taskIndex))
-  }
-  const removePart = (partIndex) => {
-    setUpdatedParts((prevParts) => prevParts.filter((_, index) => index !== partIndex))
-  }
-  const getTaskById = (taskTemplateId) => {
-    const task = taskTemplates?.find((item) => item.id === taskTemplateId)
-    if (!task) return
-    return task
-  }
-  const getPartById = (partId) => {
-    const part = inventory?.find((item) => item.id === partId)
-    if (!part) return
-    return part
-  }
-
-  const handleCreateSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!reportData.vehicle) {
-      Toast.fire('Error', 'Please select a vehicle.', 'error')
+    if (!isValid) {
+      Toast.fire('Error', 'Please correct the errors.', 'error')
       return
     }
 
+    const isEdit = Boolean(selectedReport)
     try {
-      const newReport = await createReportWithAlert(reportData)
-      if (newReport && updatedTasks.length > 0) {
-        try {
-          await Promise.all(
-            updatedTasks.map((task) => createTask({ ...task, report: newReport.id })),
-          )
-        } catch (error) {
-          console.error('Error creating tasks:', error)
-        } finally {
-          setUpdatedTasks([])
-        }
+      let report
+      // ------ADDING TASKS AND PARTS TO THE REPORT DATA ------
+      const reportData = {
+        ...data,
+        tasks: taskIds,
+        parts: partsUsed.map((part) => ({
+          part: part.partId,
+          quantity_used: part.quantity_used,
+        })),
       }
-      if (newReport && updatedParts.length > 0) {
-        try {
-          await Promise.all(
-            updatedParts.map((part) =>
-              createPart({
-                ...part,
-                report: newReport.id,
-              }),
-            ),
-          )
-        } catch (error) {
-          console.error('Error creating parts:', error)
-        } finally {
-          setUpdatedParts([])
-        }
+      // ----- REPORT CREATION OR UPDATE -----
+      if (isEdit) {
+        report = await updateReportWithAlert(selectedReport.id, reportData)
+        if (!report) return
+      } else {
+        report = await createReportWithAlert(reportData)
       }
+
+      if (!report) throw new Error('Report creation or update failed.')
+
       closeModals()
     } catch (error) {
-      console.error('Error creating report:', error)
-      Toast.fire('Error', 'Something went wrong.', 'error')
-    }
-  }
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault()
-    if (!reportData.vehicle) {
-      Toast.fire('Error', 'Please select a vehicle.', 'error')
-      return
-    }
-
-    try {
-      const updatedReport = await updateReportWithAlert(modalState.selectedItem.id, {
-        ...reportData,
-        updated_at: modalState.selectedItem.updated_at, // Concurrency check
-      })
-
-      if (!updatedReport) return
-
-      // Handle tasks
-      try {
-        // Find new tasks that are in updatedTasks but not in tasks
-        const newTasks = updatedTasks.filter(
-          (updatedTask) => !tasks.some((task) => task.id === updatedTask.id),
-        )
-
-        // Find deleted tasks that are in tasks but not in updatedTasks
-        const deletedTasks = tasks.filter(
-          (task) => !updatedTasks.some((updatedTask) => updatedTask.id === task.id),
-        )
-        // Handle new tasks and deleted tasks
-        if (newTasks.length > 0) {
-          await Promise.all(
-            newTasks.map((task) => createTask({ ...task, report: updatedReport.id })),
-          )
-        }
-        if (deletedTasks.length > 0) {
-          await Promise.all(deletedTasks.map((task) => deleteTask(task.id)))
-        }
-      } catch (error) {
-        console.error('Error updating tasks:', error)
-      }
-
-      // Handle Parts
-      try {
-        // Find new parts that are in updatedParts but not in parts
-        const newParts = updatedParts.filter(
-          (updatedPart) => !parts.some((part) => part.id === updatedPart.id),
-        )
-        // Find deleted parts that are in parts but not in updatedParts
-        const deletedParts = parts.filter(
-          (part) => !updatedParts.some((updatedPart) => updatedPart.id === part.id),
-        )
-        // Handle new parts and deleted parts
-        if (newParts.length > 0) {
-          await Promise.all(
-            newParts.map((part) =>
-              createPart({
-                ...part,
-                report: updatedReport.id,
-              }),
-            ),
-          )
-        }
-        if (deletedParts.length > 0) {
-          await Promise.all(deletedParts.map((part) => deletePart(part.id)))
-        }
-      } catch (error) {
-        console.error('Error updating parts:', error)
-      }
-    } catch (error) {
-      if (error.response?.status === 409) {
+      if (isEdit && error.response?.status === 409) {
         Toast.fire(
           'Error',
           'This report was updated by another user. Please reload and try again.',
           'error',
         )
       } else {
-        console.error('Error updating report:', error)
+        console.error('Error handling report:', error)
         Toast.fire('Error', 'Something went wrong.', 'error')
       }
     }
-    closeModals()
   }
 
-  useEffect(() => {
-    if (!modalState.selectedItem) {
-      setUpdatedTasks([])
-      setUpdatedParts([])
-      setReportData({
-        vehicle: '',
-        user: authenticatedUser.id,
-        status: 'pending',
-        remarks: '',
-      })
-    }
-  }, [modalState.selectedItem, authenticatedUser.id])
-
-  useEffect(() => {
-    if (modalState.selectedItem && tasks) {
-      setUpdatedTasks(tasks)
-    }
-  }, [modalState.selectedItem, tasks])
-
-  useEffect(() => {
-    if (modalState.selectedItem && parts) {
-      setUpdatedParts(parts)
-    }
-  }, [modalState.selectedItem, parts])
-
-  // Live validation
-
-  useEffect(() => {
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      vehicle: reportData.vehicle ? '' : 'This field is required.',
-    }))
-  }, [reportData.vehicle])
-
-  useEffect(() => {
-    const taskError = !updatedTasks.length
-      ? 'At least one task is required.'
-      : isValidQuantityInStock(quantityPart.toString())
-    setErrors((prevErrors) =>
-      prevErrors.tasks !== taskError ? { ...prevErrors, tasks: taskError } : prevErrors,
-    )
-  }, [updatedTasks, quantityPart])
-
-  useEffect(() => {
-    const quantityError =
-      quantityPart === null ||
-      quantityPart === undefined ||
-      quantityPart.toString().trim() === '' ||
-      quantityPart === '0'
-        ? 'The quantity is required to add a part.'
-        : isValidQuantityInStock(quantityPart.toString())
-    setErrors((prevErrors) =>
-      prevErrors.part_quantity !== quantityError
-        ? { ...prevErrors, part_quantity: quantityError }
-        : prevErrors,
-    )
-  }, [quantityPart])
-
-  const isFormValid = useMemo(
-    () =>
-      !errors.vehicle &&
-      !errors.status &&
-      !errors.tasks &&
-      reportData.vehicle &&
-      reportData.status &&
-      updatedTasks,
-    [errors, reportData, updatedTasks],
-  )
+  // Open delete confirmation modal
+  const handleDeleteClick = useCallback(() => {
+    openDeleteModal(selectedReport, modalState.itemType, () => deleteReportWithAlert)
+  }, [openDeleteModal, selectedReport, modalState.itemType, deleteReportWithAlert])
 
   return (
     <div className="modal-container">
@@ -351,42 +147,37 @@ const ReportModal = () => {
         <ModalGenericsClose onClose={closeModals} />
         <ModalGenericsTitle
           readonly={modalState.readonly}
-          selectedItem={modalState.selectedItem}
+          selectedItem={selectedReport}
           itemType={modalState.itemType}
         />
-        <form
-          className="modal-form"
-          onSubmit={modalState.selectedItem ? handleEditSubmit : handleCreateSubmit}
-        >
+        <form className="modal-form" onSubmit={handleSubmit}>
           <div className="report-form">
-            <fieldset>
-              <label>
-                <span>Vehicle:</span>
+            <fieldset className="report-fields">
+              <FormField label="Vehicle" error={errors.vehicle}>
                 <select
                   className={errors.vehicle ? 'invalid' : 'valid'}
                   name="vehicle"
-                  value={reportData.vehicle}
-                  onChange={handleReportChange}
+                  value={data.vehicle}
+                  onChange={handleChange}
                   required
                   disabled={modalState.readonly}
                 >
                   <option value="">Select a vehicle</option>
-                  {vehicles.map((vehicle) => (
+                  {vehicles?.map((vehicle) => (
                     <option key={vehicle.id} value={vehicle.id}>
-                      {vehicle.__str__} - {getOwnerNameByVehicleId(vehicle.id, vehicles, owners)}
+                      {vehicle.__str__}&nbsp;-&nbsp;
+                      {getOwnerNameByVehicleId(vehicle.id, vehicles, owners)}
                     </option>
                   ))}
                 </select>
-                <p className="error-text">{errors.vehicle && <>{errors.vehicle}</>}</p>
-              </label>
+              </FormField>
 
-              <label>
-                <span>Status:</span>
+              <FormField label="Status" error={errors.status}>
                 <select
                   className={errors.status ? 'invalid' : 'valid'}
                   name="status"
-                  value={reportData.status}
-                  onChange={handleReportChange}
+                  value={data.status}
+                  onChange={handleChange}
                   required
                   disabled={modalState.readonly}
                 >
@@ -394,168 +185,67 @@ const ReportModal = () => {
                   <option value="in_progress">In Progress</option>
                   <option value="completed">Completed</option>
                 </select>
-                <p className="error-text">{errors.status && <>{errors.status}</>}</p>
-              </label>
+              </FormField>
 
-              <label>
-                <span>Remarks:</span>
+              <FormField label="Remarks" error={errors.remarks}>
                 <textarea
                   name="remarks"
-                  value={reportData.remarks}
-                  onChange={handleReportChange}
+                  value={data.remarks}
+                  onChange={handleChange}
                   placeholder="Enter remarks"
                   disabled={modalState.readonly}
                 />
-              </label>
+              </FormField>
             </fieldset>
             <div className="input-divider"></div>
-            <fieldset>
+            <div className="tasks-and-parts">
               {/* Tasks select */}
-              <div>
-                <span>Repair Tasks:</span>
-                <div className="repair-section">
-                  <select
-                    className={errors.tasks ? 'invalid' : 'valid'}
-                    value={selectedTask}
-                    onChange={handleTaskChange}
-                    disabled={modalState.readonly}
-                  >
-                    <option value="">Select a repair task</option>
-                    {taskTemplates?.map((task) => (
-                      <option key={task.id} value={task.id}>
-                        {task.name} - €{task.price}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    className="small"
-                    onClick={addTask}
-                    disabled={modalState.readonly}
-                  >
-                    Add Task
-                  </button>
-                </div>
-                {/* Tasks display */}
-                {loadingTasks ? (
-                  <span> Loading tasks...</span>
-                ) : updatedTasks && updatedTasks?.length > 0 ? (
-                  <ul className="repair-list">
-                    {updatedTasks?.map((task, index) => {
-                      const taskData = getTaskById(task.task_template)
-                      return (
-                        <li key={index}>
-                          <p>
-                            {taskData ? taskData.name : 'Unknown Task'} - €
-                            {taskData ? taskData.price : 'N/A'}
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => removeTask(index)}
-                            disabled={modalState.readonly}
-                          >
-                            <SvgTrash />
-                          </button>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                ) : (
-                  <span>No tasks available</span>
-                )}
-                <p className="error-text">{errors.tasks && <>{errors.tasks}</>}</p>
-              </div>
+              <TaskFieldset
+                errors={errors}
+                loading={loading}
+                selectedTaskId={selectedTaskId}
+                taskIds={taskIds}
+                modalState={modalState}
+                taskTemplates={taskTemplates}
+                handleTaskChange={handleTaskChange}
+                addTask={addTask}
+                removeTask={removeTask}
+              />
+
               {/* Parts select */}
-              <div>
-                <span>Repair Parts:</span>
-                <div className="repair-section">
-                  <select
-                    value={selectedPart}
-                    onChange={handlePartChange}
-                    disabled={modalState.readonly}
-                  >
-                    <option value="">Select a repair part</option>
-                    {inventory.map((part) => (
-                      <option key={part.id} value={part.id}>
-                        {part.name} - €{part.unit_price}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    type="text"
-                    value={quantityPart}
-                    onChange={handleQuantityChange}
-                    disabled={modalState.readonly}
-                  />
-                  <button
-                    type="button"
-                    className="small"
-                    onClick={addPart}
-                    disabled={modalState.readonly}
-                  >
-                    Add Part
-                  </button>
-                </div>
-                {/* Parts display */}
-                {loadingParts ? (
-                  <span> Loading parts...</span>
-                ) : updatedParts && updatedParts?.length > 0 ? (
-                  <ul className="repair-list">
-                    {updatedParts?.map((part, index) => {
-                      const partData = getPartById(part.part)
-                      return (
-                        <li key={index}>
-                          <p>
-                            {part.quantity_used}x&nbsp;
-                            {partData ? partData.name : 'Unknown Part'} - €
-                            {partData ? partData.unit_price : 'N/A'}
-                          </p>
-                          <button
-                            title="Remove Part"
-                            type="button"
-                            onClick={() => removePart(index)}
-                            disabled={modalState.readonly}
-                          >
-                            <SvgTrash />
-                          </button>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                ) : (
-                  <span>No parts available</span>
-                )}
-                <p className="error-text">{errors.part_quantity && <>{errors.part_quantity}</>}</p>
-              </div>
-            </fieldset>
+              <PartFieldset
+                errors={errors}
+                loading={loading}
+                selectedPartId={selectedPartId}
+                partsUsed={partsUsed}
+                quantityPart={quantityPart}
+                modalState={modalState}
+                inventory={inventory}
+                handlePartChange={handlePartChange}
+                addPart={addPart}
+                removePart={removePart}
+                handleQuantityChange={handleQuantityChange}
+              />
+            </div>
           </div>
           <div className="button-group">
-            {modalState.selectedItem ? (
+            {selectedReport ? (
               <>
                 {modalState.readonly ? (
                   <button type="button" onClick={toggleReadonly}>
                     Edit Report
                   </button>
                 ) : (
-                  <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
+                  <button type="submit" disabled={modalState.readonly || !isValid || loading}>
                     Update Report
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() =>
-                    openDeleteModal(
-                      modalState.selectedItem,
-                      modalState.itemType,
-                      () => deleteReportWithAlert,
-                    )
-                  }
-                >
+                <button type="button" onClick={handleDeleteClick}>
                   Delete
                 </button>
               </>
             ) : (
-              <button type="submit" disabled={modalState.readonly || !isFormValid || loading}>
+              <button type="submit" disabled={modalState.readonly || !isValid || loading}>
                 Create Report
               </button>
             )}
