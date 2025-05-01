@@ -8,6 +8,8 @@ import useReportStore from '../stores/useReportStore'
 import useUserStore from '../stores/useUserStore'
 // Styles
 import '../styles/FilterBar.css'
+// Utils
+import { capitalizeFirstLetter } from '../utils/stringUtils'
 
 const FilterBar = ({ filterOptions, onFilterChange }) => {
   const { owners } = useOwnerStore()
@@ -17,8 +19,7 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
   const { invoices } = useInvoiceStore()
   const { users } = useUserStore()
 
-  /* ------------ REPORT FILTER AND SORT ----------------- */
-  // Get unique users that created a report and sort them
+  /* ------------ MEMOIZED FILTER AND SORT DATA ----------------- */
   const sortedUniqueUsers = useMemo(() => {
     if (!users?.length || !reports?.length) return []
     return [...new Set(reports.map((r) => r.user))]
@@ -27,59 +28,100 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
       .sort((a, b) => a.username.localeCompare(b.username))
   }, [users, reports])
 
-  // Get unique report dates and sort
-  const sortedUniqueDates = [...new Set(reports.map((report) => report.formatted_created_at))].sort(
-    (a, b) => new Date(b) - new Date(a),
+  const sortedUniqueDates = useMemo(() => {
+    return [...new Set(reports.map((r) => r.formatted_created_at))].sort(
+      (a, b) => new Date(b) - new Date(a),
+    )
+  }, [reports])
+
+  const uniqueStatuses = useMemo(() => {
+    return new Map(
+      reports.filter((r) => r.status !== 'exported').map((r) => [r.status, r.status_display]),
+    )
+  }, [reports])
+
+  const sortedUniqueBrands = useMemo(
+    () => [...new Set(vehicles.map((v) => v.brand))].sort(),
+    [vehicles],
+  )
+  const sortedUniqueModels = useMemo(
+    () => [...new Set(vehicles.map((v) => v.model))].sort(),
+    [vehicles],
+  )
+  const sortedUniqueYears = useMemo(
+    () => [...new Set(vehicles.map((v) => v.year))].sort((a, b) => b - a),
+    [vehicles],
   )
 
-  // Get unique report statuses
-  const uniqueStatuses = new Map(
-    reports
-      .filter((report) => report.status !== 'exported')
-      .map((report) => [report.status, report.status_display]),
+  const sortedUniqueOwners = useMemo(() => {
+    return [...new Set(owners.map((o) => [o.id, o.full_name || 'Unknown']))].sort((a, b) =>
+      a[1].localeCompare(b[1]),
+    )
+  }, [owners])
+
+  const inventoryItems = useMemo(
+    () =>
+      Array.isArray(inventory)
+        ? inventory
+        : Array.isArray(inventory?.results)
+          ? inventory.results
+          : [],
+    [inventory],
   )
 
-  /* ------------ VEHICLE FILTER AND SORT ----------------- */
-  // Get unique brands, models, and years from the vehicle list and sort
-  const sortedUniqueBrands = [...new Set(vehicles.map((vehicle) => vehicle.brand))].sort()
-  const sortedUniqueModels = [...new Set(vehicles.map((vehicle) => vehicle.model))].sort()
-  const sortedUniqueYears = [...new Set(vehicles.map((vehicle) => vehicle.year))].sort(
-    (a, b) => b - a,
+  const sortedUniquesCategories = useMemo(
+    () => [...new Set(inventoryItems.map((i) => i.category))].sort(),
+    [inventoryItems],
   )
-  // Get unique vehicle owners from the owners list and sort
-  const sortedUniqueOwners = [
-    ...new Set(owners.map((owner) => [owner.id, owner.full_name || 'Unknown'])),
-  ].sort((a, b) => a[1].localeCompare(b[1]))
+  const sortedUniqueUpdatedDates = useMemo(
+    () =>
+      [...new Set(inventoryItems.map((i) => i.formatted_updated_at))].sort(
+        (a, b) => new Date(b) - new Date(a),
+      ),
+    [inventoryItems],
+  )
 
-  /* ------------ INVENTORY FILTER AND SORT ----------------- */
-  const inventoryItems = Array.isArray(inventory)
-    ? inventory
-    : Array.isArray(inventory?.results)
-      ? inventory.results
-      : []
+  const sortedUniqueIssuedDates = useMemo(
+    () =>
+      [...new Set(invoices.map((i) => i.formatted_issued_date))].sort(
+        (a, b) => new Date(b) - new Date(a),
+      ),
+    [invoices],
+  )
 
-  const sortedUniquesCategories = [...new Set(inventoryItems.map((item) => item.category))].sort()
-  const sortedUniqueUpdatedDates = [
-    ...new Set(inventoryItems.map((item) => item.formatted_updated_at)),
-  ].sort((a, b) => new Date(b) - new Date(a))
-
-  function capitalizeFirstLetter(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1)
+  /* ------------ MAP OPTION NAME TO DATA ----------------- */
+  const optionsMap = {
+    owner: sortedUniqueOwners,
+    vehicle_owner: sortedUniqueOwners,
+    user: sortedUniqueUsers,
+    created_at: sortedUniqueDates,
+    status: [...uniqueStatuses.entries()],
+    brand: sortedUniqueBrands,
+    model: sortedUniqueModels,
+    year: sortedUniqueYears,
+    category: sortedUniquesCategories,
+    updated_at: sortedUniqueUpdatedDates,
+    formatted_issued_date: sortedUniqueIssuedDates,
   }
 
-  /* ------------ INVOICES FILTER AND SORT ----------------- */
-  const sortedUniqueIssuedDates = [
-    ...new Set(invoices.map((item) => item.formatted_issued_date)),
-  ].sort((a, b) => new Date(b) - new Date(a))
+  /* ------------ RENDER OPTIONS HELPER ----------------- */
+  const renderOptions = (list, getValue = (item) => item, getLabel = (item) => item) => {
+    return list.map((item, index) => (
+      <option key={getValue(item, index)} value={getValue(item, index)}>
+        {getLabel(item, index)}
+      </option>
+    ))
+  }
 
   return (
     <div className="filter-bar">
       {filterOptions.map((option) => (
         <div
-          className={option.type === 'checkbox' ? 'filter-group checkbox' : 'filter-group'}
           key={option.name}
+          className={option.type === 'checkbox' ? 'filter-group checkbox' : 'filter-group'}
         >
           <label htmlFor={option.name}>{capitalizeFirstLetter(option.label)}</label>
+
           {option.type === 'select' ? (
             <select
               id={option.name}
@@ -88,79 +130,13 @@ const FilterBar = ({ filterOptions, onFilterChange }) => {
               onChange={(e) => onFilterChange(option.name, e.target.value)}
             >
               <option value="">All {option.label}</option>
-              {/* Filter bar select options for the reports page */}
-              {option.name === 'owner' &&
-                sortedUniqueOwners.map((owner, index) => (
-                  <option key={index} value={owner[0]}>
-                    {owner[1]}
-                  </option>
-                ))}
-              {option.name === 'created_at' &&
-                sortedUniqueDates.map((uniqueDate) => (
-                  <option key={uniqueDate} value={uniqueDate}>
-                    {uniqueDate}
-                  </option>
-                ))}
-              {option.name === 'user' &&
-                sortedUniqueUsers.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.username}
-                  </option>
-                ))}
-              {option.name === 'status' &&
-                [...uniqueStatuses.entries()].map(([status, statusDisplay]) => (
-                  <option key={status} value={status}>
-                    {statusDisplay}
-                  </option>
-                ))}
 
-              {/* Filter bar select options for the owners page */}
-              {/* no select */}
-              {/* Filter bar select options for the vehicles page */}
-              {option.name === 'brand' &&
-                sortedUniqueBrands.map((brand) => (
-                  <option key={brand} value={brand}>
-                    {brand}
-                  </option>
-                ))}
-              {option.name === 'model' &&
-                sortedUniqueModels.map((model) => (
-                  <option key={model} value={model}>
-                    {model}
-                  </option>
-                ))}
-              {option.name === 'year' &&
-                sortedUniqueYears.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              {option.name === 'vehicle_owner' &&
-                sortedUniqueOwners.map(([ownerId, ownerName]) => (
-                  <option key={ownerId} value={ownerId}>
-                    {ownerName}
-                  </option>
-                ))}
-              {/* Filter bar select options for the inventory page */}
-              {option.name === 'category' &&
-                sortedUniquesCategories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              {option.name === 'updated_at' &&
-                sortedUniqueUpdatedDates.map((uniqueDate) => (
-                  <option key={uniqueDate} value={uniqueDate}>
-                    {uniqueDate}
-                  </option>
-                ))}
-              {/* Filter bar select options for the invoices page */}
-              {option.name === 'formatted_issued_date' &&
-                sortedUniqueIssuedDates.map((uniqueDate) => (
-                  <option key={uniqueDate} value={uniqueDate}>
-                    {uniqueDate}
-                  </option>
-                ))}
+              {optionsMap[option.name] &&
+                renderOptions(
+                  optionsMap[option.name],
+                  (item) => (Array.isArray(item) ? item[0] : item.id || item),
+                  (item) => (Array.isArray(item) ? item[1] : item.username || item),
+                )}
             </select>
           ) : (
             <input

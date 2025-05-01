@@ -1,19 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 // Utils
 import getFilterOptions from '../utils/filterBarFilterOptions'
 // Components
 import Page from '../components/Page'
 import InventoryCard from '../components/inventory/InventoryCard'
-import InventoryModal from '../components/inventory/InventoryModal'
 // Zustand
 import useInventoryStore from '../stores/useInventoryStore'
-// Contexts
-import { useGlobalContext } from '../contexts/GlobalContext'
 
 const Inventory = () => {
   const { inventory, loading } = useInventoryStore()
-  const { setModalState } = useGlobalContext()
-
   const [filters, setFilters] = useState({
     part_name: '',
     reference_code: '',
@@ -22,14 +17,6 @@ const Inventory = () => {
     unit_price: '',
     updated_at: '',
   })
-
-  useEffect(() => {
-    setModalState((prev) => ({
-      ...prev,
-      modalComponent: InventoryModal,
-    }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return (
     <Page

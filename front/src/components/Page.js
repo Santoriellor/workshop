@@ -11,8 +11,7 @@ import { useGlobalContext } from '../contexts/GlobalContext'
 // Styles
 import '../styles/Cards.css'
 // Utils
-import { filterItems } from '../utils/pageItemFilter'
-import { getVehicleInfoByVehicleId } from '../utils/getVehicleInfoByVehicleId'
+import getFilteredItems from '../utils/getFilteredItems'
 
 const Page = ({
   itemType,
@@ -34,22 +33,28 @@ const Page = ({
   }
 
   // Filter items based on filters
-  const filteredItems = useMemo(() => {
-    // If there are no items, return an empty array
-    if (!Array.isArray(items)) return []
+  const filteredItems = useMemo(
+    () => getFilteredItems(items, filters, vehicles),
+    [items, filters, vehicles],
+  )
 
-    // Filter the items
-    let itemsAfterFilter = items.filter((item) =>
-      filterItems(item, filters, vehicles, getVehicleInfoByVehicleId),
-    )
-
-    // If the filter label is "quantity_in_stock", sort the filtered items
-    if (filters.quantity_in_stock) {
-      itemsAfterFilter = itemsAfterFilter.sort((a, b) => a.quantity_in_stock - b.quantity_in_stock)
-    }
-
-    return itemsAfterFilter
-  }, [items, filters, vehicles])
+  // Display the items in a card format when the items are loaded
+  let content
+  if (loadingItem) {
+    content = <LoadingScreen fullscreen={false} />
+  } else if (filteredItems.length > 0) {
+    content = filteredItems.map((item) => (
+      <CardComponent
+        key={item.id}
+        item={item}
+        handleViewClick={openViewModal}
+        handleEditClick={openEditModal}
+        handleDeleteClick={openDeleteModal}
+      />
+    ))
+  } else {
+    content = <p>No {itemType} match your filters.</p>
+  }
 
   return (
     <>
@@ -57,23 +62,7 @@ const Page = ({
       <FilterBar filterOptions={filterOptions} onFilterChange={handleFilterChange} />
 
       {/* Items list with card display */}
-      <div className="list">
-        {loadingItem ? (
-          <LoadingScreen fullscreen={false} />
-        ) : filteredItems.length > 0 ? (
-          filteredItems.map((item) => (
-            <CardComponent
-              key={item.id}
-              item={item}
-              handleViewClick={openViewModal}
-              handleEditClick={openEditModal}
-              handleDeleteClick={openDeleteModal}
-            />
-          ))
-        ) : (
-          <p>No {itemType} match your filters.</p>
-        )}
-      </div>
+      <div className="list">{content}</div>
 
       {/* Floating ScrollToTopButton */}
       <ScrollToTopButton />

@@ -10,7 +10,7 @@ import { getReportFilters } from '../../utils/getReportFilters'
 const ReportFetcher = () => {
   const location = useLocation()
   const { modalState } = useGlobalContext()
-  const { reports, fetchReports, fetchTasks, fetchParts } = useReportStore()
+  const { reports, fetchReports } = useReportStore()
 
   // Fetch reports when the pathname changes
   useEffect(() => {
@@ -21,7 +21,7 @@ const ReportFetcher = () => {
     }
   }, [location.pathname, reports.length, fetchReports])
 
-  // Automatically fetch data when the selectedItem changes
+  // Automatically fetch the report (and related tasks and parts) when the selectedItem changes
   useEffect(() => {
     const reportPaths = ['/report', '/dashboard', '/invoices']
     if (
@@ -29,8 +29,7 @@ const ReportFetcher = () => {
       modalState.itemType === 'Report' &&
       modalState.selectedItem?.id
     ) {
-      fetchTasks(modalState.selectedItem.id)
-      fetchParts(modalState.selectedItem.id)
+      fetchReports({ id: modalState.selectedItem.id })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalState.selectedItem, modalState.itemType, location.pathname])

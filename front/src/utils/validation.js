@@ -132,6 +132,6 @@ export const isTakenTaskName = (taskName, existingTaskNames) => {
   if (!taskName.trim()) return 'This field is required.'
 
   if (existingTaskNames.some((name) => name.toLowerCase() === taskName.toLowerCase())) {
-    return 'Reference code is already taken.'
+    return 'Task name is already taken.'
   }
 }

@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 // Components
 import InventoryModal from './InventoryModal'
@@ -28,17 +29,28 @@ const InventoryCard = ({ item }) => {
     return false
   }
 
+  // Open viewing modal
+  const handleCardClick = (e) => {
+    // Prevent triggering view mode if clicking on an action button
+    if (!e.target.closest('.actions')) {
+      openModal(InventoryModal, item, cardItemType, true)
+    }
+  }
+  // Open editing modal
+  const handleEditClick = () => {
+    openModal(InventoryModal, item, cardItemType, false)
+  }
+  // Open delete confirmation modal
+  const handleDeleteClick = () => {
+    openDeleteModal(item, cardItemType, () => deleteInventoryPartWithAlert)
+  }
+
   return (
     <div
       key={item.id}
       className={isLowerThan10(item) ? 'card low-inventory' : 'card'}
       title="View inventory part"
-      onClick={(e) => {
-        // Prevent triggering view mode if clicking on an action button
-        if (!e.target.closest('.actions')) {
-          openModal(InventoryModal, item, cardItemType, true)
-        }
-      }}
+      onClick={handleCardClick}
     >
       <div className="card-content">
         <section>
@@ -70,16 +82,14 @@ const InventoryCard = ({ item }) => {
               <button
                 title="Edit inventory part"
                 className="btn btn-edit"
-                onClick={() => openModal(InventoryModal, item, cardItemType, false)}
+                onClick={handleEditClick}
               >
                 Edit
               </button>
               <button
                 title="Delete inventory part"
                 className="btn btn-delete"
-                onClick={() =>
-                  openDeleteModal(item, cardItemType, () => deleteInventoryPartWithAlert)
-                }
+                onClick={handleDeleteClick}
               >
                 Delete
               </button>

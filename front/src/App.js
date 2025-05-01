@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
 // Components
 import Sidebar from './components/Sidebar'
@@ -84,7 +84,11 @@ const Main = () => {
               </div>
             </div>
           </div>
-          {modalState.isModalReady && modalState.showModal && ModalComponent && <ModalComponent />}
+          {modalState.isModalReady && modalState.showModal && ModalComponent && (
+            <Suspense fallback={<LoadingScreen fullscreen />}>
+              <ModalComponent />
+            </Suspense>
+          )}
 
           {modalState.showDeleteModal && <DeleteModal />}
         </>

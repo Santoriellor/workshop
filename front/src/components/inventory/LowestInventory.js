@@ -6,6 +6,9 @@ import LoadingScreen from '../LoadingScreen'
 
 const LowestInventory = () => {
   const { inventory, loading } = useInventoryStore()
+  const lowStockInventory = [...inventory]
+    .sort((a, b) => a.quantity_in_stock - b.quantity_in_stock)
+    .slice(0, 5)
 
   return (
     <>
@@ -14,8 +17,8 @@ const LowestInventory = () => {
       <div className="list">
         {loading ? (
           <LoadingScreen fullscreen={false} />
-        ) : inventory.length > 0 ? (
-          inventory.map((item) => <InventoryCard key={item.id} item={item} />)
+        ) : lowStockInventory.length > 0 ? (
+          lowStockInventory.map((item) => <InventoryCard key={item.id} item={item} />)
         ) : (
           <p>No parts found.</p>
         )}

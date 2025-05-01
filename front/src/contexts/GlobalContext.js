@@ -1,5 +1,12 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, lazy } from 'react'
 import { useLocation } from 'react-router-dom'
+
+// Lazy import modals
+const VehicleModal = lazy(() => import('../components/vehicles/VehicleModal'))
+const OwnerModal = lazy(() => import('../components/owners/OwnerModal'))
+const InventoryModal = lazy(() => import('../components/inventory/InventoryModal'))
+const ReportModal = lazy(() => import('../components/reports/ReportModal'))
+const TaskTemplateModal = lazy(() => import('../components/task-templates/TaskTemplateModal'))
 
 export const GlobalContext = createContext()
 
@@ -30,11 +37,22 @@ export const GlobalProvider = ({ children }) => {
       '/tasktemplate': 'Task Template',
     }
 
+    const pathToModalComponent = {
+      '/report': ReportModal,
+      '/dashboard': ReportModal,
+      '/owner': OwnerModal,
+      '/vehicle': VehicleModal,
+      '/inventory': InventoryModal,
+      '/tasktemplate': TaskTemplateModal,
+    }
+
     const matchedType = pathToType[location.pathname] || null
+    const matchedModal = pathToModalComponent[location.pathname] || null
 
     setModalState((prev) => ({
       ...prev,
       itemType: matchedType,
+      modalComponent: matchedModal,
     }))
   }, [location.pathname])
 

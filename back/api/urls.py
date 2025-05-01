@@ -3,8 +3,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     RegisterView, LoginView, UserViewSet, UserProfileViewSet,
-    OwnerViewSet, VehicleViewSet, ReportViewSet, TaskViewSet, TaskTemplateViewSet,
-    PartViewSet, InventoryViewSet, InvoiceViewSet
+    OwnerViewSet, VehicleViewSet, ReportViewSet, TaskTemplateViewSet, InventoryViewSet, InvoiceViewSet
 )
 
 # DRF Router for ViewSets
@@ -14,9 +13,7 @@ router.register(r'profile', UserProfileViewSet, basename='userprofile')
 router.register(r'owners', OwnerViewSet, basename='owner')
 router.register(r'vehicles', VehicleViewSet, basename='vehicle')
 router.register(r'reports', ReportViewSet, basename='report')
-router.register(r'tasks', TaskViewSet, basename='task')
 router.register(r'task-templates', TaskTemplateViewSet, basename='task-template')
-router.register(r'parts', PartViewSet, basename='part')
 router.register(r'inventory', InventoryViewSet, basename='inventory')
 router.register(r'invoices', InvoiceViewSet, basename='invoice')
 
