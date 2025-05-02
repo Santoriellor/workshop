@@ -53,6 +53,7 @@ const TaskFieldset = ({
                     {taskTemplate?.name ?? 'Unknown Task'} - €{taskTemplate.price ?? 'N/A'}
                   </p>
                   <button
+                    title="Remove task"
                     type="button"
                     onClick={() => removeTask(taskId)}
                     disabled={modalState.readonly}

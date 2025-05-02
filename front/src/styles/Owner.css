@@ -7,7 +7,8 @@
   gap: 0.5rem;
   border: none;
   border-radius: 5px;
-  background-color: white;
+  background-color: var(--background-main);
+  transition: all 0.3s ease-in-out;
 }
 .form-inputs label {
   font-weight: 500;

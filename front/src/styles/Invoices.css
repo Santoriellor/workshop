@@ -1,21 +1,23 @@
 .invoices-header {
-  background-color: #f5f5f5;
+  background-color: var(--background-card);
   padding: 15px;
   border-radius: 8px;
   margin: 10px 0px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
 }
 
 .invoices {
-  color: #555;
+  color: var(--text-main);
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   align-content: flex-start;
+  transition: all 0.3s ease-in-out;
 }
 
 .invoices-list {
-  color: #555;
+  color: var(--text-main);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -26,8 +28,9 @@
 }
 
 .invoices-divider {
-  border: 1px solid rgba(85, 85, 85, 0.2);
+  border: 1px solid var(--boxshadow-main);
   margin: 10px 10px;
+  transition: all 0.3s ease-in-out;
 }
 
 .card-invoice {
@@ -40,25 +43,26 @@
   justify-content: space-between;
   width: 96%;
   padding: 10px 15px 5px 15px;
-  background: #f5f5f5;
+  background: var(--background-card);
   border-radius: 6px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease;
+  box-shadow: 0 4px 6px var(--boxshadow-main);
+  transition: all 0.3s ease-in-out;
   cursor: pointer;
 }
 
 .card-invoice:hover {
-  box-shadow: 0 0 12px rgba(59, 140, 153, 0.8);
+  box-shadow: 0 0 12px var(--color-focus);
 }
 
 .card-invoice header {
   margin: 0 0 5px 0;
   padding-bottom: 5px;
-  color: #555;
+  color: var(--text-main);
   font-size: 18px;
   font-weight: 600;
   text-align: left;
-  border-bottom: 1.5px solid #ddd;
+  border-bottom: 1.5px solid var(--border-main);
+  transition: all 0.3s ease-in-out;
 }
 
 .card-invoice-row {

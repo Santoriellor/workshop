@@ -9,15 +9,13 @@
   align-items: center;
   margin: 0;
   padding: 0;
-  border: 2px #37828d solid;
+  border: 2px var(--border-menu) solid;
   border-left: none;
-  background-color: lightblue;
+  background-color: var(--background-btn-slidin);
   z-index: 1000;
   cursor: default;
   opacity: 0;
-  transition:
-    opacity 0.3s ease-in-out,
-    transform 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
 .create-item-button-container.slide-in {
@@ -34,16 +32,17 @@
   left: 25px;
   margin: 0;
   padding: 0;
-  border: 2px #37828d solid;
+  border: 2px var(--border-menu) solid;
   border-top-right-radius: 50%;
   border-bottom-right-radius: 50%;
   border-left: none;
-  background: lightblue;
+  background: var(--background-btn-slidin);
   width: 52px;
   height: 52px;
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: all 0.3s ease-in-out;
 }
 
 .create-item-button .icon {
@@ -52,12 +51,12 @@
   cursor: pointer;
   width: 48px;
   height: 48px;
-  fill: white;
-  stroke: #37828d;
+  fill: var(--background-svg-slidin);
+  stroke: var(--border-menu);
   transition: all 0.3s ease-in-out;
 }
 
 .create-item-button .icon:hover {
-  stroke: #0056b3;
-  filter: drop-shadow(0 0 5px #0056b3);
+  stroke: var(--stroke-slidin-hover);
+  filter: drop-shadow(0 0 5px var(--stroke-slidin-hover));
 }

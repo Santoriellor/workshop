@@ -76,6 +76,12 @@ class Report(models.Model):
     def get_status_display(self):
         """Returns the user-readable status."""
         return dict(self.STATUS_CHOICES).get(self.status, self.status)
+    
+    def delete(self, *args, **kwargs):
+        # Manually call delete() on related parts to trigger inventory restoration
+        for part in self.part_set.all():
+            part.delete()
+        super().delete(*args, **kwargs)
 
 
 class TaskTemplate(models.Model):
@@ -119,6 +125,7 @@ class Part(models.Model):
         return f"{self.quantity_used}x {self.part.name} for {self.report}"
 
     def save(self, *args, **kwargs):
+        print(f"[DEBUG] quantity_in_stock: {self.part.quantity_in_stock}, quantity_used: {self.quantity_used} ({type(self.quantity_used)})")
         with transaction.atomic():
             # Fetch the previous state if updating
             if self.pk:

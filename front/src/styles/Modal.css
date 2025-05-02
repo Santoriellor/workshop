@@ -8,17 +8,18 @@
   align-items: center;
   width: 100%;
   height: 100vh;
-  background: linear-gradient(to right, #2c3e50, #4ca1af);
+  background: linear-gradient(to right, var(--background-auth-left), var(--background-auth-right));
   box-sizing: border-box;
   overflow: auto;
+  transition: all 0.3s ease-in-out;
 }
 
 .modal-card {
-  background: white;
+  background: var(--background-main);
   padding: 1rem;
   margin: 1rem;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px var(--boxshadow-main);
   width: 80%;
   max-width: 700px;
   position: absolute;
@@ -29,12 +30,13 @@
   justify-content: center;
   text-align: center;
   animation: fadeIn 0.5s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
 .modal-card h2 {
   margin-top: 0;
   margin-bottom: 1rem;
-  color: #2c3e50;
+  color: var(--text-main);
 }
 
 .modal-card h3 {
@@ -43,22 +45,22 @@
 
 .modal-card button {
   padding: 12px;
-  background: #4ca1af;
-  color: white;
+  background: var(--background-btn);
+  color: var(--text-btn);
   font-size: 16px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   margin-top: 10px;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease-in-out;
 }
 
 .modal-card button:hover {
-  background: #3b8c99;
+  background: var(--background-btn-hover);
 }
 
 .modal-card button:disabled {
-  background: #95a5a6;
+  background: var(--background-btn-disabled);
   cursor: not-allowed;
 }
 
@@ -71,12 +73,12 @@
   border: solid 2px white;
   border-radius: 50%;
   background-color: white;
-  fill: red;
+  fill: var(--color-alert);
   cursor: pointer;
-  transition: fill 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 .modal-card-close:hover {
-  fill: #c70303;
+  fill: var(--color-alert-hover);
 }
 
 .modal-form {
@@ -105,16 +107,17 @@
   align-self: flex-start;
   font-style: italic;
   font-size: 12pt;
-  color: #2c3e50;
+  color: var(--text-main);
 }
 
 .modal-form input,
 .modal-form select,
 .modal-form textarea {
+  background-color: var(--background-form);
   width: 100%;
   padding: 10px;
   margin: 0;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-main);
   border-radius: 4px;
   font-size: 14px;
   box-sizing: border-box;
@@ -131,25 +134,25 @@
 .modal-form input:focus,
 .modal-form select:focus,
 .modal-form textarea:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  border-color: var(--color-focus);
+  box-shadow: 0 0 7px var(--color-focus);
   outline: none;
   transition: all 0.4s ease-in-out;
 }
 
 .modal-form input.invalid,
 .modal-form select.invalid {
-  border-color: red;
+  border-color: var(--color-alert);
 }
 .modal-form input.invalid:focus,
 .modal-form select.invalid:focus {
-  border-color: red;
-  box-shadow: 0 0 5px rgba(184, 84, 59, 0.5);
+  border-color: var(--color-alert);
+  box-shadow: 0 0 8px var(--color-alert);
 }
 
 .modal-form .error-text {
   height: 12px;
-  color: red;
+  color: var(--color-alert);
   font-size: 10pt;
   font-style: italic;
   padding: 0;
@@ -170,15 +173,15 @@
 .modal-form input:disabled,
 .modal-form select:disabled,
 .modal-form textarea:disabled {
-  background: #f8f8f8;
+  background-color: var(--background-form);
   cursor: not-allowed;
 }
 
 .modal-form button {
   padding: 12px;
   margin: 0;
-  background: #4ca1af;
-  color: white;
+  background: var(--background-btn);
+  color: var(--text-btn);
   font-size: 16px;
   border: none;
   border-radius: 8px;
@@ -192,11 +195,11 @@
 }
 
 .modal-form button:hover {
-  background: #3b8c99;
+  background: var(--background-btn-hover);
 }
 
 .modal-form button:disabled {
-  background: #95a5a6;
+  background: var(--background-btn-disabled);
   cursor: not-allowed;
 }
 
