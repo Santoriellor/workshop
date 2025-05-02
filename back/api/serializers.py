@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.utils.dateformat import format
@@ -108,6 +109,8 @@ class InventorySerializer(serializers.ModelSerializer):
 
 class PartSerializer(serializers.ModelSerializer):
     part = serializers.PrimaryKeyRelatedField(queryset=Inventory.objects.all())
+    quantity_used = serializers.DecimalField(max_digits=10, decimal_places=2)
+    
     class Meta:
         model = Part
         fields = '__all__'
@@ -146,10 +149,13 @@ class ReportSerializer(serializers.ModelSerializer):
             Task(report=report, task_template_id=task_id) for task_id in tasks
         ])
 
-        Part.objects.bulk_create([
-            Part(report=report, part_id=part_data["part"], quantity_used=part_data["quantity_used"])
-            for part_data in parts
-        ])
+        # Create parts one by one to trigger inventory logic
+        for part_data in parts:
+            Part.objects.create(
+                report=report,
+                part_id=part_data["part"],
+                quantity_used=Decimal(part_data["quantity_used"])
+            )
 
         return report
     
@@ -168,14 +174,16 @@ class ReportSerializer(serializers.ModelSerializer):
 
         # Handle parts
         if parts is not None:
-            instance.part_set.all().delete()
-            Part.objects.bulk_create([
-                Part(
+            # Delete one-by-one to trigger inventory restoration
+            for part in instance.part_set.all():
+                part.delete()
+            
+            for part_data in parts:
+                Part.objects.create(
                     report=instance,
                     part_id=part_data["part"],
-                    quantity_used=part_data["quantity_used"]
-                ) for part_data in parts
-            ])
+                    quantity_used=Decimal(part_data["quantity_used"])
+                )
 
         return instance
 

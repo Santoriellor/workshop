@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 // Components
 import CreateItemButton from './buttons/CreateItemButton'
 import SvgLogout from './svgGenerics/SvgLogout'
+import ThemeToggle from './buttons/ThemeToggle'
 // Styles
 import '../styles/Sidebar.css'
 // Contexts
@@ -29,6 +30,7 @@ function Sidebar() {
       {authenticatedUser && (
         <>
           <div className="sidebar-header">
+            <ThemeToggle />
             <img className="sidebar-logo" src="images/logo-garage.svg" alt="logo" />
             <span className="sidebar-company-name">The Garage</span>
 

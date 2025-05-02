@@ -72,7 +72,13 @@ export const useReportModal = (
     if (partExists) {
       setPartsUsed((prev) =>
         prev.map((p) =>
-          p.partId === selectedPartId ? { ...p, quantity_used: p.quantity_used + quantityPart } : p,
+          p.partId === selectedPartId
+            ? {
+                ...p,
+                quantity_used:
+                  (Math.round(p.quantity_used * 100) + Math.round(quantityPart * 100)) / 100,
+              }
+            : p,
         ),
       )
     } else {

@@ -1,6 +1,94 @@
 /* * {
   outline: solid 1px red;
 } */
+/* :root {
+  --background-color: #f9f9f9;
+  --background-menu: #343a40;
+  --menu-link-color: #dfdbdb;
+  --text-color: #343a40;
+  --link-color: hsla(182, 96%, 40%, 0.76);
+  --link-hover-color: hsla(182, 96%, 40%, 1.4);
+  --border-color: #dee2e6;
+  --projects-bg-color: white;
+  --form-bg-color: white;
+  --filters-btn-hover-color: white;
+} */
+
+[data-theme='light'] {
+  --color-alert: red;
+  --color-alert-hover: #c70303;
+  --color-focus: #0056b3;
+
+  /* login/register */
+  --text-auth-link: #4ca1af;
+  --text-auth-link-hover: #37828d;
+  --background-auth-left: #2c3e50;
+  --background-auth-right: #4ca1af;
+  /* sidebar */
+  --background-logo: white;
+  --text-menu: white;
+  --text-menu-active: #37828d;
+  --border-menu: #37828d;
+  --border-menu-active: #4ca1af;
+  --background-menu: #4ca1af;
+  --background-menu-active: white;
+  /* buttons */
+  --text-btn: white;
+  --text-btn-hover: white;
+  --background-btn: #4ca1af;
+  --background-btn-hover: #37828d;
+  --background-btn-disabled: #95a5a6;
+  --background-btn-slidin: lightblue;
+  --background-svg-slidin: white;
+  --stroke-slidin-hover: #0056b3;
+  /* cards */
+  --background-card: #f5f5f5;
+  --background-card-disabled: #f8f8f8;
+  --background-form: white;
+  /* main */
+  --text-main: #555;
+  --border-main: #ddd;
+  --background-main: white;
+  --boxshadow-main: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme='dark'] {
+  --color-alert: red;
+  --color-alert-hover: #c70303;
+  --color-focus: #0056b3;
+
+  /* login/register */
+  --text-auth-link: #4ca1af;
+  --text-auth-link-hover: white;
+  --background-auth-left: #2c3e50;
+  --background-auth-right: #4ca1af;
+  /* sidebar */
+  --background-logo: white;
+  --text-menu: lightgrey;
+  --text-menu-active: lightgrey;
+  --border-menu: #555;
+  --border-menu-active: #37828d;
+  --background-menu: #37828d;
+  --background-menu-active: #5f5f5f;
+  /* buttons */
+  --text-btn: lightgrey;
+  --text-btn-hover: white;
+  --background-btn: #37828d;
+  --background-btn-hover: #205158;
+  --background-btn-disabled: #95a5a6;
+  --background-btn-slidin: #95a5a6;
+  --background-svg-slidin: lightgrey;
+  --stroke-slidin-hover: #0056b3;
+  /* cards */
+  --background-card: #7a7a7a;
+  --background-card-disabled: #f8f8f8;
+  --background-form: #a8a8a8;
+  /* main */
+  --text-main: lightgrey;
+  --border-main: #ddd;
+  --background-main: #5f5f5f;
+  --boxshadow-main: rgba(0, 0, 0, 0.2);
+}
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -10,6 +98,8 @@ body {
   overflow: hidden;
   min-height: 530px;
   min-width: 500px;
+  background-color: var(--background-main);
+  transition: all 0.3s ease-in-out;
 }
 
 .container {

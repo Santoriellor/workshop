@@ -8,15 +8,15 @@
   align-items: center;
   width: 100%;
   height: 100vh;
-  background: linear-gradient(to right, #2c3e50, #4ca1af);
+  background: linear-gradient(to right, var(--background-auth-left), var(--background-auth-right));
   box-sizing: border-box;
 }
 
 .auth-card {
-  background: white;
+  background: var(--background-main);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px var(--boxshadow-main);
   width: 80%;
   max-width: 400px;
   display: flex;
@@ -30,7 +30,7 @@
 
 h2 {
   margin-bottom: 1rem;
-  color: #2c3e50;
+  color: var(--text-main);
 }
 
 .auth-form {
@@ -41,11 +41,12 @@ h2 {
 }
 
 .auth-form input {
+  color: var(--text-main);
   width: 100%;
   padding: 10px;
   margin-top: 8px;
   margin-bottom: 2px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-main);
   border-radius: 8px;
   font-size: 16px;
   transition: all 0.3s ease;
@@ -53,23 +54,23 @@ h2 {
 }
 
 .auth-form input.invalid {
-  border-color: red;
+  border-color: var(--color-alert);
 }
 
 .auth-form input:focus {
-  border-color: #4ca1af;
+  border-color: var(--color-focus);
   outline: none;
-  box-shadow: 0 0 5px rgba(76, 161, 175, 0.5);
+  box-shadow: 0 0 7px var(--color-focus);
 }
 
 .auth-form input.invalid:focus {
-  border-color: red;
-  box-shadow: 0 0 5px rgba(184, 84, 59, 0.5);
+  border-color: var(--color-alert);
+  box-shadow: 0 0 5px var(--color-alert);
 }
 
 .auth-form .error-text {
   height: 12px;
-  color: red;
+  color: var(--color-alert);
   font-size: 10pt;
   font-style: italic;
   padding: 0;
@@ -78,8 +79,8 @@ h2 {
 
 .auth-form button {
   padding: 12px;
-  background: #4ca1af;
-  color: white;
+  background: var(--background-btn);
+  color: var(--text-btn);
   font-size: 16px;
   border: none;
   border-radius: 8px;
@@ -89,26 +90,28 @@ h2 {
 }
 
 .auth-form button:hover {
-  background: #3b8c99;
+  background: var(--background-btn-hover);
 }
 
 .auth-form button:disabled {
-  background: #95a5a6;
+  background: var(--background-btn-disabled);
   cursor: not-allowed;
 }
 
 .auth-card .bottomline {
+  color: var(--text-main);
   margin-top: 10px;
   font-size: 14px;
 }
 
 .auth-card .bottomline a {
-  color: #4ca1af;
+  color: var(--text-auth-link);
   text-decoration: none;
   font-weight: bold;
 }
 
 .auth-card .bottomline a:hover {
+  color: var(--text-auth-link-hover);
   text-decoration: underline;
 }
 

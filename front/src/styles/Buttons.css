@@ -2,41 +2,39 @@
 .btn {
   margin: 5px;
   padding: 12px;
-  background: #4ca1af;
-  color: white;
+  background: var(--background-btn);
+  color: var(--text-btn);
   font-size: 16px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   margin-top: 5px;
-  transition:
-    filter 0.3s ease-in-out,
-    background 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 .btn:hover {
-  background: #3b8c99;
+  background: var(--background-btn-hover);
 }
 .btn:disabled {
-  background: #95a5a6;
+  background: var(--background-btn-disabled);
   cursor: not-allowed;
 }
 .btn-edit {
   padding: 3px 6px;
   width: 80px;
-  background-color: #555;
+  background-color: var(--background-btn);
 }
 .btn-edit:hover {
-  filter: drop-shadow(0 0 3px #3b8c99);
-  background-color: #3b8c99;
+  filter: drop-shadow(0 0 3px var(--background-btn-hover));
+  background-color: var(--background-btn-hover);
 }
 .btn-delete {
   padding: 3px 6px;
   width: 80px;
-  background-color: #555;
+  background-color: var(--background-btn);
 }
 .btn-delete:hover {
-  filter: drop-shadow(0 0 3px #c70303);
-  background-color: #c70303;
+  filter: drop-shadow(0 0 3px var(--color-alert));
+  background-color: var(--color-alert);
 }
 /* Floating Button */
 .btn-float {
@@ -46,11 +44,6 @@
   transition:
     filter 0.3s ease-in-out,
     background 0.3s ease-in-out;
-}
-
-.btn-float:hover {
-  filter: drop-shadow(0 0 8px white);
-  background-color: #1f646e;
 }
 
 .button-group {

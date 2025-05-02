@@ -7,9 +7,10 @@
 
 .input-divider {
   content: '';
-  border: 1px solid rgba(85, 85, 85, 0.2);
+  border: 1px solid var(--boxshadow-main);
   padding: 0;
   margin: 0;
+  transition: all 0.3s ease-in-out;
 }
 
 .report-form .report-fields {
@@ -43,7 +44,7 @@
 }
 .repair-section button {
   margin: 0;
-  background-color: rgb(138, 136, 136);
+  background-color: var(--background-btn);
 }
 
 .repair-list {
@@ -57,8 +58,8 @@
   width: 100%;
 }
 .repair-list li {
-  background-color: #55b6c5;
-  border: solid 1px lightgrey;
+  background-color: var(--background-btn-disabled);
+  border: solid 1px var(--border-main);
   padding: 5px;
   border-radius: 8px;
   display: flex;
@@ -71,7 +72,7 @@
 .repair-list li p {
   padding: 0;
   margin: 0;
-  color: white;
+  color: var(--text-btn);
   margin-right: 5px;
   line-height: 1.5;
 }
@@ -81,17 +82,18 @@
   display: flex;
   align-content: center;
   justify-content: center;
-  background-color: rgb(255, 100, 100);
+  background-color: var(--color-alert);
   transition: background 0.3s ease-in-out;
 }
 .repair-list li button:hover {
-  background-color: red;
+  background-color: var(--color-alert-hover);
 }
 .repair-list li button:disabled {
-  fill: grey;
+  fill: var(--background-btn-disabled);
 }
 .repair-list li button svg {
   width: 24px;
   height: 24px;
   fill: white;
+  pointer-events: none;
 }
