@@ -1,18 +1,6 @@
 /* * {
   outline: solid 1px red;
 } */
-/* :root {
-  --background-color: #f9f9f9;
-  --background-menu: #343a40;
-  --menu-link-color: #dfdbdb;
-  --text-color: #343a40;
-  --link-color: hsla(182, 96%, 40%, 0.76);
-  --link-hover-color: hsla(182, 96%, 40%, 1.4);
-  --border-color: #dee2e6;
-  --projects-bg-color: white;
-  --form-bg-color: white;
-  --filters-btn-hover-color: white;
-} */
 
 [data-theme='light'] {
   --color-alert: red;
