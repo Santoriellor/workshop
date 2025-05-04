@@ -23,7 +23,30 @@ export const GlobalProvider = ({ children }) => {
     isModalReady: false,
   })
 
+  const [isActiveLight, setIsActiveLight] = useState(true)
+
   const [deleteItemWithAlert, setDeleteItemWithAlert] = useState(() => () => {})
+
+  // Apply the theme (light or dark) and save it in localStorage
+  const applyTheme = (theme) => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
+  }
+
+  // Set the theme on load
+  useEffect(() => {
+    // Check for theme in localStorage or fallback to system preference
+    const storedTheme = localStorage.getItem('theme')
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+
+    if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+      setIsActiveLight(true)
+      applyTheme('dark')
+    } else {
+      setIsActiveLight(false)
+      applyTheme('light')
+    }
+  }, [])
 
   // Automatically set itemType based on pathname
   useEffect(() => {
@@ -131,6 +154,9 @@ export const GlobalProvider = ({ children }) => {
       value={{
         modalState,
         setModalState,
+        isActiveLight,
+        setIsActiveLight,
+        applyTheme,
         openModal,
         openDeleteModal,
         handleDeleteConfirm,

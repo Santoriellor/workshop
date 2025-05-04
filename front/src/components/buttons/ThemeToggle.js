@@ -1,31 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+// Contexts
+import { useGlobalContext } from '../../contexts/GlobalContext'
+// Styles
 import '../../styles/ThemeToggle.css'
 
 const ThemeToggle = () => {
-  const [active, setActive] = useState(false)
-
-  useEffect(() => {
-    // Check for theme in localStorage or fallback to system preference
-    const storedTheme = localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-
-    if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
-      setActive(true)
-      applyTheme('dark')
-    } else {
-      setActive(false)
-      applyTheme('light')
-    }
-  }, [])
-
-  const applyTheme = (theme) => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('theme', theme)
-  }
+  const { isActiveLight, setIsActiveLight, applyTheme } = useGlobalContext()
 
   const toggleTheme = () => {
-    const newTheme = active ? 'light' : 'dark'
-    setActive(!active)
+    const newTheme = isActiveLight ? 'light' : 'dark'
+    setIsActiveLight(!isActiveLight)
     applyTheme(newTheme)
   }
 
@@ -33,7 +17,7 @@ const ThemeToggle = () => {
     <div className="toggle">
       <svg
         className="svg-sun"
-        fill={active ? '#000' : 'yellow'}
+        fill={isActiveLight ? '#000' : 'yellow'}
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
       >
@@ -43,19 +27,19 @@ const ThemeToggle = () => {
         <input
           aria-label="dark mode toggle"
           role="switch"
-          aria-checked={active}
+          aria-checked={isActiveLight}
           type="checkbox"
           id="toggle"
           onKeyDown={(e) => e.code === 'Enter' && toggleTheme()}
           onClick={toggleTheme}
-          checked={active}
+          checked={isActiveLight}
           readOnly
         />
         <span className="slider"></span>
       </label>
       <svg
         className="svg-moon"
-        fill={active ? 'white' : 'black'}
+        fill={isActiveLight ? 'white' : 'black'}
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 384 512"
       >
