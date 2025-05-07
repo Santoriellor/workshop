@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import axiosInstance from '../utils/axiosInstance'
 
-const REPORT_API_URL = process.env.REACT_APP_API_URL + '/reports/'
+const REPORT_API_URL = import.meta.env.VITE_API_URL + '/reports/'
 
 const useReportStore = create((set) => ({
   reports: [],
