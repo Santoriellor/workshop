@@ -52,6 +52,7 @@ services:
     build:
       context: .
       dockerfile: front/Dockerfile
+      target: dev # dev to run test for the frontend or prod to serve the app
     container_name: react
     env_file:
       - ./front/.env
