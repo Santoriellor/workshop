@@ -68,10 +68,12 @@ export const useReportModal = (
 
   const addPart = useCallback(() => {
     if (!selectedPartId || quantityPart <= 0) return
-    const partExists = partsUsed.some((p) => p.partId === selectedPartId)
-    if (partExists) {
-      setPartsUsed((prev) =>
-        prev.map((p) =>
+
+    setPartsUsed((prev) => {
+      const partExists = prev.some((p) => p.partId === selectedPartId)
+
+      if (partExists) {
+        return prev.map((p) =>
           p.partId === selectedPartId
             ? {
                 ...p,
@@ -79,14 +81,15 @@ export const useReportModal = (
                   (Math.round(p.quantity_used * 100) + Math.round(quantityPart * 100)) / 100,
               }
             : p,
-        ),
-      )
-    } else {
-      setPartsUsed((prev) => [...prev, { partId: selectedPartId, quantity_used: quantityPart }])
-    }
+        )
+      } else {
+        return [...prev, { partId: selectedPartId, quantity_used: quantityPart }]
+      }
+    })
+
     setSelectedPartId('')
     setQuantityPart(1)
-  }, [selectedPartId, quantityPart, partsUsed])
+  }, [selectedPartId, quantityPart])
 
   const removePart = useCallback((partId) => {
     setPartsUsed((prev) => prev.filter((p) => p.partId !== partId))

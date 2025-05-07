@@ -2,7 +2,7 @@ import axios from 'axios'
 import { refreshToken, logout } from './authUtils'
 
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
 })
 
 // Set token dynamically (e.g., after login or token refresh)

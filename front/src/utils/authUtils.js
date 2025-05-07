@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { setAxiosToken } from './axiosInstance'
 
-const apiURL = process.env.REACT_APP_API_URL
+const apiURL = import.meta.env.VITE_API_URL
 
 export const refreshToken = async () => {
   const refreshToken = localStorage.getItem('refreshToken')

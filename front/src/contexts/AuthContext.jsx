@@ -6,7 +6,7 @@ import Swal from 'sweetalert2'
 import { setAxiosToken } from '../utils/axiosInstance'
 import { logout as utilsLogout } from '../utils/authUtils'
 
-const apiURL = process.env.REACT_APP_API_URL
+const apiURL = import.meta.env.VITE_API_URL
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {

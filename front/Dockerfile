@@ -1,12 +1,12 @@
 # front/Dockerfile
-FROM node:18.20.7
+FROM node:lts-alpine
 
 # Set working directory
 WORKDIR /frontend
 
 # Install dependencies
 COPY front/package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy project files
 COPY front/ .

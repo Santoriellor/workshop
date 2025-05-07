@@ -41,13 +41,13 @@ const ReportCard = ({ item, handleExportClick }) => {
   // Memoized values
   const vehicleInfo = useMemo(
     () => getVehicleInfoByVehicleId(item.vehicle, vehicles),
-    [item.id, vehicles],
+    [item.vehicle, vehicles],
   )
   const ownerName = useMemo(
     () => getOwnerNameByVehicleId(item.vehicle, vehicles, owners),
-    [item.id, vehicles, owners],
+    [item.vehicle, vehicles, owners],
   )
-  const userName = useMemo(() => getUserNameById(item.user), [item.user, users])
+  const userName = useMemo(() => getUserNameById(item.user), [item.user])
 
   // Open viewing modal
   const handleCardClick = (e) => {
