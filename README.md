@@ -52,6 +52,21 @@ docker-compose exec backend python manage.py createsuperuser
 docker-compose exec backend python manage.py test
 ```
 
+### Run npm test:
+
+To run the tests for the frontend, you need to change the "target" parameter from "prod" to "dev" in the "docker-compose.yml" file.
+Once the container is up, you can access the bash within the frontend container with :
+
+```bash
+docker-compose exec frontend sh
+```
+
+then inside the bash run the command :
+
+```bash
+npm test
+```
+
 ### Restart containers:
 
 ```bash

@@ -2,7 +2,7 @@ import { act } from '@testing-library/react'
 import useReportStore from '../../stores/useReportStore'
 import axiosInstance from '../../utils/axiosInstance'
 
-jest.mock('../../utils/axiosInstance')
+vi.mock('../../utils/axiosInstance')
 
 describe('useReportStore', () => {
   beforeEach(() => {
