@@ -11,12 +11,12 @@ from .models import (
     Invoice
 )
 
-#import logging
-
-# Set up logger
-#logger = logging.getLogger('myapiapp')
+# ------------------ AUTH & USER ------------------
 
 class LoginSerializer(serializers.Serializer):
+    """
+    Handles user authentication via email and password.
+    """
     email = serializers.EmailField()
     password = serializers.CharField()
 
@@ -24,27 +24,28 @@ class LoginSerializer(serializers.Serializer):
         email = data.get('email')
         password = data.get('password')
         
-        # Log the incoming payload (email and password)
-        # logger.info(f"Received login request with email: {email} and password: {password}")
-
         if email and password:
             user = authenticate(request=self.context.get('request'), email=email, password=password)
             if not user:
-                # logger.info("Invalid credentials, authentication failed.")
                 raise serializers.ValidationError("Invalid email or password.")
         else:
-            # logger.info("Missing email or password in request.")
             raise serializers.ValidationError("Must include 'email' and 'password'.")
 
         data['user'] = user
         return data
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializes user profile details.
+    """
     class Meta:
         model = UserProfile
         fields = ['full_name', 'bio', 'image', 'verified']
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializes user registration data.
+    """
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'password']
@@ -58,13 +59,21 @@ class UserSerializer(serializers.ModelSerializer):
         )
         return user
 
+# ------------------ OWNER & VEHICLE ------------------
+
 class OwnerSerializer(serializers.ModelSerializer):
+    """
+    Serializes owner information.
+    """
     class Meta:
         model = Owner
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 class VehicleSerializer(serializers.ModelSerializer):
+    """
+    Serializes vehicle details and includes a string representation field.
+    """
     __str__ = serializers.SerializerMethodField()
     
     def get___str__(self, obj):
@@ -75,26 +84,41 @@ class VehicleSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
         
     def validate_year(self, value):
+        """
+        Validates the 'year' field to ensure it is within a reasonable range.
+        """
         current_year = datetime.now().year
         if value < 1900 or value > current_year:
             raise serializers.ValidationError(f"Year must be between 1900 and {current_year}.")
         return value
 
-class TaskTemplateSerializer(serializers.ModelSerializer):    
+# ------------------ TASK & TEMPLATE ------------------
+
+class TaskTemplateSerializer(serializers.ModelSerializer):
+    """
+    Serializes task templates.
+    """    
     class Meta:
         model = TaskTemplate
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 class TaskSerializer(serializers.ModelSerializer):
+    """
+    Serializes tasks that are linked to reports and templates.
+    """
     task_template = serializers.PrimaryKeyRelatedField(queryset=TaskTemplate.objects.all())
 
     class Meta:
         model = Task
         fields = '__all__'
         
+# ------------------ INVENTORY & PART ------------------
 
 class InventorySerializer(serializers.ModelSerializer):
+    """
+    Serializes inventory items with human-readable date formatting.
+    """
     formatted_created_at = serializers.SerializerMethodField()
     formatted_updated_at = serializers.SerializerMethodField()
     
@@ -108,6 +132,9 @@ class InventorySerializer(serializers.ModelSerializer):
         return format(obj.updated_at, "F j, Y")
 
 class PartSerializer(serializers.ModelSerializer):
+    """
+    Serializes parts used in reports.
+    """
     part = serializers.PrimaryKeyRelatedField(queryset=Inventory.objects.all())
     quantity_used = serializers.DecimalField(max_digits=10, decimal_places=2)
     
@@ -115,15 +142,21 @@ class PartSerializer(serializers.ModelSerializer):
         model = Part
         fields = '__all__'
 
+# ------------------ REPORT ------------------
+
 class ReportSerializer(serializers.ModelSerializer):
+    """
+    Serializes reports and includes nested task and part data.
+    Allows creation and update of tasks and parts from report requests.
+    """
     formatted_created_at = serializers.SerializerMethodField()
     formatted_updated_at = serializers.SerializerMethodField()
     status_display = serializers.SerializerMethodField()
     
-    # Allow tasks and parts to be passed in the report request body
+    # Incoming task and part IDs
     tasks = serializers.ListField(write_only=True, child=serializers.IntegerField(), required=False)
     parts = serializers.ListField(write_only=True, child=serializers.DictField(), required=False)
-    # Allow tasks and parts to be passed in the report response body
+    # Outgoing task and part data
     tasks_data = TaskSerializer(many=True, source='task_set', read_only=True)
     parts_data = PartSerializer(many=True, source='part_set', read_only=True)
     
@@ -140,6 +173,9 @@ class ReportSerializer(serializers.ModelSerializer):
         return obj.get_status_display()
     
     def create(self, validated_data):
+        """
+        Creates a report and its associated tasks and parts.
+        """
         tasks = validated_data.pop('tasks', [])
         parts = validated_data.pop('parts', [])
 
@@ -160,19 +196,23 @@ class ReportSerializer(serializers.ModelSerializer):
         return report
     
     def update(self, instance, validated_data):
+        """
+        Updates report, replacing all related tasks and parts.
+        Ensures inventory consistency when parts change.
+        """
         tasks = validated_data.pop('tasks', None)
         parts = validated_data.pop('parts', None)
 
         instance = super().update(instance, validated_data)
 
-        # Handle tasks
+        # Replace all tasks if provided
         if tasks is not None:
             instance.task_set.all().delete()
             Task.objects.bulk_create([
                 Task(report=instance, task_template_id=task_id) for task_id in tasks
             ])
 
-        # Handle parts
+        # Replace all parts if provided
         if parts is not None:
             # Delete one-by-one to trigger inventory restoration
             for part in instance.part_set.all():
@@ -187,8 +227,12 @@ class ReportSerializer(serializers.ModelSerializer):
 
         return instance
 
+# ------------------ INVOICE ------------------
 
 class InvoiceSerializer(serializers.ModelSerializer):
+    """
+    Serializes invoices and includes human-readable issue date.
+    """
     formatted_issued_date = serializers.SerializerMethodField()
     
     class Meta:
