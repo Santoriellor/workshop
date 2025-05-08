@@ -7,6 +7,12 @@ from django.conf import settings
 
 # -------------- USER & PROFILE --------------
 class User(AbstractUser):
+    """
+    Custom user model that uses email as the login identifier.
+
+    Overrides Django's default AbstractUser to use 'email' for authentication
+    while keeping 'username' as a required field for legacy compatibility.
+    """
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
 
@@ -14,12 +20,18 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username']  # Username is still required for createsuperuser
 
     def profile(self):
+        """Returns the user's profile if it exists, otherwise None."""
         try:
             return self.userprofile
         except UserProfile.DoesNotExist:
             return None
 
 class UserProfile(models.Model):
+    """
+    Stores additional information about the user.
+
+    Automatically created/updated via signals upon User creation/update.
+    """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=1000)
     bio = models.CharField(max_length=100)
@@ -31,6 +43,9 @@ class UserProfile(models.Model):
 
 # -------- VEHICLE & OWNER MODELS --------
 class Owner(models.Model):
+    """
+    Represents the owner of one or more vehicles.
+    """
     full_name = models.CharField(max_length=100)
     address = models.TextField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -42,6 +57,9 @@ class Owner(models.Model):
         return self.full_name
 
 class Vehicle(models.Model):
+    """
+    Stores vehicle details, linked to an owner.
+    """
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE)
     brand = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
@@ -56,6 +74,11 @@ class Vehicle(models.Model):
     
 # ---------- REPORT & TASKS ------------
 class Report(models.Model):
+    """
+    Inspection or service report associated with a vehicle and a user.
+
+    Tracks the status of vehicle inspection and repair tasks.
+    """
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('in_progress', 'In Progress'),
@@ -78,13 +101,19 @@ class Report(models.Model):
         return dict(self.STATUS_CHOICES).get(self.status, self.status)
     
     def delete(self, *args, **kwargs):
-        # Manually call delete() on related parts to trigger inventory restoration
+        """
+        On delete, cascade and restore inventory quantities
+        from related parts.
+        """
         for part in self.part_set.all():
             part.delete()
         super().delete(*args, **kwargs)
 
 
 class TaskTemplate(models.Model):
+    """
+    Blueprint for a repair or maintenance task.
+    """
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -95,6 +124,11 @@ class TaskTemplate(models.Model):
         return self.name
     
 class Task(models.Model):
+    """
+    Specific task performed as part of a report.
+
+    Links a TaskTemplate to a Report.
+    """
     report = models.ForeignKey(Report, on_delete=models.CASCADE)
     task_template = models.ForeignKey(TaskTemplate, on_delete=models.SET_NULL, null=True)
 
@@ -105,6 +139,9 @@ class Task(models.Model):
     
 # -------- INVENTORY & REPAIR PARTS --------    
 class Inventory(models.Model):
+    """
+    Represents a stock item that can be used for repairs.
+    """
     name = models.CharField(max_length=100)
     reference_code = models.CharField(max_length=50, unique=True)
     category = models.CharField(max_length=50, blank=True, null=True)
@@ -117,6 +154,11 @@ class Inventory(models.Model):
         return f"{self.name} ({self.reference_code})"
     
 class Part(models.Model):
+    """
+    Part used in a report, linked to inventory.
+
+    Automatically adjusts stock levels on save/delete.
+    """
     report = models.ForeignKey(Report, on_delete=models.CASCADE)
     part = models.ForeignKey(Inventory, on_delete=models.CASCADE)
     quantity_used = models.DecimalField(max_digits=10, decimal_places=2)
@@ -125,7 +167,11 @@ class Part(models.Model):
         return f"{self.quantity_used}x {self.part.name} for {self.report}"
 
     def save(self, *args, **kwargs):
-        print(f"[DEBUG] quantity_in_stock: {self.part.quantity_in_stock}, quantity_used: {self.quantity_used} ({type(self.quantity_used)})")
+        """
+        On save, deduct used quantity from inventory.
+
+        Restores stock if updating an existing part entry.
+        """
         with transaction.atomic():
             # Fetch the previous state if updating
             if self.pk:
@@ -152,7 +198,9 @@ class Part(models.Model):
             super().save(*args, **kwargs)
             
     def delete(self, *args, **kwargs):
-        """Restore inventory quantity when a part is deleted."""
+        """
+        On delete, restore inventory quantity.
+        """
         with transaction.atomic():
             self.part.quantity_in_stock += self.quantity_used
             self.part.save()
@@ -161,6 +209,9 @@ class Part(models.Model):
 
 # -------- INVOICE --------
 class Invoice(models.Model):
+    """
+    Invoice generated from a report, includes total cost and PDF export.
+    """
     invoice_number = models.CharField(max_length=20, unique=True)
     report = models.ForeignKey(Report, on_delete=models.CASCADE)
     issued_date = models.DateTimeField(default=timezone.now)
@@ -178,10 +229,12 @@ class Invoice(models.Model):
     
 # Signals to create/update UserProfile when a User is created/updated
 def create_user_profile(sender, instance, created, **kwargs):
+    """Signal to create a UserProfile when a new User is created."""
     if created:
         UserProfile.objects.create(user=instance)
 
 def save_user_profile(sender, instance, **kwargs):
+    """Signal to save UserProfile when the User is saved."""
     if hasattr(instance, 'userprofile'):
         instance.userprofile.save()
 

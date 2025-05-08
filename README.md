@@ -1,6 +1,6 @@
 # Workshop Web Application (Dockerized)
 
-This is a full-stack car workshop management app with:
+This is a full-stack Job Card management app with:
 
 - Django + MySQL (Backend)
 - React 18 + JavaScript (Frontend)

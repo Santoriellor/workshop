@@ -1,11 +1,34 @@
+"""
+Tests for vehicle creation edge cases via the Vehicle API.
+
+Covers scenarios such as:
+- Missing required fields
+- Invalid data formats
+- Duplicate constraints
+- Unrealistic values
+"""
+
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from rest_framework import status
 from api.models import Vehicle, Owner
 
 class VehicleEdgeCaseTests(APITestCase):
+    """
+    Test suite for validating edge cases during vehicle creation through the API.
+    
+    Ensures that the API returns appropriate validation errors for missing fields,
+    incorrect formats, duplicate entries, and implausible values.
+    """
     def setUp(self):
-        # Register the user and log them in
+        """
+        Set up an authenticated user and create a test owner.
+
+        This includes:
+        - Registering and logging in a test user
+        - Retrieving an access token for authentication
+        - Creating an owner record associated with the user
+        """
         self.register_url = reverse('register')
         self.login_url = reverse('login')
         self.user_data = {
@@ -27,6 +50,9 @@ class VehicleEdgeCaseTests(APITestCase):
         self.owner = Owner.objects.create(full_name="John Doe", email="john@example.com", phone="1234567890")
 
     def test_create_vehicle_missing_required_fields(self):
+        """
+        Test that vehicle creation fails when required fields (license_plate, year) are missing.
+        """
         # Missing license_plate and year
         invalid_data = {
             'brand': 'Toyota',
@@ -39,6 +65,9 @@ class VehicleEdgeCaseTests(APITestCase):
         self.assertIn('year', response.data)
 
     def test_create_vehicle_with_invalid_year_format(self):
+        """
+        Test that vehicle creation fails when 'year' is not a valid integer.
+        """
         invalid_data = {
             'brand': 'Toyota',
             'model': 'Yaris',
@@ -51,6 +80,9 @@ class VehicleEdgeCaseTests(APITestCase):
         self.assertIn('year', response.data)
 
     def test_create_vehicle_with_duplicate_license_plate(self):
+        """
+        Test that duplicate license plates are not allowed.
+        """
         Vehicle.objects.create(
             brand='Ford',
             model='Fusion',
@@ -70,6 +102,9 @@ class VehicleEdgeCaseTests(APITestCase):
         self.assertIn('license_plate', response.data)
 
     def test_create_vehicle_with_extreme_year(self):
+        """
+        Test that extremely high future years (e.g. 9999) are rejected.
+        """
         # Far future year
         data = {
             'brand': 'Tesla',

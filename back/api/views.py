@@ -1,3 +1,20 @@
+"""
+views.py
+
+This module defines all API views for the Django backend.
+It includes endpoints for user authentication, user profiles, owners, vehicles, reports, tasks,
+inventory, and invoices.
+The views use Django REST Framework's class-based viewsets and custom APIViews to provide standard CRUD operations and custom logic such as:
+- User registration and login with JWT token support
+- Concurrency control via `updated_at` checks on updates
+- Report export and dynamic PDF invoice generation using WeasyPrint
+- Filtering and ordering via DjangoFilterBackend
+- Custom pagination where needed using LimitOffsetPagination
+
+Each view enforces appropriate permissions, typically requiring authentication, and is designed
+to interact with corresponding serializers and models for structured input/output handling.
+"""
+
 from rest_framework import permissions, status, viewsets, filters
 from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
@@ -32,6 +49,12 @@ class CustomPagination(LimitOffsetPagination):
 
 # Authentication Views
 class RegisterView(APIView):
+    """
+    API endpoint that allows a new user to register.
+
+    Accepts a POST request with user data, validates it using the UserSerializer,
+    and creates a new user upon successful validation.
+    """
     permission_classes = []
     
     def post(self, request):
@@ -42,6 +65,12 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
+    """
+    API endpoint that allows a user to log in.
+
+    Validates credentials and returns JWT access and refresh tokens upon success,
+    along with serialized user data.
+    """
     permission_classes = []
 
     def post(self, request):
@@ -58,7 +87,12 @@ class LoginView(APIView):
         }, status=status.HTTP_200_OK)
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    """Retrieve the list of users."""
+    """
+    API endpoint to retrieve user data.
+
+    Provides a read-only view of all users and includes custom actions to return
+    the currently authenticated user's info and check username/email availability.
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = []
@@ -83,6 +117,11 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(response_data)
 
 class UserProfileViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing the authenticated user's profile.
+
+    Supports CRUD operations, but restricts access to only the requesting user's profile.
+    """
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -93,6 +132,12 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
 # Owners Views
 class OwnerViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing vehicle owners.
+
+    Supports CRUD operations with filtering and ordering based on name and email.
+    Includes concurrency checks during updates using `updated_at`.
+    """
     queryset = Owner.objects.all()
     serializer_class = OwnerSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -130,6 +175,12 @@ class OwnerViewSet(viewsets.ModelViewSet):
 
 # Vehicles Views
 class VehicleViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing vehicles.
+
+    Supports full CRUD operations with filtering and ordering on various fields.
+    Includes concurrency conflict resolution during updates.
+    """
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -167,7 +218,13 @@ class VehicleViewSet(viewsets.ModelViewSet):
 
 # Reports Views
 class ReportViewSet(viewsets.ModelViewSet):
-    # queryset = Report.objects.all()
+    """
+    API endpoint for managing maintenance reports.
+
+    Includes logic for pagination, filtering, ordering, and concurrency control.
+    Features a custom invoice generation method when a report is marked as 'exported',
+    including PDF generation using WeasyPrint. Also exposes related tasks and parts.
+    """
     queryset = Report.objects.select_related('vehicle').all()
     serializer_class = ReportSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -338,6 +395,11 @@ class ReportViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class TaskTemplateViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing task templates.
+
+    Allows full CRUD operations and supports filtering and ordering by name or description.
+    """
     queryset = TaskTemplate.objects.all()
     serializer_class = TaskTemplateSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -374,6 +436,12 @@ class TaskTemplateViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=400)
 
 class InventoryViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing inventory items.
+
+    Provides CRUD functionality, with filtering and ordering on inventory fields.
+    Pagination is disabled unless limit/offset parameters are specified.
+    """
     queryset = Inventory.objects.all()
     serializer_class = InventorySerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -429,6 +497,12 @@ class InventoryViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=400)
 
 class InvoiceViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing invoices.
+
+    Allows listing and updating invoices with ordering and filtering support.
+    Pagination is disabled unless explicitly requested via query parameters.
+    """
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
     permission_classes = [permissions.IsAuthenticated]

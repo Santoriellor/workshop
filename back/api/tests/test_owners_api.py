@@ -1,4 +1,13 @@
-# api/tests/test_owners_api.py
+"""
+Tests for the Owner API endpoints.
+
+Covers basic CRUD functionality:
+- Creating a new owner
+- Listing all owners
+- Retrieving a specific owner
+- Updating owner details
+- Deleting an owner
+"""
 
 from django.test import TestCase
 from rest_framework.test import APIClient
@@ -7,12 +16,24 @@ from api.models import Owner
 from django.urls import reverse
 
 class TestOwnerAPI(TestCase):
+    """
+    Test suite for the Owner model API endpoints.
+
+    Uses Django REST Framework's APIClient to authenticate a user and perform
+    CRUD operations on the Owner model via API endpoints.
+    """
     def setUp(self):
+        """
+        Create a test user and authenticate them for API usage.
+        """
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(username="testuser", password="testpass")
         self.client.force_authenticate(user=self.user)
 
     def test_create_owner(self):
+        """
+        Test the creation of a new owner via POST request.
+        """
         url = reverse('owner-list')
         data = {
             "full_name": "John Doe",
@@ -24,6 +45,9 @@ class TestOwnerAPI(TestCase):
         self.assertEqual(response.status_code, 201)
 
     def test_list_owners(self):
+        """
+        Test listing all owners via GET request.
+        """
         Owner.objects.create(full_name="Jane Smith", email="jane@example.com")
         url = reverse('owner-list')
         response = self.client.get(url)
@@ -31,7 +55,9 @@ class TestOwnerAPI(TestCase):
         self.assertGreaterEqual(len(response.data), 1)
         
     def test_get_single_owner(self):
-        # Test to get a single owner by ID
+        """
+        Test retrieving a specific owner by their ID.
+        """
         owner = Owner.objects.create(full_name="Jane Smith", email="jane@example.com")
         url = reverse('owner-detail', kwargs={'pk': owner.pk})
         response = self.client.get(url)
@@ -40,7 +66,9 @@ class TestOwnerAPI(TestCase):
         self.assertEqual(response.data['email'], owner.email)
 
     def test_update_owner(self):
-        # Test to update an existing owner
+        """
+        Test updating an existing owner's details using PATCH.
+        """
         owner = Owner.objects.create(full_name="Jane Smith", email="jane@example.com")
         url = reverse('owner-detail', kwargs={'pk': owner.pk})
         data = {
@@ -54,7 +82,9 @@ class TestOwnerAPI(TestCase):
         self.assertEqual(owner.email, "updated@example.com")
 
     def test_delete_owner(self):
-        # Test to delete an owner
+        """
+        Test deleting an owner via DELETE request.
+        """
         owner = Owner.objects.create(full_name="Jane Smith", email="jane@example.com")
         url = reverse('owner-detail', kwargs={'pk': owner.pk})
         response = self.client.delete(url)
