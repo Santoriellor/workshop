@@ -145,7 +145,7 @@ class Inventory(models.Model):
     name = models.CharField(max_length=100)
     reference_code = models.CharField(max_length=50, unique=True)
     category = models.CharField(max_length=50, blank=True, null=True)
-    quantity_in_stock = models.PositiveIntegerField(default=0)
+    quantity_in_stock = models.DecimalField(max_digits=10, decimal_places=2)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
