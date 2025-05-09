@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y \
     libgdk-pixbuf2.0-0 \
     libglib2.0-0 \
     libglib2.0-dev \
+    fonts-dejavu \
+    fonts-liberation \
+    fonts-freefont-ttf \
     shared-mime-info \
     libssl-dev \
     libffi-dev \
