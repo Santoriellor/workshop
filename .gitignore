@@ -31,7 +31,6 @@ Thumbs.db
 
 # Build & Static Files
 staticfiles/
-static/
 media/
 dist/
 build/
