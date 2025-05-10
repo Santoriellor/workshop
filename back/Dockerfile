@@ -42,5 +42,5 @@ EXPOSE 8000
 
 # Populate the database (optional)
 COPY back/entrypoint.sh backend/entrypoint.sh
-RUN chmod +x backend/entrypoint.sh
+RUN sed -i 's/\r$//' backend/entrypoint.sh && chmod +x backend/entrypoint.sh
 ENTRYPOINT ["backend/entrypoint.sh"]
