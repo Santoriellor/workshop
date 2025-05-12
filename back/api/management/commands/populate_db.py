@@ -69,12 +69,13 @@ def populate_owners():
     owners = []
     for _ in range(10):
         owner = Owner.objects.create(
-            full_name=fake.name(),
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
             address=fake.address(),
             phone=fake.numerify(text='############'),
             email=fake.email()
         )
-        print(f'Created owner: {owner.full_name}')
+        print(f'Created owner: {owner.first_name} {owner.last_name}')
         owners.append(owner)
     return owners
 
