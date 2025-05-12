@@ -20,7 +20,8 @@ const OwnerModal = () => {
   const { owners, createOwner, updateOwner, deleteOwner, loading } = useOwnerStore()
 
   const initialData = {
-    full_name: modalState.selectedItem?.full_name || '',
+    first_name: modalState.selectedItem?.first_name || '',
+    last_name: modalState.selectedItem?.last_name || '',
     email: modalState.selectedItem?.email || '',
     phone: modalState.selectedItem?.phone || '',
     address: modalState.selectedItem?.address || '',
@@ -85,14 +86,27 @@ const OwnerModal = () => {
         />
         <form className="modal-form" onSubmit={handleSubmit}>
           <fieldset>
-            <FormField label="Full name" error={errors.full_name}>
+            <FormField label="First name" error={errors.first_name}>
               <input
-                className={errors.full_name ? 'invalid' : 'valid'}
+                className={errors.first_name ? 'invalid' : 'valid'}
                 type="text"
-                name="full_name"
-                value={data.full_name}
+                name="first_name"
+                value={data.first_name}
                 onChange={handleChange}
-                placeholder="Enter full name"
+                placeholder="Enter first name"
+                required
+                disabled={modalState.readonly}
+              />
+            </FormField>
+
+            <FormField label="Last name" error={errors.last_name}>
+              <input
+                className={errors.last_name ? 'invalid' : 'valid'}
+                type="text"
+                name="last_name"
+                value={data.last_name}
+                onChange={handleChange}
+                placeholder="Enter last name"
                 required
                 disabled={modalState.readonly}
               />

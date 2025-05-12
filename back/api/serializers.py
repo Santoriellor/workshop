@@ -38,9 +38,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """
     Serializes user profile details.
     """
+    full_name = serializers.SerializerMethodField()
     class Meta:
         model = UserProfile
         fields = ['full_name', 'bio', 'image', 'verified']
+        
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
 
 class UserSerializer(serializers.ModelSerializer):
     """
@@ -65,10 +69,14 @@ class OwnerSerializer(serializers.ModelSerializer):
     """
     Serializes owner information.
     """
+    full_name = serializers.SerializerMethodField()
     class Meta:
         model = Owner
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
+        
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
 
 class VehicleSerializer(serializers.ModelSerializer):
     """

@@ -33,26 +33,36 @@ class UserProfile(models.Model):
     Automatically created/updated via signals upon User creation/update.
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=1000)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
     bio = models.CharField(max_length=100)
     image = models.ImageField(upload_to="user_images", default="default.jpg")
     verified = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.email
+    
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
 
 # -------- VEHICLE & OWNER MODELS --------
 class Owner(models.Model):
     """
     Represents the owner of one or more vehicles.
     """
-    full_name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
     address = models.TextField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(unique=True, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
+    
     def __str__(self):
         return self.full_name
 

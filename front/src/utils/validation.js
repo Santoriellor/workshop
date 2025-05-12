@@ -1,4 +1,10 @@
 // Common validations
+export const isValidName = (name) => {
+  const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ'’\-\s]+$/
+  if (name.trim().length === 0) return ''
+  return nameRegex.test(name) ? '' : 'Invalid name format.'
+}
+
 export const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (email.length === 0) return ''
@@ -75,14 +81,12 @@ export const isValidOrTakenLicensePlate = (licensePlate, existingLicensePlates) 
 }
 
 // Owners validations
-export const isTakenOwnerName = (ownerName, existingOwnerNames) => {
-  if (ownerName.length === 0) return ''
-  if (!ownerName.trim()) return ''
-
-  if (existingOwnerNames.some((name) => name.toLowerCase() === ownerName.toLowerCase())) {
+export const isTakenOwnerName = (firstName, lastName, existingFullNames) => {
+  const fullName = `${firstName.trim()} ${lastName.trim()}`.toLowerCase()
+  if (!firstName.trim() || !lastName.trim()) return ''
+  if (existingFullNames.includes(fullName)) {
     return 'Owner name is already taken.'
   }
-
   return ''
 }
 

@@ -29,6 +29,8 @@ from django.template.loader import get_template
 from django.core.files.base import ContentFile
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_aware, make_aware
+from django.db.models import Value, F, CharField
+from django.db.models.functions import Concat
 from weasyprint import HTML
 from decimal import Decimal
 from .models import (
@@ -43,6 +45,7 @@ from .serializers import (
     ReportSerializer, TaskSerializer, TaskTemplateSerializer,
     InventorySerializer, PartSerializer, InvoiceSerializer
 ) 
+from .filters import OwnerFilter
 
 class CustomPagination(LimitOffsetPagination):
     default_limit = 5
@@ -144,9 +147,23 @@ class OwnerViewSet(viewsets.ModelViewSet):
     
     # To set up filters from the backend side
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['full_name', 'email']
-    ordering_fields = ['full_name']
+    filterset_class = OwnerFilter
 
+    def get_queryset(self):
+        queryset = Owner.objects.all()
+        ordering = self.request.query_params.get('ordering')
+
+        if ordering in ['full_name', '-full_name']:
+            direction = '' if ordering == 'full_name' else '-'
+            queryset = queryset.annotate(
+                _full_name=Concat(
+                    F('first_name'), Value(' '), F('last_name'),
+                    output_field=CharField()
+                )
+            ).order_by(f'{direction}_full_name')
+
+        return queryset
+    
     def update(self, request, *args, **kwargs):
         """Allow partial updates while keeping existing values for missing fields."""
         partial = kwargs.pop('partial', False)

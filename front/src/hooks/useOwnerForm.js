@@ -1,8 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
-import { isValidEmail, isTakenOwnerName, isValidPhone, isValidAddress } from '../utils/validation'
+import {
+  isValidEmail,
+  isTakenOwnerName,
+  isValidName,
+  isValidPhone,
+  isValidAddress,
+} from '../utils/validation'
 
 const initialErrors = {
-  full_name: '',
+  first_name: '',
+  last_name: '',
   email: '',
   address: '',
   phone: '',
@@ -13,12 +20,15 @@ export const useOwnerForm = (initialData, owners, selectedItem) => {
   const [errors, setErrors] = useState(initialErrors)
 
   // Memoize existing names to avoid recalculating on every render
-  const existingOwnerNames = useMemo(() => {
+  const existingOwnerFullNames = useMemo(() => {
     return owners
-      .map((owner) => owner.full_name)
       .filter(
-        (name) => !selectedItem || name.toLowerCase() !== selectedItem.full_name.toLowerCase(),
+        (owner) =>
+          !selectedItem ||
+          `${owner.first_name} ${owner.last_name}`.toLowerCase() !==
+            `${selectedItem.first_name} ${selectedItem.last_name}`.toLowerCase(),
       )
+      .map((owner) => `${owner.first_name} ${owner.last_name}`.toLowerCase())
   }, [owners, selectedItem])
 
   const handleChange = (e) => {
@@ -28,16 +38,49 @@ export const useOwnerForm = (initialData, owners, selectedItem) => {
 
   // Validation effects
   useEffect(() => {
-    const fullNameError =
-      data.full_name.trim() === ''
-        ? 'This field is required.'
-        : isTakenOwnerName(data.full_name, existingOwnerNames)
-    setErrors((prevErrors) =>
-      prevErrors.full_name !== fullNameError
-        ? { ...prevErrors, full_name: fullNameError }
-        : prevErrors,
-    )
-  }, [data.full_name, existingOwnerNames])
+    const firstName = data.first_name.trim()
+    const lastName = data.last_name.trim()
+
+    let firstNameError = ''
+    let lastNameError = ''
+
+    // Empty check
+    if (!firstName) {
+      firstNameError = 'This field is required.'
+    }
+    if (!lastName) {
+      lastNameError = 'This field is required.'
+    }
+
+    // Format check
+    if (!firstNameError) {
+      const formatError = isValidName(firstName)
+      if (formatError) {
+        firstNameError = formatError
+      }
+    }
+    if (!lastNameError) {
+      const formatError = isValidName(lastName)
+      if (formatError) {
+        lastNameError = formatError
+      }
+    }
+
+    // Duplication check only if both fields are valid so far
+    if (!firstNameError && !lastNameError) {
+      const duplicateError = isTakenOwnerName(firstName, lastName, existingOwnerFullNames)
+      if (duplicateError) {
+        firstNameError = duplicateError
+        lastNameError = duplicateError
+      }
+    }
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      first_name: firstNameError,
+      last_name: lastNameError,
+    }))
+  }, [data.first_name, data.last_name, existingOwnerFullNames])
 
   useEffect(() => {
     const emailError =
