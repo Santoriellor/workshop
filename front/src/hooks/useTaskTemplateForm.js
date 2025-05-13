@@ -10,6 +10,7 @@ const initialErrors = {
 export const useTaskTemplateForm = (initialData, taskTemplates, selectedItem) => {
   const [data, setData] = useState(initialData)
   const [errors, setErrors] = useState(initialErrors)
+  const [touched, setTouched] = useState({})
 
   // Memoize existing names to avoid recalculating on every render
   const existingNames = useMemo(() => {
@@ -21,6 +22,11 @@ export const useTaskTemplateForm = (initialData, taskTemplates, selectedItem) =>
   const handleChange = (e) => {
     const { name, value } = e.target
     setData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleBlur = (e) => {
+    const { name } = e.target
+    setTouched((prev) => ({ ...prev, [name]: true }))
   }
 
   // Validation effects
@@ -51,5 +57,5 @@ export const useTaskTemplateForm = (initialData, taskTemplates, selectedItem) =>
     [errors, data],
   )
 
-  return { data, setData, errors, handleChange, isValid }
+  return { data, setData, errors, touched, handleChange, handleBlur, isValid }
 }

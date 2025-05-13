@@ -70,7 +70,7 @@ const ReportModal = () => {
     modalState.showModal,
   )
 
-  const { data, errors, handleChange, isValid } = useReportForm(
+  const { data, errors, touched, handleChange, handleBlur, isValid } = useReportForm(
     initialData,
     taskIds,
     partsUsed,
@@ -153,12 +153,13 @@ const ReportModal = () => {
         <form className="modal-form" onSubmit={handleSubmit}>
           <div className="report-form">
             <fieldset className="report-fields">
-              <FormField label="Vehicle" error={errors.vehicle}>
+              <FormField label="Vehicle" error={touched.vehicle && errors.vehicle}>
                 <select
-                  className={errors.vehicle ? 'invalid' : 'valid'}
+                  className={touched.vehicle && errors.vehicle ? 'invalid' : 'valid'}
                   name="vehicle"
                   value={data.vehicle}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   required
                   disabled={modalState.readonly}
                 >
@@ -172,12 +173,13 @@ const ReportModal = () => {
                 </select>
               </FormField>
 
-              <FormField label="Status" error={errors.status}>
+              <FormField label="Status" error={touched.status && errors.status}>
                 <select
-                  className={errors.status ? 'invalid' : 'valid'}
+                  className={touched.status && errors.status ? 'invalid' : 'valid'}
                   name="status"
                   value={data.status}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   required
                   disabled={modalState.readonly}
                 >
@@ -187,11 +189,12 @@ const ReportModal = () => {
                 </select>
               </FormField>
 
-              <FormField label="Remarks" error={errors.remarks}>
+              <FormField label="Remarks" error={touched.remarks && errors.remarks}>
                 <textarea
                   name="remarks"
                   value={data.remarks}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="Enter remarks"
                   disabled={modalState.readonly}
                 />
@@ -202,12 +205,14 @@ const ReportModal = () => {
               {/* Tasks select */}
               <TaskFieldset
                 errors={errors}
+                touched={touched}
                 loading={loading}
                 selectedTaskId={selectedTaskId}
                 taskIds={taskIds}
                 modalState={modalState}
                 taskTemplates={taskTemplates}
                 handleTaskChange={handleTaskChange}
+                handleBlur={handleBlur}
                 addTask={addTask}
                 removeTask={removeTask}
               />
@@ -215,6 +220,7 @@ const ReportModal = () => {
               {/* Parts select */}
               <PartFieldset
                 errors={errors}
+                touched={touched}
                 loading={loading}
                 selectedPartId={selectedPartId}
                 partsUsed={partsUsed}
@@ -222,6 +228,7 @@ const ReportModal = () => {
                 modalState={modalState}
                 inventory={inventory}
                 handlePartChange={handlePartChange}
+                handleBlur={handleBlur}
                 addPart={addPart}
                 removePart={removePart}
                 handleQuantityChange={handleQuantityChange}

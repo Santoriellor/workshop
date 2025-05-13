@@ -42,7 +42,7 @@ const InventoryModal = () => {
     unit_price: modalState.selectedItem?.unit_price || '',
   }
 
-  const { data, setData, errors, handleChange, isValid } = useInventoryForm(
+  const { data, setData, errors, touched, handleChange, handleBlur, isValid } = useInventoryForm(
     initialData,
     inventory,
     modalState.selectedItem,
@@ -114,38 +114,44 @@ const InventoryModal = () => {
         />
         <form className="modal-form" onSubmit={handleSubmit}>
           <fieldset>
-            <FormField label="Name" error={errors.name}>
+            <FormField label="Name" error={touched.name && errors.name}>
               <input
-                className={errors.name ? 'invalid' : 'valid'}
+                className={touched.name && errors.name ? 'invalid' : 'valid'}
                 type="text"
                 name="name"
                 value={data.name}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter name"
                 required
                 disabled={modalState.readonly}
               />
             </FormField>
 
-            <FormField label="Reference code" error={errors.reference_code}>
+            <FormField
+              label="Reference code"
+              error={touched.reference_code && errors.reference_code}
+            >
               <input
-                className={errors.reference_code ? 'invalid' : 'valid'}
+                className={touched.reference_code && errors.reference_code ? 'invalid' : 'valid'}
                 type="text"
                 name="reference_code"
                 value={data.reference_code}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter reference code"
                 required
                 disabled={modalState.readonly}
               />
             </FormField>
 
-            <FormField label="Category" error={errors.category}>
+            <FormField label="Category" error={touched.category && errors.category}>
               <select
-                className={errors.category ? 'invalid' : 'valid'}
+                className={touched.category && errors.category ? 'invalid' : 'valid'}
                 name="category"
                 value={data.category}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 required
                 disabled={modalState.readonly}
               >
@@ -158,25 +164,32 @@ const InventoryModal = () => {
               </select>
             </FormField>
 
-            <FormField label="Quantity in stock" error={errors.quantity_in_stock}>
+            <FormField
+              label="Quantity in stock"
+              error={touched.quantity_in_stock && errors.quantity_in_stock}
+            >
               <input
-                className={errors.quantity_in_stock ? 'invalid' : 'valid'}
+                className={
+                  touched.quantity_in_stock && errors.quantity_in_stock ? 'invalid' : 'valid'
+                }
                 type="text"
                 name="quantity_in_stock"
                 value={data.quantity_in_stock}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter quantity in stock"
                 disabled={modalState.readonly}
               />
             </FormField>
 
-            <FormField label="Unit price" error={errors.unit_price}>
+            <FormField label="Unit price" error={touched.unit_price && errors.unit_price}>
               <input
-                className={errors.unit_price ? 'invalid' : 'valid'}
+                className={touched.unit_price && errors.unit_price ? 'invalid' : 'valid'}
                 type="text"
                 name="unit_price"
                 value={data.unit_price}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter unit price"
                 disabled={modalState.readonly}
               />
