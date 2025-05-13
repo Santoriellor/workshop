@@ -27,7 +27,7 @@ const OwnerModal = () => {
     address: modalState.selectedItem?.address || '',
   }
 
-  const { data, setData, errors, handleChange, isValid } = useOwnerForm(
+  const { data, setData, errors, touched, handleChange, handleBlur, isValid } = useOwnerForm(
     initialData,
     owners,
     modalState.selectedItem,
@@ -86,65 +86,70 @@ const OwnerModal = () => {
         />
         <form className="modal-form" onSubmit={handleSubmit}>
           <fieldset>
-            <FormField label="First name" error={errors.first_name}>
+            <FormField label="First name" error={touched.first_name && errors.first_name}>
               <input
-                className={errors.first_name ? 'invalid' : 'valid'}
+                className={touched.first_name && errors.first_name ? 'invalid' : 'valid'}
                 type="text"
                 name="first_name"
                 value={data.first_name}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter first name"
                 required
                 disabled={modalState.readonly}
               />
             </FormField>
 
-            <FormField label="Last name" error={errors.last_name}>
+            <FormField label="Last name" error={touched.last_name && errors.last_name}>
               <input
-                className={errors.last_name ? 'invalid' : 'valid'}
+                className={touched.last_name && errors.last_name ? 'invalid' : 'valid'}
                 type="text"
                 name="last_name"
                 value={data.last_name}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter last name"
                 required
                 disabled={modalState.readonly}
               />
             </FormField>
 
-            <FormField label="Email" error={errors.email}>
+            <FormField label="Email" error={touched.email && errors.email}>
               <input
-                className={errors.email ? 'invalid' : 'valid'}
+                className={touched.email && errors.email ? 'invalid' : 'valid'}
                 type="email"
                 name="email"
                 value={data.email}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter email"
                 required
                 disabled={modalState.readonly}
               />
             </FormField>
 
-            <FormField label="Address" error={errors.address}>
+            <FormField label="Address" error={touched.address && errors.address}>
               <input
-                className={errors.address ? 'invalid' : 'valid'}
+                className={touched.address && errors.address ? 'invalid' : 'valid'}
                 type="text"
                 name="address"
                 value={data.address}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter address"
                 required
                 disabled={modalState.readonly}
               />
             </FormField>
 
-            <FormField label="Phone" error={errors.phone}>
+            <FormField label="Phone" error={touched.phone && errors.phone}>
               <input
-                className={errors.phone ? 'invalid' : 'valid'}
+                className={touched.phone && errors.phone ? 'invalid' : 'valid'}
                 type="text"
                 name="phone"
                 value={data.phone}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter phone"
                 required
                 disabled={modalState.readonly}

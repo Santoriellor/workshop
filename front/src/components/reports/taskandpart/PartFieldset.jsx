@@ -5,6 +5,7 @@ import LoadingScreen from '../../LoadingScreen'
 
 const PartFieldset = ({
   errors,
+  touched,
   loading,
   modalState,
   selectedPartId,
@@ -14,13 +15,20 @@ const PartFieldset = ({
   removePart,
   inventory,
   handlePartChange,
+  handleBlur,
   handleQuantityChange,
 }) => {
   return (
     <fieldset>
-      <FormField label="Repair parts" error={errors.parts}>
+      <FormField label="Repair parts" error={touched.part && errors.parts}>
         <div className="repair-section">
-          <select value={selectedPartId} onChange={handlePartChange} disabled={modalState.readonly}>
+          <select
+            value={selectedPartId}
+            name="part"
+            onChange={handlePartChange}
+            onBlur={handleBlur}
+            disabled={modalState.readonly}
+          >
             <option value="">Select a repair part</option>
             {inventory?.map((part) => (
               <option key={part.id} value={part.id}>

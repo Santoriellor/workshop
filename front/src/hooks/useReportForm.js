@@ -12,6 +12,7 @@ const initialErrors = {
 export const useReportForm = (initialData, taskIds, partsUsed, quantityPart) => {
   const [data, setData] = useState(initialData)
   const [errors, setErrors] = useState(initialErrors)
+  const [touched, setTouched] = useState({})
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -19,6 +20,11 @@ export const useReportForm = (initialData, taskIds, partsUsed, quantityPart) => 
       ...prev,
       [name]: name === 'vehicle' ? Number(value) : value,
     }))
+  }
+
+  const handleBlur = (e) => {
+    const { name } = e.target
+    setTouched((prev) => ({ ...prev, [name]: true }))
   }
 
   // Validation effects
@@ -57,5 +63,5 @@ export const useReportForm = (initialData, taskIds, partsUsed, quantityPart) => 
     return hasNoErrors && hasAllRequiredFields
   }, [errors, data])
 
-  return { data, errors, handleChange, isValid }
+  return { data, errors, touched, handleChange, handleBlur, isValid }
 }

@@ -5,23 +5,27 @@ import LoadingScreen from '../../LoadingScreen'
 
 const TaskFieldset = ({
   errors,
+  touched,
   loading,
   selectedTaskId,
   taskIds,
   taskTemplates,
   handleTaskChange,
+  handleBlur,
   modalState,
   addTask,
   removeTask,
 }) => {
   return (
     <fieldset>
-      <FormField label="Repair tasks" error={errors.tasks}>
+      <FormField label="Repair tasks" error={touched.task && errors.tasks}>
         <div className="repair-section">
           <select
-            className={errors.tasks ? 'invalid' : 'valid'}
+            className={touched.task && errors.tasks ? 'invalid' : 'valid'}
             value={selectedTaskId ?? ''}
+            name="task"
             onChange={handleTaskChange}
+            onBlur={handleBlur}
             disabled={modalState.readonly}
           >
             <option value="">Select a repair task</option>

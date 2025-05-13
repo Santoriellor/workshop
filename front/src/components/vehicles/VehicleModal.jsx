@@ -32,11 +32,8 @@ const VehicleModal = () => {
     owner: modalState.selectedItem?.owner || '',
   }
 
-  const { data, setData, errors, handleChange, handleBrandChange, isValid } = useVehicleForm(
-    initialData,
-    vehicles,
-    modalState.selectedItem,
-  )
+  const { data, setData, errors, touched, handleChange, handleBrandChange, handleBlur, isValid } =
+    useVehicleForm(initialData, vehicles, modalState.selectedItem)
 
   // Create, Update, Delete vehicle with alert
   const createVehicleWithAlert = withSuccessAlert(createVehicle, 'Vehicle created successfully!')
@@ -91,14 +88,15 @@ const VehicleModal = () => {
         />
         <form className="modal-form" onSubmit={handleSubmit}>
           <fieldset>
-            <FormField label="Brand" error={errors.brand}>
+            <FormField label="Brand" error={touched.brand && errors.brand}>
               <select
                 name="brand"
                 value={data.brand}
                 onChange={handleBrandChange}
+                onBlur={handleBlur}
                 disabled={modalState.readonly}
                 required
-                className={errors.brand ? 'invalid' : 'valid'}
+                className={touched.brand && errors.brand ? 'invalid' : 'valid'}
               >
                 <option value="">Select a brand</option>
                 {brands.map((brand) => (
@@ -109,14 +107,15 @@ const VehicleModal = () => {
               </select>
             </FormField>
 
-            <FormField label="Model" error={errors.model}>
+            <FormField label="Model" error={touched.model && errors.model}>
               <select
                 name="model"
                 value={data.model}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 disabled={!data.brand || modalState.readonly}
                 required
-                className={errors.model ? 'invalid' : 'valid'}
+                className={touched.model && errors.model ? 'invalid' : 'valid'}
               >
                 <option value="">Select a model</option>
                 {brandModelMap[data.brand]?.map((model) => (
@@ -127,42 +126,45 @@ const VehicleModal = () => {
               </select>
             </FormField>
 
-            <FormField label="Year" error={errors.year}>
+            <FormField label="Year" error={touched.year && errors.year}>
               <input
                 type="number"
                 name="year"
                 value={data.year}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter year"
                 min="1900"
                 max={new Date().getFullYear()}
                 disabled={modalState.readonly}
                 required
-                className={errors.year ? 'invalid' : 'valid'}
+                className={touched.year && errors.year ? 'invalid' : 'valid'}
               />
             </FormField>
 
-            <FormField label="License Plate" error={errors.license_plate}>
+            <FormField label="License Plate" error={touched.license_plate && errors.license_plate}>
               <input
                 type="text"
                 name="license_plate"
                 value={data.license_plate}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter license plate"
                 disabled={modalState.readonly}
                 required
-                className={errors.license_plate ? 'invalid' : 'valid'}
+                className={touched.license_plate && errors.license_plate ? 'invalid' : 'valid'}
               />
             </FormField>
 
-            <FormField label="Owner" error={errors.owner}>
+            <FormField label="Owner" error={touched.owner && errors.owner}>
               <select
                 name="owner"
                 value={data.owner}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 disabled={modalState.readonly}
                 required
-                className={errors.owner ? 'invalid' : 'valid'}
+                className={touched.owner && errors.owner ? 'invalid' : 'valid'}
               >
                 <option value="">Select an owner</option>
                 {owners.map((owner) => (

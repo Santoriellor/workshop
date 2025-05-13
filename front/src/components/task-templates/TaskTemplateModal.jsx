@@ -25,7 +25,7 @@ const TaskTemplateModal = () => {
     price: modalState.selectedItem?.price || '',
   }
 
-  const { data, setData, errors, handleChange, isValid } = useTaskTemplateForm(
+  const { data, setData, errors, touched, handleChange, handleBlur, isValid } = useTaskTemplateForm(
     initialData,
     taskTemplates,
     modalState.selectedItem,
@@ -93,39 +93,42 @@ const TaskTemplateModal = () => {
         />
         <form className="modal-form" onSubmit={handleSubmit}>
           <fieldset>
-            <FormField label="Name" error={errors.name}>
+            <FormField label="Name" error={touched.name && errors.name}>
               <input
-                className={errors.name ? 'invalid' : 'valid'}
+                className={touched.name && errors.name ? 'invalid' : 'valid'}
                 type="text"
                 name="name"
                 value={data.name}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter name"
                 required
                 disabled={modalState.readonly}
               />
             </FormField>
 
-            <FormField label="Description" error={errors.description}>
+            <FormField label="Description" error={touched.description && errors.description}>
               <input
-                className={errors.description ? 'invalid' : 'valid'}
+                className={touched.description && errors.description ? 'invalid' : 'valid'}
                 type="textarea"
                 name="description"
                 value={data.description}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Please describe the task"
                 required
                 disabled={modalState.readonly}
               />
             </FormField>
 
-            <FormField label="Price" error={errors.price}>
+            <FormField label="Price" error={touched.price && errors.price}>
               <input
-                className={errors.price ? 'invalid' : 'valid'}
+                className={touched.price && errors.price ? 'invalid' : 'valid'}
                 type="text"
                 name="price"
                 value={data.price}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Enter price"
                 disabled={modalState.readonly}
               />

@@ -11,6 +11,7 @@ const initialErrors = {
 export const useVehicleForm = (initialData, vehicles, selectedItem) => {
   const [data, setData] = useState(initialData)
   const [errors, setErrors] = useState(initialErrors)
+  const [touched, setTouched] = useState({})
 
   // Memoize existing plates to avoid recalculating on every render
   const existingPlates = useMemo(() => {
@@ -38,6 +39,11 @@ export const useVehicleForm = (initialData, vehicles, selectedItem) => {
       brand: value,
       model: '', // Reset model when brand changes
     }))
+  }
+
+  const handleBlur = (e) => {
+    const { name } = e.target
+    setTouched((prev) => ({ ...prev, [name]: true }))
   }
 
   // Validation effects
@@ -86,5 +92,5 @@ export const useVehicleForm = (initialData, vehicles, selectedItem) => {
     [errors, data],
   )
 
-  return { data, setData, errors, handleChange, handleBrandChange, isValid }
+  return { data, setData, errors, touched, handleChange, handleBrandChange, handleBlur, isValid }
 }
