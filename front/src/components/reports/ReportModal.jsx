@@ -44,7 +44,7 @@ const ReportModal = () => {
       user: authenticatedUser.id,
       status: selectedReport?.status ?? 'pending',
       remarks: selectedReport?.remarks ?? '',
-      updated_at: selectedReport.updated_at,
+      updated_at: selectedReport?.updated_at ?? '',
     }),
     [selectedReport, authenticatedUser.id],
   )
