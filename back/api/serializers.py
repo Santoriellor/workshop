@@ -1,8 +1,11 @@
 from datetime import datetime
+from dateutil.parser import isoparse
 from decimal import Decimal
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from django.contrib.auth import authenticate
 from django.utils.dateformat import format
+from django.utils.timezone import now
 from .models import (
     User, UserProfile,
     Owner, Vehicle,
@@ -10,6 +13,7 @@ from .models import (
     Part, Inventory,
     Invoice
 )
+from .exceptions import ConflictException
 
 # ------------------ AUTH & USER ------------------
 
@@ -77,6 +81,26 @@ class OwnerSerializer(serializers.ModelSerializer):
         
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
+    
+    def validate(self, attrs):
+        """
+        Check concurrency using updated_at timestamp from client.
+        """
+        if self.instance:
+            client_updated_at = self.initial_data.get("updated_at")
+            if not client_updated_at:
+                raise serializers.ValidationError("Missing 'updated_at' field for concurrency check.")
+            
+            try:
+                client_parsed_updated_at = isoparse(client_updated_at)
+            except Exception:
+                raise ValidationError("Invalid timestamp format.")
+            
+            server_updated_at = self.instance.updated_at
+            
+            if abs((client_parsed_updated_at - server_updated_at).total_seconds()) > 0.000001:
+                raise ConflictException("This owner has been modified by someone else. Please refresh.")
+        return attrs
 
 class VehicleSerializer(serializers.ModelSerializer):
     """
@@ -99,6 +123,26 @@ class VehicleSerializer(serializers.ModelSerializer):
         if value < 1900 or value > current_year:
             raise serializers.ValidationError(f"Year must be between 1900 and {current_year}.")
         return value
+    
+    def validate(self, attrs):
+        """
+        Check concurrency using updated_at timestamp from client.
+        """
+        if self.instance:
+            client_updated_at = self.initial_data.get("updated_at")
+            if not client_updated_at:
+                raise serializers.ValidationError("Missing 'updated_at' field for concurrency check.")
+            
+            try:
+                client_parsed_updated_at = isoparse(client_updated_at)
+            except Exception:
+                raise ValidationError("Invalid timestamp format.")
+            
+            server_updated_at = self.instance.updated_at
+            
+            if abs((client_parsed_updated_at - server_updated_at).total_seconds()) > 0.000001:
+                raise ConflictException("This vehicle has been modified by someone else. Please refresh.")
+        return attrs
 
 # ------------------ TASK & TEMPLATE ------------------
 
@@ -110,6 +154,26 @@ class TaskTemplateSerializer(serializers.ModelSerializer):
         model = TaskTemplate
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
+        
+    def validate(self, attrs):
+        """
+        Check concurrency using updated_at timestamp from client.
+        """
+        if self.instance:
+            client_updated_at = self.initial_data.get("updated_at")
+            if not client_updated_at:
+                raise serializers.ValidationError("Missing 'updated_at' field for concurrency check.")
+            
+            try:
+                client_parsed_updated_at = isoparse(client_updated_at)
+            except Exception:
+                raise ValidationError("Invalid timestamp format.")
+            
+            server_updated_at = self.instance.updated_at
+            
+            if abs((client_parsed_updated_at - server_updated_at).total_seconds()) > 0.000001:
+                raise ConflictException("This task template has been modified by someone else. Please refresh.")
+        return attrs
 
 class TaskSerializer(serializers.ModelSerializer):
     """
@@ -138,6 +202,26 @@ class InventorySerializer(serializers.ModelSerializer):
         return format(obj.created_at, "F j, Y")
     def get_formatted_updated_at(self, obj):
         return format(obj.updated_at, "F j, Y")
+    
+    def validate(self, attrs):
+        """
+        Check concurrency using updated_at timestamp from client.
+        """
+        if self.instance:
+            client_updated_at = self.initial_data.get("updated_at")
+            if not client_updated_at:
+                raise serializers.ValidationError("Missing 'updated_at' field for concurrency check.")
+            
+            try:
+                client_parsed_updated_at = isoparse(client_updated_at)
+            except Exception:
+                raise ValidationError("Invalid timestamp format.")
+            
+            server_updated_at = self.instance.updated_at
+            
+            if abs((client_parsed_updated_at - server_updated_at).total_seconds()) > 0.000001:
+                raise ConflictException("This inventory part has been modified by someone else. Please refresh.")
+        return attrs
 
 class PartSerializer(serializers.ModelSerializer):
     """
@@ -156,6 +240,7 @@ class ReportSerializer(serializers.ModelSerializer):
     """
     Serializes reports and includes nested task and part data.
     Allows creation and update of tasks and parts from report requests.
+    Enforces concurrency control based on updated_at timestamp.
     """
     formatted_created_at = serializers.SerializerMethodField()
     formatted_updated_at = serializers.SerializerMethodField()
@@ -180,6 +265,26 @@ class ReportSerializer(serializers.ModelSerializer):
     def get_status_display(self, obj):
         return obj.get_status_display()
     
+    def validate(self, attrs):
+        """
+        Check concurrency using updated_at timestamp from client.
+        """
+        if self.instance:
+            client_updated_at = self.initial_data.get("updated_at")
+            if not client_updated_at:
+                raise serializers.ValidationError("Missing 'updated_at' field for concurrency check.")
+            
+            try:
+                client_parsed_updated_at = isoparse(client_updated_at)
+            except Exception:
+                raise ValidationError("Invalid timestamp format.")
+            
+            server_updated_at = self.instance.updated_at
+            
+            if abs((client_parsed_updated_at - server_updated_at).total_seconds()) > 0.000001:
+                raise ConflictException("This report has been modified by someone else. Please refresh.")
+        return attrs
+    
     def create(self, validated_data):
         """
         Creates a report and its associated tasks and parts.
@@ -200,6 +305,9 @@ class ReportSerializer(serializers.ModelSerializer):
                 part_id=part_data["part"],
                 quantity_used=Decimal(part_data["quantity_used"])
             )
+            
+        report.updated_at = now()
+        report.save(update_fields=['updated_at'])
 
         return report
     
@@ -233,6 +341,9 @@ class ReportSerializer(serializers.ModelSerializer):
                     quantity_used=Decimal(part_data["quantity_used"])
                 )
 
+        instance.updated_at = now()
+        instance.save(update_fields=['updated_at'])
+
         return instance
 
 # ------------------ INVOICE ------------------
@@ -242,6 +353,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
     Serializes invoices and includes human-readable issue date.
     """
     formatted_issued_date = serializers.SerializerMethodField()
+    total_cost = serializers.ReadOnlyField()
     
     class Meta:
         model = Invoice

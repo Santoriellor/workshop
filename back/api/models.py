@@ -223,18 +223,32 @@ class Invoice(models.Model):
     Invoice generated from a report, includes total cost and PDF export.
     """
     invoice_number = models.CharField(max_length=20, unique=True)
-    report = models.ForeignKey(Report, on_delete=models.CASCADE)
+    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="invoice")
     issued_date = models.DateTimeField(default=timezone.now)
-    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    """ total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) """
     pdf = models.FileField(upload_to='invoices/', null=True, blank=True)
 
-    def calculate_total_cost(self):
-        """Automatically calculate total cost from linked repairs"""
-        self.total_cost = sum(repair.total_cost or 0 for repair in self.repairs.all())
-        self.save()
+    #def calculate_total_cost(self):
+    #    """Automatically calculate total cost from linked repairs"""
+    #    self.total_cost = sum(repair.total_cost or 0 for repair in self.repairs.all())
+    #    self.save()
 
     def __str__(self):
         return f"Invoice {self.invoice_number} - {self.total_cost} CHF"
+    
+    @property
+    def total_cost(self):
+        """
+        Dynamically calculates total cost from tasks and parts.
+        """
+        task_total = sum(
+            task.task_template.price for task in self.report.task_set.all()
+            if task.task_template and task.task_template.price
+        )
+        part_total = sum(
+            part.quantity_used * part.part.unit_price for part in self.report.part_set.all()
+        )
+        return task_total + part_total
 
     
 # Signals to create/update UserProfile when a User is created/updated

@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+//import axios from 'axios'
 import Swal from 'sweetalert2'
 // Utils
-import { setAxiosToken } from '../utils/axiosInstance'
+import axiosInstance, { setAxiosToken } from '../utils/axiosInstance'
 import { logout as utilsLogout } from '../utils/authUtils'
 
 const apiURL = import.meta.env.VITE_API_URL
@@ -16,12 +16,12 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserData = async (token) => {
     try {
-      const response = await axios.get(`${apiURL}/users/me/`, {
+      const response = await axiosInstance.get(`${apiURL}/users/me/`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       setAuthenticatedUser(response.data)
     } catch (error) {
-      console.error('Failed to fetch user data:', error)
+      //console.error('Failed to fetch user data:', error)
       logout() // Log out if the token is invalid
     }
   }
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoadingAuth(true)
     try {
-      const response = await axios.post(`${apiURL}/login/`, {
+      const response = await axiosInstance.post(`${apiURL}/login/`, {
         email,
         password,
       })
@@ -66,14 +66,25 @@ export const AuthProvider = ({ children }) => {
 
       return true
     } catch (error) {
-      console.error('Login failed:', error)
+      if (error.response && error.response.status === 400) {
+        // Optional: log quietly
+        // console.warn('Login 400:', error.response.data);
 
-      // Alert the user on error
-      Swal.fire({
-        icon: 'error',
-        title: 'Login Failed',
-        text: 'Invalid email or password. Please try again.',
-      })
+        Swal.fire({
+          icon: 'error',
+          title: 'Login Failed',
+          text: error.response.data?.detail || 'Invalid email or password. Please try again.',
+        })
+      } else {
+        // Unexpected error
+        console.error('Unexpected login error:', error)
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Login Error',
+          text: 'An unexpected error occurred. Please try again.',
+        })
+      }
 
       return false
     } finally {
@@ -91,7 +102,7 @@ export const AuthProvider = ({ children }) => {
     setLoadingAuth(true)
     try {
       // Send registration data to the backend
-      await axios.post(`${apiURL}/register/`, {
+      await axiosInstance.post(`${apiURL}/register/`, {
         username,
         email,
         password,
@@ -107,8 +118,27 @@ export const AuthProvider = ({ children }) => {
       // Redirect to the login page
       navigate('/login')
     } catch (error) {
-      console.error('Registration failed:', error)
+      if (error.response && error.response.status === 400) {
+        // Optional: log quietly
+        console.warn('Registration 400:', error.response.data)
 
+        Swal.fire({
+          icon: 'error',
+          title: 'Registration Failed',
+          text:
+            error.response.data?.detail ||
+            'An error occurred during registration. Please try again.',
+        })
+      } else {
+        // Unexpected error
+        console.error('Unexpected registration error:', error)
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Registration Error',
+          text: 'An unexpected error occurred. Please try again.',
+        })
+      }
       // Alert the user on error
       Swal.fire({
         icon: 'error',

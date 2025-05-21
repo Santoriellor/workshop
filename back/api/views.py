@@ -168,19 +168,6 @@ class OwnerViewSet(viewsets.ModelViewSet):
         """Allow partial updates while keeping existing values for missing fields."""
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        
-        # Compare updated_at for concurrency control
-        client_updated_at = request.data.get('updated_at')
-        if client_updated_at:
-            parsed_client_time = parse_datetime(client_updated_at)
-            if parsed_client_time and not is_aware(parsed_client_time):
-                parsed_client_time = make_aware(parsed_client_time)
-
-            if parsed_client_time and parsed_client_time != instance.updated_at:
-                return Response(
-                    {"detail": "This report has been modified by another user. Please refresh."},
-                    status=status.HTTP_409_CONFLICT,
-                )
                 
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
@@ -211,19 +198,6 @@ class VehicleViewSet(viewsets.ModelViewSet):
         """Allow partial updates while keeping existing values for missing fields."""
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        
-        # Compare updated_at for concurrency control
-        client_updated_at = request.data.get('updated_at')
-        if client_updated_at:
-            parsed_client_time = parse_datetime(client_updated_at)
-            if parsed_client_time and not is_aware(parsed_client_time):
-                parsed_client_time = make_aware(parsed_client_time)
-
-            if parsed_client_time and parsed_client_time != instance.updated_at:
-                return Response(
-                    {"detail": "This report has been modified by another user. Please refresh."},
-                    status=status.HTTP_409_CONFLICT,
-                )
                 
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
@@ -281,19 +255,6 @@ class ReportViewSet(viewsets.ModelViewSet):
         
         # Get the current status before updating
         previous_status = instance.status
-        
-        # Compare updated_at for concurrency control
-        client_updated_at = request.data.get('updated_at')
-        if client_updated_at:
-            parsed_client_time = parse_datetime(client_updated_at)
-            if parsed_client_time and not is_aware(parsed_client_time):
-                parsed_client_time = make_aware(parsed_client_time)
-
-            if parsed_client_time and parsed_client_time != instance.updated_at:
-                return Response(
-                    {"detail": "This report has been modified by another user. Please refresh."},
-                    status=status.HTTP_409_CONFLICT,
-                )
     
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
@@ -319,10 +280,8 @@ class ReportViewSet(viewsets.ModelViewSet):
         )
         
         # Generate invoice PDF and calculate the total cost with VAT
-        html_content, final_total = self.generate_invoice_pdf(invoice)
+        html_content = self.generate_invoice_pdf(invoice)
         
-        # Update the invoice with the calculated total_cost
-        invoice.total_cost = final_total
         invoice.save()    
 
         pdf_file = HTML(string=html_content, base_url=request.build_absolute_uri()).write_pdf()
@@ -431,19 +390,6 @@ class TaskTemplateViewSet(viewsets.ModelViewSet):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         
-        # Compare updated_at for concurrency control
-        client_updated_at = request.data.get('updated_at')
-        if client_updated_at:
-            parsed_client_time = parse_datetime(client_updated_at)
-            if parsed_client_time and not is_aware(parsed_client_time):
-                parsed_client_time = make_aware(parsed_client_time)
-
-            if parsed_client_time and parsed_client_time != instance.updated_at:
-                return Response(
-                    {"detail": "This report has been modified by another user. Please refresh."},
-                    status=status.HTTP_409_CONFLICT,
-                )
-                
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
         if serializer.is_valid():
@@ -491,20 +437,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
         """Allow partial updates while keeping existing values for missing fields."""
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        
-        # Compare updated_at for concurrency control
-        client_updated_at = request.data.get('updated_at')
-        if client_updated_at:
-            parsed_client_time = parse_datetime(client_updated_at)
-            if parsed_client_time and not is_aware(parsed_client_time):
-                parsed_client_time = make_aware(parsed_client_time)
-
-            if parsed_client_time and parsed_client_time != instance.updated_at:
-                return Response(
-                    {"detail": "This report has been modified by another user. Please refresh."},
-                    status=status.HTTP_409_CONFLICT,
-                )
-                
+           
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
         if serializer.is_valid():

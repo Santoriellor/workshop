@@ -34,6 +34,7 @@ PyJWT==2.10.1
 pypdf==5.1.0
 pyphen==0.17.2
 pytest==8.3.5
+pytest-django==4.11.1
 python-bidi==0.6.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1

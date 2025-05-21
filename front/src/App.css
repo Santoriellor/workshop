@@ -1,13 +1,10 @@
-/* * {
-  outline: solid 1px red;
-} */
-
 [data-theme='light'] {
   --color-alert: red;
   --color-alert-hover: #c70303;
   --color-focus: #0056b3;
 
   /* login/register */
+  --text-auth: #555;
   --text-auth-link: #4ca1af;
   --text-auth-link-hover: #37828d;
   --background-auth-left: #2c3e50;
@@ -46,6 +43,7 @@
   --color-focus: #0056b3;
 
   /* login/register */
+  --text-auth: #555;
   --text-auth-link: #4ca1af;
   --text-auth-link-hover: white;
   --background-auth-left: #2c3e50;
@@ -86,6 +84,7 @@ body {
   overflow: hidden;
   min-height: 530px;
   min-width: 500px;
+  margin: 0;
   background-color: var(--background-main);
   transition: all 0.3s ease-in-out;
 }

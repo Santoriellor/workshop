@@ -11,7 +11,7 @@ const OwnerFetcher = () => {
   useEffect(() => {
     const paths = ['/owner', '/vehicle', '/report', '/dashboard', '/invoices']
     if (paths.includes(location.pathname)) {
-      fetchOwners({}, 'full_name')
+      fetchOwners({}, 'last_name')
     }
   }, [location.pathname, owners.length, fetchOwners])
 
