@@ -47,7 +47,6 @@ const useReportStore = create((set) => ({
 
   updateReport: async (id, report) => {
     try {
-      console.log('Report:', report)
       const response = await axiosInstance.patch(`${REPORT_API_URL}${id}/`, report)
       set((state) => ({
         reports: state.reports.map((r) => (r.id === id ? response.data : r)),
