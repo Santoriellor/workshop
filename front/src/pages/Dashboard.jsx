@@ -24,11 +24,11 @@ const Dashboard = () => {
         <section className="lowest-inventory">
           <LowestInventory />
         </section>
-        <div className="divider"></div>
+        <div className="divider top"></div>
         <section className="latest-invoices">
           <LatestInvoices />
         </section>
-        <div className="divider"></div>
+        <div className="divider bottom"></div>
         <section className="latest-reports">
           <LatestReports />
         </section>

@@ -17,7 +17,7 @@ import '../../styles/Modal.css'
 // Data
 import brandModelMap from '../../data/brandModelMap.json'
 
-const brands = Object.keys(brandModelMap)
+const brands = Object.keys(brandModelMap).sort()
 
 const VehicleModal = () => {
   const { modalState, closeModals, toggleReadonly, openDeleteModal } = useGlobalContext()

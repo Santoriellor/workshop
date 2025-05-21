@@ -49,7 +49,7 @@ const TaskTemplateCard = ({ item }) => {
             </p>
           </div>
         </section>
-        <section className="actions">
+        <section className="actions hide">
           <button title="Edit task" className="btn btn-edit" onClick={handleEditClick}>
             Edit
           </button>

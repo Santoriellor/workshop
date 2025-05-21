@@ -26,3 +26,37 @@
   margin: 20px 10px;
   transition: all 0.3s ease-in-out;
 }
+
+/* Wide screen layout using grid */
+@media (min-width: 1100px) {
+  .dashboard {
+    display: grid;
+    grid-template-areas:
+      'inventory report'
+      'divider divider'
+      'invoices invoices';
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .lowest-inventory {
+    grid-area: inventory;
+  }
+
+  .latest-reports {
+    grid-area: report;
+  }
+
+  .latest-invoices {
+    grid-area: invoices;
+  }
+
+  .divider.top {
+    grid-area: divider;
+    margin: 0 20px;
+  }
+
+  .divider.bottom {
+    display: none;
+  }
+}

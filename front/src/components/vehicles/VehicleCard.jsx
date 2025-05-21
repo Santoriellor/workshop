@@ -69,7 +69,7 @@ const VehicleCard = ({ item }) => {
             </p>
           </div>
         </section>
-        <section className="actions">
+        <section className="actions hide">
           {isPathVehicles && (
             <>
               <button title="Edit vehicle" className="btn btn-edit" onClick={handleEditClick}>

@@ -50,7 +50,7 @@ def populate_users():
         return User.objects.all()
     
     users = []
-    for _ in range(3):
+    for _ in range(4):
         username = fake.user_name()
         email = fake.email()
         password = "password123"
@@ -80,7 +80,7 @@ def populate_owners():
     return owners
 
 def populate_vehicles(owners):
-    if Vehicle.objects.count() > 10:
+    if Vehicle.objects.count() > 8:
         print("Vehicles already populated.")
         return Vehicle.objects.all()
     
@@ -105,6 +105,10 @@ def populate_reports(users, vehicles):
         populate_inventory()
     if not TaskTemplate.objects.exists():
         populate_task_templates()
+    
+    if Report.objects.count() > 8:
+        print("Reports already populated.")
+        return Report.objects.all()
         
     for vehicle in vehicles:
         report = Report.objects.create(

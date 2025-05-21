@@ -75,9 +75,9 @@ const InventoryCard = ({ item }) => {
             )}
           </div>
         </section>
-        <section className="actions">
-          {isPathInventory && (
-            <>
+        {isPathInventory && (
+          <>
+            <section className="actions hide">
               <button
                 title="Edit inventory part"
                 className="btn btn-edit"
@@ -92,9 +92,9 @@ const InventoryCard = ({ item }) => {
               >
                 Delete
               </button>
-            </>
-          )}
-        </section>
+            </section>
+          </>
+        )}
       </div>
     </div>
   )

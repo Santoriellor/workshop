@@ -21,7 +21,7 @@ export const refreshToken = async () => {
 
     return newAccessToken
   } catch (error) {
-    console.error('Token refresh failed:', error)
+    //console.error('Token refresh failed:', error)
     return null
   }
 }

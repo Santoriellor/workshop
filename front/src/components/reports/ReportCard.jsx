@@ -114,29 +114,38 @@ const ReportCard = ({ item, handleExportClick }) => {
             )}
           </div>
         </section>
-        <section className="actions">
-          {isPathReports && (
-            <>
-              <button title="Edit Report" className="btn btn-edit" onClick={handleEditClick}>
-                Edit
-              </button>
-              <button title="Delete Report" className="btn btn-delete" onClick={handleDeleteClick}>
-                Delete
-              </button>
-            </>
-          )}
-          {isPathInvoices && item.status === 'completed' && (
-            <>
-              <button
-                title="Export Report"
-                className="btn btn-edit"
-                onClick={() => handleExportClick(item)}
-              >
-                Invoice and PDF
-              </button>
-            </>
-          )}
-        </section>
+        {(isPathReports || isPathInvoices) && (
+          <>
+            <section className={isPathInvoices ? 'actions' : 'actions hide'}>
+              {isPathReports && (
+                <>
+                  <button title="Edit Report" className="btn btn-edit" onClick={handleEditClick}>
+                    Edit
+                  </button>
+                  <button
+                    title="Delete Report"
+                    className="btn btn-delete"
+                    onClick={handleDeleteClick}
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+
+              {isPathInvoices && item.status === 'completed' && (
+                <>
+                  <button
+                    title="Export Report"
+                    className="btn btn-edit"
+                    onClick={() => handleExportClick(item)}
+                  >
+                    Invoice and PDF
+                  </button>
+                </>
+              )}
+            </section>
+          </>
+        )}
       </div>
     </div>
   )

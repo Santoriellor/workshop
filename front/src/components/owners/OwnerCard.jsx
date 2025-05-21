@@ -44,7 +44,7 @@ const OwnerCard = ({ item }) => {
         </p> */}
           </div>
         </section>
-        <section className="actions">
+        <section className="actions hide">
           <button
             title="Edit owner"
             className="btn btn-edit"

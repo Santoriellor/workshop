@@ -85,3 +85,9 @@
 .card-invoice a {
   text-align: center;
 }
+
+@media (max-width: 1050px) {
+  .invoices {
+    flex-direction: column;
+  }
+}

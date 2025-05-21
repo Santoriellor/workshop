@@ -59,9 +59,9 @@ const Main = () => {
           <InventoryFetcher />
           <TaskTemplateFetcher />
           <div className="container">
-            <div className="left-menu">
-              <Sidebar />
-            </div>
+            {/* <div className="left-menu"> */}
+            <Sidebar />
+            {/* </div> */}
             <div className="main">
               <div className="content">
                 <Routes>
