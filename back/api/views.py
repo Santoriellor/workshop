@@ -351,7 +351,7 @@ class ReportViewSet(viewsets.ModelViewSet):
         }
         html_content = template.render(context)
 
-        return html_content, final_total
+        return html_content
     
     
     @action(detail=True, methods=['get'])
