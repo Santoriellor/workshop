@@ -1,12 +1,10 @@
-# Base stage (for dev & prod)
-# front/Dockerfile
-FROM node:lts-alpine AS base
+# Dockerfile for React and Nginx
+
+# Stage 1: Build React app
+FROM node:lts-alpine AS frontend_build
 
 # Set working directory
 WORKDIR /frontend
-
-# Copy env specific to Docker build
-COPY front/.env.docker .env
 
 # Install dependencies
 COPY front/package*.json ./
@@ -14,20 +12,21 @@ RUN npm install --legacy-peer-deps
 
 # Copy project files
 COPY front/ .
+# Replace env specific to Docker build
+COPY front/.env.docker .env
 
-# Development stage
-FROM base AS dev
-CMD ["npm", "start"]
-
-# Production build stage
-FROM base AS build
 RUN npm run build
 
-# Production final image
-# Use nginx to serve built files
-FROM nginx:alpine AS prod
-COPY --from=build /frontend/build /usr/share/nginx/html
-COPY front/nginx.conf /etc/nginx/conf.d/default.conf
+# Stage 2: nginx serving frontend + backend static files
+FROM nginx:alpine
 
-# Expose application port
+COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy React build files from previous stage
+COPY --from=frontend_build /frontend/build /usr/share/nginx/html
+
+# The backend static files will be mounted as a volume at runtime
+
 EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

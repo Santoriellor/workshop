@@ -16,7 +16,7 @@ class PartModelTest(TestCase):
         Set up necessary objects including Owner, Vehicle, User, Report, and Inventory
         for testing Part model behavior.
         """
-        self.owner = Owner.objects.create(full_name="Alice", email="alice@example.com")
+        self.owner = Owner.objects.create(first_name="Alice", last_name="Doodle", email="alice@example.com")
         self.vehicle = Vehicle.objects.create(owner=self.owner, brand="Toyota", model="Yaris", license_plate="AA123BB", year=2020)
         self.user = User.objects.create_user(username="user", email="user@example.com", password="pass123")
         self.report = Report.objects.create(vehicle=self.vehicle, user=self.user, status="pending")

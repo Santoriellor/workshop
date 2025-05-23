@@ -21,7 +21,7 @@ export const refreshToken = async () => {
 
     return newAccessToken
   } catch (error) {
-    //console.error('Token refresh failed:', error)
+    console.error('Token refresh failed:', error)
     return null
   }
 }
@@ -29,5 +29,4 @@ export const refreshToken = async () => {
 export const logout = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('refreshToken')
-  // window.location.href = '/login' // fallback way to redirect
 }

@@ -15,20 +15,22 @@ Each view enforces appropriate permissions, typically requiring authentication, 
 to interact with corresponding serializers and models for structured input/output handling.
 """
 
+import os
 from rest_framework import permissions, status, viewsets, filters
 from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.exceptions import ValidationError
+# from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
+# from django.shortcuts import render, get_object_or_404
+# from django.http import HttpResponse
 from django.template.loader import get_template
 from django.core.files.base import ContentFile
-from django.utils.dateparse import parse_datetime
-from django.utils.timezone import is_aware, make_aware
+from django.conf import settings
+# from django.utils.dateparse import parse_datetime
+# from django.utils.timezone import is_aware, make_aware
 from django.db.models import Value, F, CharField
 from django.db.models.functions import Concat
 from weasyprint import HTML
@@ -284,10 +286,20 @@ class ReportViewSet(viewsets.ModelViewSet):
         
         invoice.save()    
 
-        pdf_file = HTML(string=html_content, base_url=request.build_absolute_uri()).write_pdf()
+        if settings.IS_DOCKER:
+            # In production inside Docker, static files served from STATIC_ROOT via nginx
+            base_url = "http://react_nginx/"
+        else:
+            # In development (runserver), base url points to root, so Django serves static files
+            base_url = request.build_absolute_uri(settings.STATIC_URL)
+            
+        pdf_file = HTML(string=html_content, base_url=base_url).write_pdf()
         
+        # Ensure /media/invoices exists
+        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'invoices'), exist_ok=True)
+    
         # Save the PDF to the invoice model
-        invoice.pdf.save(f"invoices/invoice_{invoice_number}.pdf", ContentFile(pdf_file), save=True)
+        invoice.pdf.save(f"invoice_{invoice_number}.pdf", ContentFile(pdf_file), save=True)
 
         return Response({"message": "Invoice generated successfully", "invoice_id": invoice.id})
     

@@ -35,7 +35,7 @@ class ReportViewSetTest(APITestCase):
         self.user = User.objects.create_user(username='testuser', password='testpass')
         self.client.force_authenticate(user=self.user)
         
-        self.owner = Owner.objects.create(full_name="John Doe")
+        self.owner = Owner.objects.create(first_name="John", last_name="Doe")
         v1 = Vehicle.objects.create(owner=self.owner, brand='Audi', model='A3', year=2010, license_plate='XYZ1')
         v2 = Vehicle.objects.create(owner=self.owner, brand='BMW', model='X5', year=2005, license_plate='XYZ2')
         self.report1 = Report.objects.create(vehicle=v1, user=self.user, status='pending')
@@ -94,7 +94,10 @@ class ReportViewSetTest(APITestCase):
         Test that updating a report's status to 'exported' creates an invoice.
         """
         url = reverse('report-detail', kwargs={'pk': self.report1.pk})
-        data = {'status': 'exported'}  # This should trigger invoice creation
+        data = {
+            'status': 'exported',
+            'updated_at': self.report1.updated_at
+            }  # This should trigger invoice creation
         response = self.client.patch(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         invoice = Invoice.objects.get(report=self.report1)

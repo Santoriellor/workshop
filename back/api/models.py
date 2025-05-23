@@ -228,11 +228,6 @@ class Invoice(models.Model):
     """ total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) """
     pdf = models.FileField(upload_to='invoices/', null=True, blank=True)
 
-    #def calculate_total_cost(self):
-    #    """Automatically calculate total cost from linked repairs"""
-    #    self.total_cost = sum(repair.total_cost or 0 for repair in self.repairs.all())
-    #    self.save()
-
     def __str__(self):
         return f"Invoice {self.invoice_number} - {self.total_cost} CHF"
     
