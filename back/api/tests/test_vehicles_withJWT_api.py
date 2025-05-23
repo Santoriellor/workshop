@@ -41,7 +41,7 @@ class VehicleTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
 
         # 4. Create an Owner object (link it to the user)
-        self.owner = Owner.objects.create(full_name="John Doe", email="john@example.com", phone="1234567890")
+        self.owner = Owner.objects.create(first_name="John", last_name="Doe", email="john@example.com", phone="1234567890")
         
         # 5. Create a Vehicle object associated with the owner
         self.vehicle_data = {
@@ -92,7 +92,8 @@ class VehicleTests(APITestCase):
             'model': 'Focus',
             'year': 2021,
             'license_plate': 'DEF 456',
-            'owner': self.owner.id
+            'owner': self.owner.id,
+            'updated_at': vehicle.updated_at
         }
         response = self.client.put(url, updated_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)

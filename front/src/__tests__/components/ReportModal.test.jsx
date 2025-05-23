@@ -72,6 +72,7 @@ vi.mock('../../hooks/useReportForm', () => ({
   useReportForm: () => ({
     data: { vehicle: '', status: 'pending', remarks: '', user: 1 },
     errors: {},
+    touched: {},
     handleChange: vi.fn(),
     isValid: true,
   }),

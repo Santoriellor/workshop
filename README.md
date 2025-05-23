@@ -22,7 +22,7 @@ Install the following:
 From the project root :
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 This will:
@@ -35,9 +35,9 @@ This will:
 
 ## 🌐 Access the App
 
-- **Frontend**: http://localhost:3000
+- **Frontend**: http://localhost
 - **Backend API**: http://localhost:8000
-- **Backend Django Admin**: http://127.0.0.1:8000/admin/
+- **Backend Django Admin**: http://localhost:8000/admin/
 - **MySQL**: port 3306 (internal)
 
 ---
@@ -47,18 +47,23 @@ This will:
 ### Run Django management commands:
 
 ```bash
-docker-compose exec backend python manage.py migrate
-docker-compose exec backend python manage.py createsuperuser
-docker-compose exec backend python manage.py test
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py createsuperuser
+docker compose exec backend python manage.py test
 ```
 
 ### Run npm test:
 
-To run the tests for the frontend, you need to change the "target" parameter from "prod" to "dev" in the "docker-compose.yml" file.
+To run the tests for the frontend, you need to change to run :
+
+```bash
+docker compose -f docker-compose.test.yml up --build
+```
+
 Once the container is up, you can access the bash within the frontend container with :
 
 ```bash
-docker-compose exec frontend sh
+docker compose exec frontend sh
 ```
 
 then inside the bash run the command :
@@ -104,7 +109,7 @@ workshop/
 
 Once up and running:
 
-- Log into the frontend on port 3000
+- Log into the frontend on localhost
 - Backend handles API + DB
 - Everything is containerized — no need for manual Python/Node installs!
 

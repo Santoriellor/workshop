@@ -36,21 +36,24 @@ class TestOwnerAPI(TestCase):
         """
         url = reverse('owner-list')
         data = {
-            "full_name": "John Doe",
+            "first_name": "John",
+            "last_name": "Doe",
             "email": "john@example.com"
         }
         response = self.client.post(url, data, format='json')
         if response.status_code != 201:
-            print(f"Error: {response.data}")
+            print("DEBUG:", response.status_code, response.data)
         self.assertEqual(response.status_code, 201)
 
     def test_list_owners(self):
         """
         Test listing all owners via GET request.
         """
-        Owner.objects.create(full_name="Jane Smith", email="jane@example.com")
+        Owner.objects.create(first_name="Jane", last_name="Smith", email="jane@example.com")
         url = reverse('owner-list')
         response = self.client.get(url)
+        if response.status_code != 200:
+            print("DEBUG:", response.status_code, response.data)
         self.assertEqual(response.status_code, 200)
         self.assertGreaterEqual(len(response.data), 1)
         
@@ -58,36 +61,46 @@ class TestOwnerAPI(TestCase):
         """
         Test retrieving a specific owner by their ID.
         """
-        owner = Owner.objects.create(full_name="Jane Smith", email="jane@example.com")
+        owner = Owner.objects.create(first_name="Jane", last_name="Smith", email="jane@example.com")
         url = reverse('owner-detail', kwargs={'pk': owner.pk})
         response = self.client.get(url)
+        if response.status_code != 200:
+            print("DEBUG:", response.status_code, response.data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['full_name'], owner.full_name)
+        self.assertEqual(response.data['first_name'], owner.first_name)
+        self.assertEqual(response.data['last_name'], owner.last_name)
         self.assertEqual(response.data['email'], owner.email)
 
     def test_update_owner(self):
         """
         Test updating an existing owner's details using PATCH.
         """
-        owner = Owner.objects.create(full_name="Jane Smith", email="jane@example.com")
+        owner = Owner.objects.create(first_name="Jane", last_name="Smith", email="jane@example.com")
         url = reverse('owner-detail', kwargs={'pk': owner.pk})
         data = {
-            "full_name": "Jane Updated",
-            "email": "updated@example.com"
+            "first_name": "Jany",
+            "last_name": "Updated",
+            "email": "updated@example.com",
+            "updated_at": owner.updated_at
         }
         response = self.client.patch(url, data, format='json')
+        if response.status_code != 200:
+            print("DEBUG:", response.status_code, response.data)
         self.assertEqual(response.status_code, 200)
         owner.refresh_from_db()
-        self.assertEqual(owner.full_name, "Jane Updated")
+        self.assertEqual(owner.first_name, "Jany")
+        self.assertEqual(owner.last_name, "Updated")
         self.assertEqual(owner.email, "updated@example.com")
 
     def test_delete_owner(self):
         """
         Test deleting an owner via DELETE request.
         """
-        owner = Owner.objects.create(full_name="Jane Smith", email="jane@example.com")
+        owner = Owner.objects.create(first_name="Jane", last_name="Smith", email="jane@example.com")
         url = reverse('owner-detail', kwargs={'pk': owner.pk})
         response = self.client.delete(url)
+        if response.status_code != 204:
+            print("DEBUG:", response.status_code, response.data)
         self.assertEqual(response.status_code, 204)
         # Check that the owner is actually deleted
         self.assertFalse(Owner.objects.filter(pk=owner.pk).exists())

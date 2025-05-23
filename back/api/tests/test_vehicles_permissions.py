@@ -26,11 +26,11 @@ class VehiclePermissionsTests(APITestCase):
         """
         # User A
         self.user_a = User.objects.create_user(username='user_a', email='a@example.com', password='pass1234')
-        self.owner_a = Owner.objects.create(full_name='User A', email='a@example.com', phone='1234567890')
+        self.owner_a = Owner.objects.create(first_name="User", last_name="A", email='a@example.com', phone='1234567890')
 
         # User B
         self.user_b = User.objects.create_user(username='user_b', email='b@example.com', password='pass1234')
-        self.owner_b = Owner.objects.create(full_name='User B', email='b@example.com', phone='9876543210')
+        self.owner_b = Owner.objects.create(first_name="User", last_name="B", email='b@example.com', phone='9876543210')
 
         # Vehicle belonging to User A's Owner
         self.vehicle = Vehicle.objects.create(

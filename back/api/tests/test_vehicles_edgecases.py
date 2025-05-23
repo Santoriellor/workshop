@@ -47,7 +47,7 @@ class VehicleEdgeCaseTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
 
         # Create an Owner object linked to the user
-        self.owner = Owner.objects.create(full_name="John Doe", email="john@example.com", phone="1234567890")
+        self.owner = Owner.objects.create(first_name="John", last_name="Doe", email="john@example.com", phone="1234567890")
 
     def test_create_vehicle_missing_required_fields(self):
         """

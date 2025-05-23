@@ -1,17 +1,39 @@
-import React, { Suspense } from 'react'
-import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
-import { MemoryRouter } from 'react-router-dom'
-
-// Component under test
-import App from './App'
-
 // Mock react-router-dom
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
   }
+})
+
+// Mock axios
+vi.mock('axios', () => {
+  const mockAxiosInstance = vi.fn() // Make it callable like axiosInstance(config)
+
+  // Add HTTP method stubs
+  mockAxiosInstance.get = vi.fn()
+  mockAxiosInstance.post = vi.fn()
+  mockAxiosInstance.request = vi.fn()
+
+  // Add interceptors
+  mockAxiosInstance.interceptors = {
+    request: {
+      use: vi.fn(),
+      eject: vi.fn(),
+    },
+    response: {
+      use: vi.fn(),
+      eject: vi.fn(),
+    },
+  }
+
+  // Mock axios.create to return the same instance
+  const mockAxios = {
+    create: vi.fn(() => mockAxiosInstance),
+    ...mockAxiosInstance,
+  }
+
+  return { default: mockAxios }
 })
 
 // Mock Contexts
@@ -71,6 +93,14 @@ vi.mock('./components/Sidebar', () => ({
   __esModule: true,
   default: () => <div>Mocked Sidebar</div>,
 }))
+
+import React, { Suspense } from 'react'
+import { render, screen } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
+
+// Component under test
+import App from './App'
 
 // Grab mocked hooks
 import { useAuth } from './contexts/AuthContext'

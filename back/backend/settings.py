@@ -54,7 +54,7 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True')
+DEBUG = os.getenv('IS_DOCKER', 'False') == 'False'
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
@@ -171,21 +171,22 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# Static and Media files
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static_django/'
 
-#Where to refer to static files in the development environment
-STATICFILES_DIRS = [BASE_DIR / "static"]
+# In production inside Docker
+if os.environ.get("IS_DOCKER") == "true":
+    STATIC_ROOT = '/backend/staticfiles'
+    MEDIA_ROOT = '/backend/media'
+else:
+    STATICFILES_DIRS = [BASE_DIR / "static"]
+    STATIC_ROOT = BASE_DIR / "staticfiles"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-#Where to reference static files in production
-STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# MEDIA settings
 #Media file path
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

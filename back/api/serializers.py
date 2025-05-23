@@ -361,3 +361,9 @@ class InvoiceSerializer(serializers.ModelSerializer):
         
     def get_formatted_issued_date(self, obj):
         return format(obj.issued_date, "F j, Y")
+
+    """ def get_pdf(self, obj):
+        request = self.context.get('request')
+        if obj.pdf and request:
+            return request.build_absolute_uri(obj.pdf.url)
+        return None """

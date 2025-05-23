@@ -20,6 +20,11 @@ python manage.py migrate
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
+# Collect static files
+echo "Migrate & Createsuperuser"
+python manage.py migrate
+python manage.py createsuperuser --noinput || echo "Superuser probably already exists"
+
 # Populate the database
 echo "Populating database..."
 python manage.py populate_db --all
@@ -29,5 +34,10 @@ else
     echo "⚠️ populate_db failed or already done."
 fi
 
-echo "Starting Django server..."
-exec python manage.py runserver 0.0.0.0:8000
+if [ "$IS_DOCKER" = "true" ]; then
+  echo "Starting Django dev server..."
+  exec python manage.py runserver 0.0.0.0:8000
+else
+  echo "Starting Gunicorn for production..."
+  exec gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 3
+fi
