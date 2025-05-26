@@ -354,6 +354,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
     """
     formatted_issued_date = serializers.SerializerMethodField()
     total_cost = serializers.ReadOnlyField()
+    owner_full_name = serializers.SerializerMethodField()
+    vehicle_plate = serializers.SerializerMethodField()
     
     class Meta:
         model = Invoice
@@ -362,8 +364,14 @@ class InvoiceSerializer(serializers.ModelSerializer):
     def get_formatted_issued_date(self, obj):
         return format(obj.issued_date, "F j, Y")
 
-    """ def get_pdf(self, obj):
-        request = self.context.get('request')
-        if obj.pdf and request:
-            return request.build_absolute_uri(obj.pdf.url)
-        return None """
+    def get_owner_full_name(self, obj):
+        try:
+            return obj.report.vehicle.owner.full_name
+        except AttributeError:
+            return None
+        
+    def get_vehicle_plate(self, obj):
+        try:
+            return obj.report.vehicle.license_plate
+        except AttributeError:
+            return None
