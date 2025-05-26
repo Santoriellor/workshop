@@ -7,7 +7,6 @@ inventory, and invoices.
 The views use Django REST Framework's class-based viewsets and custom APIViews to provide standard CRUD operations and custom logic such as:
 - User registration and login with JWT token support
 - Concurrency control via `updated_at` checks on updates
-- Report export and dynamic PDF invoice generation using WeasyPrint
 - Filtering and ordering via DjangoFilterBackend
 - Custom pagination where needed using LimitOffsetPagination
 
@@ -22,24 +21,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-# from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
-# from django.shortcuts import render, get_object_or_404
-# from django.http import HttpResponse
-from django.template.loader import get_template
-from django.core.files.base import ContentFile
-from django.conf import settings
-# from django.utils.dateparse import parse_datetime
-# from django.utils.timezone import is_aware, make_aware
 from django.db.models import Value, F, CharField
 from django.db.models.functions import Concat
-from weasyprint import HTML
-from decimal import Decimal
 from .models import (
     User, UserProfile,
     Owner, Vehicle,
-    Report, Task, TaskTemplate,
-    Part, Inventory, Invoice
+    Report, TaskTemplate,
+    Inventory, Invoice
 )
 from .serializers import (
     LoginSerializer, UserSerializer, UserProfileSerializer,
@@ -48,6 +37,7 @@ from .serializers import (
     InventorySerializer, PartSerializer, InvoiceSerializer
 ) 
 from .filters import OwnerFilter
+from .services.invoices import generate_invoice
 
 class CustomPagination(LimitOffsetPagination):
     default_limit = 5
@@ -215,8 +205,7 @@ class ReportViewSet(viewsets.ModelViewSet):
     API endpoint for managing maintenance reports.
 
     Includes logic for pagination, filtering, ordering, and concurrency control.
-    Features a custom invoice generation method when a report is marked as 'exported',
-    including PDF generation using WeasyPrint. Also exposes related tasks and parts.
+    Exposes related tasks and parts.
     """
     queryset = Report.objects.select_related('vehicle').all()
     serializer_class = ReportSerializer
@@ -265,106 +254,11 @@ class ReportViewSet(viewsets.ModelViewSet):
             
             # Check if status changed to "exported"
             if previous_status != "exported" and serializer.validated_data.get("status") == "exported":
-                self.generate_invoice(instance, request)
+                 invoice = generate_invoice(instance, request)
                 
             return Response(serializer.data)
 
         return Response(serializer.errors, status=400)
-    
-    def generate_invoice(self, report, request):
-        """Create an invoice and generate a PDF for an exported report."""
-        invoice_number = f"INV-{report.id:06d}"
-        
-        # Create an Invoice entry
-        invoice = Invoice.objects.create(
-            invoice_number=invoice_number,
-            report=report
-        )
-        
-        # Generate invoice PDF and calculate the total cost with VAT
-        html_content = self.generate_invoice_pdf(invoice)
-        
-        invoice.save()    
-
-        if settings.IS_DOCKER:
-            # In production inside Docker, static files served from STATIC_ROOT via nginx
-            base_url = "http://react_nginx/"
-        else:
-            # In development (runserver), base url points to root, so Django serves static files
-            base_url = request.build_absolute_uri(settings.STATIC_URL)
-            
-        pdf_file = HTML(string=html_content, base_url=base_url).write_pdf()
-        
-        # Ensure /media/invoices exists
-        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'invoices'), exist_ok=True)
-    
-        # Save the PDF to the invoice model
-        invoice.pdf.save(f"invoice_{invoice_number}.pdf", ContentFile(pdf_file), save=True)
-
-        return Response({"message": "Invoice generated successfully", "invoice_id": invoice.id})
-    
-    def generate_invoice_pdf(self, invoice):
-        """Generate and return a PDF file for the invoice."""
-        tasks = Task.objects.filter(report=invoice.report)
-        parts = Part.objects.filter(report=invoice.report)
-        # Join task with task template and part with inventory
-        tasks = tasks.select_related('task_template')
-        parts = parts.select_related('part')
-        
-        VAT_RATE = Decimal("0.2")
-        task_data = []
-        part_data = []
-        net_total = Decimal("0.00")
-        
-        # Process tasks
-        for task in tasks:
-            price = task.task_template.price
-            vat_amount = price * VAT_RATE
-            total_price = price + vat_amount
-            
-            task_data.append({
-                "name": task.task_template.name,
-                "price": "{:.2f}".format(price),
-                "vat": "{:.2f}".format(vat_amount),
-                "total": "{:.2f}".format(total_price),
-            })
-            
-            net_total += price 
-            
-        # Process parts
-        for part in parts:
-            unit_price = part.part.unit_price
-            quantity = part.quantity_used
-            subtotal = unit_price * quantity
-            vat_amount = subtotal * VAT_RATE
-            total_price = subtotal + vat_amount
-            
-            part_data.append({
-                "name": part.part.name,
-                "unit_price": "{:.2f}".format(unit_price),
-                "quantity": str(quantity),
-                "subtotal": "{:.2f}".format(subtotal),
-                "vat": "{:.2f}".format(vat_amount),
-                "total": "{:.2f}".format(total_price),
-            })
-
-            net_total += subtotal
-            
-        vat_total = net_total * VAT_RATE
-        final_total = net_total + vat_total
-        template = get_template("api/invoice_template.html")
-        context = {
-        "invoice": invoice,
-        "tasks": task_data,
-        "parts": part_data,
-        "net_total": "{:.2f}".format(net_total),
-            "vat_total": "{:.2f}".format(vat_total),
-            "final_total": "{:.2f}".format(final_total),
-        }
-        html_content = template.render(context)
-
-        return html_content
-    
     
     @action(detail=True, methods=['get'])
     def tasks(self, request, pk=None):

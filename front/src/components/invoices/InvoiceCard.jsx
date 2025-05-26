@@ -13,7 +13,10 @@ const InvoiceCard = ({ invoice }) => {
       title="Open invoice PDF"
     >
       <section key={invoice.id}>
-        <header>{invoice.invoice_number}</header>
+        <header>
+          {invoice.invoice_number} - {invoice.owner_full_name || 'Owner unknown'} (
+          {invoice.vehicle_plate || 'Plate unknown'})
+        </header>
         <div className={isPathDashboard ? 'card-invoice-col' : 'card-invoice-row'}>
           <p>Issued: {invoice.formatted_issued_date}</p>
           <p>Total Cost: {invoice.total_cost} CHF</p>
