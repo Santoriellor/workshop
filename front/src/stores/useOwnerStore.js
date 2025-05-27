@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import axiosInstance from '../utils/axiosInstance'
 
-const OWNER_API_URL = import.meta.env.VITE_API_URL + '/owners/'
+const OWNER_API_URL = '/owners/'
 
 const useOwnerStore = create((set) => ({
   owners: [],

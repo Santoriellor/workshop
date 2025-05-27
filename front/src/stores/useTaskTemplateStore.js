@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import axiosInstance from '../utils/axiosInstance'
 
-const TASKTEMPLATE_API_URL = import.meta.env.VITE_API_URL + '/task-templates/'
+const TASKTEMPLATE_API_URL = '/task-templates/'
 
 const useTaskTemplateStore = create((set) => ({
   taskTemplates: [],

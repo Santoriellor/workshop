@@ -1,5 +1,3 @@
-# app/services/invoice.py
-
 import os
 from decimal import Decimal
 from django.conf import settings

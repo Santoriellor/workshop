@@ -6,7 +6,6 @@ import Swal from 'sweetalert2'
 import axiosInstance, { setAxiosToken } from '../utils/axiosInstance'
 import { logout as utilsLogout } from '../utils/authUtils'
 
-const apiURL = import.meta.env.VITE_API_URL
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
@@ -16,7 +15,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserData = async (token) => {
     try {
-      const response = await axiosInstance.get(`${apiURL}/users/me/`, {
+      const response = await axiosInstance.get(`/users/me/`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       setAuthenticatedUser(response.data)
@@ -42,7 +41,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoadingAuth(true)
     try {
-      const response = await axiosInstance.post(`${apiURL}/login/`, {
+      const response = await axiosInstance.post(`/login/`, {
         email,
         password,
       })
@@ -102,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     setLoadingAuth(true)
     try {
       // Send registration data to the backend
-      await axiosInstance.post(`${apiURL}/register/`, {
+      await axiosInstance.post(`/register/`, {
         username,
         email,
         password,
