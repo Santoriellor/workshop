@@ -10,18 +10,6 @@ export const setAxiosToken = (token) => {
   axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`
 }
 
-// Add request interceptor to set Authorization header for every request
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error),
-)
-
 // Add response interceptor to handle token refresh on 401 errors
 axiosInstance.interceptors.response.use(
   (response) => response, // If the request is successful, return the response
