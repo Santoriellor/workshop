@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import axiosInstance from '../utils/axiosInstance'
 
-const INVOICE_API_URL = import.meta.env.VITE_API_URL + '/invoices/'
+const INVOICE_API_URL = '/invoices/'
 
 const useInvoiceStore = create((set) => ({
   invoices: [],

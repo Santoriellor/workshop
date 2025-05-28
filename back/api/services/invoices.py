@@ -15,10 +15,10 @@ def generate_invoice(report, request=None):
 
     html_content = generate_invoice_pdf(invoice)
 
-    if settings.IS_DOCKER:
-        base_url = "http://react_nginx/"
+    if request is not None:
+        base_url = request.build_absolute_uri('/')  # This includes scheme + domain
     else:
-        base_url = request.build_absolute_uri(settings.STATIC_URL) if request else "/"
+        base_url = "https://workshop.santoriello.ch/"
 
     pdf_file = HTML(string=html_content, base_url=base_url).write_pdf()
 

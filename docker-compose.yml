@@ -28,6 +28,7 @@ services:
       context: .
       dockerfile: back/Dockerfile
     container_name: django
+    restart: always
     volumes:
       - static_volume:/backend/staticfiles
       - media_volume:/backend/media
@@ -54,10 +55,11 @@ services:
       context: .
       dockerfile: front/Dockerfile
     container_name: react_nginx
+    restart: always
     env_file:
       - ./front/.env
     ports:
-      - "80:80"
+      - "3000:3000"
     depends_on:
       - backend
     volumes:

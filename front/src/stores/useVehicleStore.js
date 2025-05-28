@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import axiosInstance from '../utils/axiosInstance'
 
-const VEHICLE_API_URL = import.meta.env.VITE_API_URL + '/vehicles/'
+const VEHICLE_API_URL = '/vehicles/'
 
 const useVehicleStore = create((set) => ({
   vehicles: [],
