@@ -32,7 +32,7 @@ const PartFieldset = ({
             <option value="">Select a repair part</option>
             {inventory?.map((part) => (
               <option key={part.id} value={part.id}>
-                {part.name} - €{part.unit_price}
+                {part.name} - {part.unit_price} CHF
               </option>
             ))}
           </select>
@@ -62,7 +62,7 @@ const PartFieldset = ({
                 <li key={index}>
                   <p>
                     {partUsed.quantity_used ?? 'N/A'}x&nbsp;
-                    {part?.name ?? 'Unknown Part'} - €{part?.unit_price ?? 'N/A'}
+                    {part?.name ?? 'Unknown Part'} - {part?.unit_price ?? 'N/A'} CHF
                   </p>
                   <button
                     title="Remove Part"

@@ -31,7 +31,7 @@ const TaskFieldset = ({
             <option value="">Select a repair task</option>
             {taskTemplates?.map((taskTemplate) => (
               <option key={taskTemplate.id} value={taskTemplate.id}>
-                {taskTemplate.name} - €{taskTemplate.price}
+                {taskTemplate.name} - {taskTemplate.price} CHF
               </option>
             ))}
           </select>
@@ -54,7 +54,7 @@ const TaskFieldset = ({
               return (
                 <li key={taskId}>
                   <p>
-                    {taskTemplate?.name ?? 'Unknown Task'} - €{taskTemplate.price ?? 'N/A'}
+                    {taskTemplate?.name ?? 'Unknown Task'} - {taskTemplate.price ?? 'N/A'} CHF
                   </p>
                   <button
                     title="Remove task"
