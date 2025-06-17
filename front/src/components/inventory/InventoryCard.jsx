@@ -68,8 +68,7 @@ const InventoryCard = ({ item }) => {
                   {item.category}
                 </p>
                 <p>
-                  <strong>Unit price:</strong>&nbsp;
-                  {item.unit_price}
+                  <strong>Unit price:</strong>&nbsp;{item.unit_price} CHF
                 </p>
               </>
             )}

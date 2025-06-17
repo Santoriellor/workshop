@@ -45,7 +45,7 @@ const TaskTemplateCard = ({ item }) => {
               <strong>Description:</strong>&nbsp;{item.description}
             </p>
             <p>
-              <strong>Price:</strong>&nbsp;{item.price}
+              <strong>Price:</strong>&nbsp;{item.price} CHF
             </p>
           </div>
         </section>

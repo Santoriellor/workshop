@@ -100,11 +100,11 @@
                         <tr>
                             <td class="border-b py-3 pl-3">{{ forloop.counter }}.</td>
                             <td class="border-b py-3 pl-2">{{ task.name }}</td>
-                            <td class="border-b py-3 pl-2 text-right">Fr.{{ task.price }}</td>
-                            <td class="border-b py-3 pl-2 text-center">Fr.{{ task.vat }}</td>
+                            <td class="border-b py-3 pl-2 text-right">CHF {{ task.price }}</td>
+                            <td class="border-b py-3 pl-2 text-center">CHF {{ task.vat }}</td>
                             <td class="border-b py-3 pl-2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
                             <td class="border-b py-3 pl-2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                            <td class="border-b py-3 pl-2 pr-3 text-right">Fr.{{ task.total }}</td>
+                            <td class="border-b py-3 pl-2 pr-3 text-right">CHF {{ task.total }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -127,11 +127,11 @@
                         <tr>
                             <td class="border-b py-3 pl-3">{{ forloop.counter }}.</td>
                             <td class="border-b py-3 pl-2">{{ part.name }}</td>
-                            <td class="border-b py-3 pl-2 text-right">Fr.{{ part.unit_price }}</td>
+                            <td class="border-b py-3 pl-2 text-right">CHF {{ part.unit_price }}</td>
                             <td class="border-b py-3 pl-2 text-center">{{ part.quantity }}</td>
-                            <td class="border-b py-3 pl-2 text-center">Fr.{{ part.vat }}</td>
-                            <td class="border-b py-3 pl-2 text-right">Fr.{{ part.subtotal }}</td>
-                            <td class="border-b py-3 pl-2 pr-3 text-right">Fr.{{ part.total }}</td>
+                            <td class="border-b py-3 pl-2 text-center">CHF {{ part.vat }}</td>
+                            <td class="border-b py-3 pl-2 text-right">CHF {{ part.subtotal }}</td>
+                            <td class="border-b py-3 pl-2 pr-3 text-right">CHF {{ part.total }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -149,7 +149,7 @@
                                             </td>
                                             <td class="border-b p-3 text-right">
                                                 <div class="whitespace-nowrap font-bold text-main">
-                                                    Fr.{{ net_total }}
+                                                    CHF {{ net_total }}
                                                 </div>
                                             </td>
                                         </tr>
@@ -160,7 +160,7 @@
                                             </td>
                                             <td class="p-3 text-right">
                                                 <div class="whitespace-nowrap font-bold text-main">
-                                                    Fr.{{ vat_total }}
+                                                    CHF {{ vat_total }}
                                                 </div>
                                             </td>
                                             <td class="p-3 text-right">
@@ -168,7 +168,7 @@
                                             </td>
                                             <td class="bg-main p-3 text-right">
                                                 <div class="whitespace-nowrap font-bold text-white">
-                                                    Fr.{{ final_total }}
+                                                    CHF {{ final_total }}
                                                 </div>
                                             </td>
                                         </tr>
