@@ -1,17 +1,17 @@
 # back/Dockerfile
 FROM python:3.12-slim
 
-# set environment variables
+# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies (for PDF generation, image processing, etc.)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
     libcairo2 \
-    libgdk-pixbuf2.0-0 \
+    libgdk-pixbuf-2.0-0 \
     libglib2.0-0 \
     libglib2.0-dev \
     fonts-dejavu \
@@ -26,13 +26,13 @@ RUN apt-get update && apt-get install -y \
     netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY back/requirements.txt .
-RUN python3 -m pip install --upgrade pip setuptools
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Set work directory
+# Set working directory
 WORKDIR /backend
+
+# Copy and install Python dependencies
+COPY back/requirements.txt .
+RUN python3 -m pip install --upgrade pip setuptools \
+    && pip install --no-cache-dir -r requirements.txt
 
 # Copy project files
 COPY back/ .
@@ -40,7 +40,7 @@ COPY back/ .
 # Expose application port
 EXPOSE 8000
 
-# Populate the database (optional)
-COPY back/entrypoint.sh backend/entrypoint.sh
-RUN sed -i 's/\r$//' backend/entrypoint.sh && chmod +x backend/entrypoint.sh
-ENTRYPOINT ["backend/entrypoint.sh"]
+# Copy and set entrypoint script
+COPY back/entrypoint.sh ./entrypoint.sh
+RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
