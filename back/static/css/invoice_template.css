@@ -1,3 +1,23 @@
+/* ===== DEBUG WATERMARK ===== */
+@page {
+    size: A4;
+    margin: 2cm;
+}
+
+body::before {
+    content: "CSS LOADED ✓";
+    position: fixed;
+    top: 40%;
+    left: 10%;
+    font-size: 80px;
+    font-weight: bold;
+    color: rgba(255, 0, 0, 0.2);
+    transform: rotate(-30deg);
+    z-index: 9999;
+    pointer-events: none;
+}
+/* ===== END DEBUG ===== */
+
 @font-face {
   font-family: "Daruma";
   src: url("fonts/Daruma/DarumadropOne-Regular.ttf") format("truetype");

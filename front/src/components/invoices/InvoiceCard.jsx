@@ -6,11 +6,14 @@ const InvoiceCard = ({ invoice }) => {
 
   return (
     <a
-      href={invoice.pdf ? invoice.pdf : '#'}
+      href={invoice.pdf_exists ? invoice.pdf : '#'}
       target="_blank"
       rel="noopener noreferrer"
       className="card-invoice"
-      title="Open invoice PDF"
+      title={invoice.pdf_exists ? 'Open invoice PDF' : 'File missing'}
+      onClick={(e) => {
+          if (!invoice.pdf_exists) e.preventDefault()
+      }}
     >
       <section key={invoice.id}>
         <header>
@@ -21,7 +24,7 @@ const InvoiceCard = ({ invoice }) => {
           <p>Issued: {invoice.formatted_issued_date}</p>
           <p>Total Cost: {invoice.total_cost} CHF</p>
 
-          <p>{invoice.pdf ? `Invoice number: ${invoice.invoice_number}` : 'No file found'}</p>
+            <p>{invoice.pdf_exists ? `Invoice number: ${invoice.invoice_number}` : 'No file found'}</p>
         </div>
       </section>
     </a>

@@ -13,7 +13,7 @@ def generate_invoice(report, request=None):
 
     html_content = generate_invoice_pdf(invoice)
 
-    base_url = "file:///backend/staticfiles/"
+    base_url = f"file://{settings.STATIC_ROOT}/"
 
     pdf_file = HTML(string=html_content, base_url=base_url).write_pdf()
 
