@@ -47,7 +47,8 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = 'False'
+# Parse DEBUG from env safely (treat any of 1/true/yes as True)
+DEBUG = os.getenv('DEBUG', 'False').lower() in {'1', 'true', 'yes'}
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')

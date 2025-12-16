@@ -9,7 +9,8 @@ services:
     env_file:
       - ./back/.env
     environment:
-      MYSQL_ROOT_PASSWORD: /run/secrets/mysql_root_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_DATABASE: workshop_db
       MYSQL_USER_FILE: /run/secrets/mysql_user
       MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
     volumes:
@@ -24,8 +25,8 @@ services:
       dockerfile: back/Dockerfile
     restart: always
     volumes:
-      - static_volume:/static
-      - media_volume:/media
+      - static_volume:/backend/staticfiles
+      - media_volume:/backend/media
     secrets:
       - django_secret_key
       - mysql_user
@@ -60,8 +61,8 @@ services:
       dockerfile: front/Dockerfile
     restart: always
     volumes:
-      - static_volume:/static
-      - media_volume:/media
+      - static_volume:/backend/staticfiles:ro
+      - media_volume:/backend/media:ro
     env_file:
       - ./front/.env
     depends_on:
