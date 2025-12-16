@@ -19,21 +19,25 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      # List local nginx/media files (debug)
-      - name: List local nginx/media files
-        run: ls -l ./nginx/media/
-
-      # Ensure nginx/media folder exists on VPS
-      - name: Create nginx/media folder on VPS
+      - name: Reset VPS deployment (clean start)
         run: |
-         ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
-           mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}/nginx/media
-           ls -l ${{ secrets.VPS_DEPLOY_PATH }}/nginx/media/
-         "
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+            DEPLOY_PATH='${{ secrets.VPS_DEPLOY_PATH }}'
 
-      - name: Copy default.conf to VPS
-        run: |
-          scp ./nginx/media/default.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/nginx/media/default.conf
+            echo 'Stopping any running Docker containers...'
+            if [ -f \$DEPLOY_PATH/docker-compose.yml ]; then
+              cd \$DEPLOY_PATH
+              docker compose down || true
+            fi
+
+            echo 'Removing project Docker volumes...'
+            docker volume rm mysql_volume static_volume media_volume || true
+
+            echo 'Deleting all files in deploy folder...'
+            rm -rf \$DEPLOY_PATH/*
+
+            echo 'Deployment folder cleaned.'
+          "
 
       - name: Copy project to VPS
         run: |
