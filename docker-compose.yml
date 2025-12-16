@@ -24,8 +24,8 @@ services:
       dockerfile: back/Dockerfile
     restart: always
     volumes:
-      - static_volume:/backend/staticfiles
-      - media_volume:/backend/media
+      - static_volume:/static
+      - media_volume:/media
     secrets:
       - django_secret_key
       - mysql_user
@@ -51,10 +51,6 @@ services:
       - "traefik.http.routers.workshop-backend.entrypoints=websecure"
       - "traefik.http.routers.workshop-backend.tls.certresolver=le"
 
-      # Remove `/api` before forwarding to Django
-      #- "traefik.http.middlewares.workshop-backend-strip.stripprefix.prefixes=/api"
-      #- "traefik.http.routers.workshop-backend.middlewares=workshop-backend-strip"
-
       # Django listens on port 8000
       - "traefik.http.services.workshop-backend.loadbalancer.server.port=8000"
 
@@ -78,6 +74,22 @@ services:
       - "traefik.http.routers.workshop-frontend.entrypoints=websecure"
       - "traefik.http.routers.workshop-frontend.tls.certresolver=le"
       - "traefik.http.services.workshop-frontend.loadbalancer.server.port=80"
+
+  nginx-media:
+    image: nginx:alpine
+    restart: always
+    volumes:
+      - static_volume:/static:ro
+      - media_volume:/media:ro
+      - ./nginx/media/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - proxy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.workshop-media.rule=Host(`workshop.santoriello.ch`) && (PathPrefix(`/media`) || PathPrefix(`/static_django`))"
+      - "traefik.http.routers.workshop-media.entrypoints=websecure"
+      - "traefik.http.routers.workshop-media.tls.certresolver=le"
+      - "traefik.http.services.workshop-media.loadbalancer.server.port=80"
 
 secrets:
   mysql_root_password:

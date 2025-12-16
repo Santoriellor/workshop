@@ -34,10 +34,5 @@ else
     echo "⚠️ populate_db failed or already done."
 fi
 
-if [ "$IS_DOCKER" = "true" ]; then
-  echo "Starting Django dev server..."
-  exec python manage.py runserver 0.0.0.0:8000
-else
-  echo "Starting Gunicorn for production..."
-  exec gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 3
-fi
+echo "Starting Gunicorn for production..."
+exec gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 3
