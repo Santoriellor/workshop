@@ -1,4 +1,5 @@
 import os
+from django.conf import settings
 from datetime import datetime
 from dateutil.parser import isoparse
 from decimal import Decimal
