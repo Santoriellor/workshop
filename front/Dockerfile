@@ -13,7 +13,8 @@ RUN npm run build
 
 # Stage 2: nginx
 FROM nginx:alpine
-COPY ./nginx/frontend/nginx.conf /etc/nginx/frontend/default.conf
+# Put the nginx vhost config where nginx will load it by default
+COPY ./nginx/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=frontend_build /frontend/build /usr/share/nginx/html
 
 EXPOSE 80
