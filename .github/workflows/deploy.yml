@@ -28,6 +28,17 @@ jobs:
             ./ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/
 
+      - name: Ensure nginx/media folder and config exist on VPS
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+            DEPLOY_PATH='${{ secrets.VPS_DEPLOY_PATH }}'
+            # Create folder if it doesn't exist
+            mkdir -p \$DEPLOY_PATH/nginx/media
+            # Copy default.conf from repo to VPS
+            cp -n \$DEPLOY_PATH/nginx/media/default.conf \$DEPLOY_PATH/nginx/media/default.conf || echo 'default.conf already exists'
+            ls -l \$DEPLOY_PATH/nginx/media/
+          "
+
       - name: Build and restart services on VPS
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
