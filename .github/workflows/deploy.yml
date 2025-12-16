@@ -36,22 +36,22 @@ jobs:
             if [ ! -f \$CONFIG_FILE ]; then
               echo 'Creating default nginx/media/default.conf...'
               cat << 'EOF' > \$CONFIG_FILE
-                server {
-                    listen 80;
-                    
-                    location /static_django/ {
-                    alias /static/;
-                    access_log off;
-                    expires 30d;
-                }
-                
-                  location /media/ {
-                  alias /media/;
-                  access_log off;
-                  expires 30d;
-                }
-                }
-                EOF
+server {
+    listen 80;
+    
+    location /static_django/ {
+        alias /static/;
+        access_log off;
+        expires 30d;
+    }
+
+    location /media/ {
+        alias /media/;
+        access_log off;
+        expires 30d;
+    }
+}
+EOF
             else
             echo 'nginx/media/default.conf already exists'
             fi
