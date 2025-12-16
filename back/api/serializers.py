@@ -356,6 +356,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
     total_cost = serializers.ReadOnlyField()
     owner_full_name = serializers.SerializerMethodField()
     vehicle_plate = serializers.SerializerMethodField()
+    pdf_exists = serializers.SerializerMethodField()
     
     class Meta:
         model = Invoice
@@ -375,3 +376,10 @@ class InvoiceSerializer(serializers.ModelSerializer):
             return obj.report.vehicle.license_plate
         except AttributeError:
             return None
+
+    def get_pdf_exists(self, obj):
+        # Check if PDF field exists and the file is present on disk
+        if not obj.pdf:
+            return False
+        pdf_path = os.path.join(settings.MEDIA_ROOT, obj.pdf.name)
+        return os.path.exists(pdf_path)
