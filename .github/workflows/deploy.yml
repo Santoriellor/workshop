@@ -19,26 +19,6 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Reset VPS deployment (clean start)
-        run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
-            DEPLOY_PATH='${{ secrets.VPS_DEPLOY_PATH }}'
-
-            echo 'Stopping any running Docker containers...'
-            if [ -f \$DEPLOY_PATH/docker-compose.yml ]; then
-              cd \$DEPLOY_PATH
-              docker compose down || true
-            fi
-
-            echo 'Removing project Docker volumes...'
-            docker volume rm mysql_volume static_volume media_volume || true
-
-            echo 'Deleting all files in deploy folder...'
-            rm -rf \$DEPLOY_PATH/*
-
-            echo 'Deployment folder cleaned.'
-          "
-
       - name: Copy project to VPS
         run: |
           rsync -avz \

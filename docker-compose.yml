@@ -59,6 +59,9 @@ services:
       context: .
       dockerfile: front/Dockerfile
     restart: always
+    volumes:
+      - static_volume:/static
+      - media_volume:/media
     env_file:
       - ./front/.env
     depends_on:
@@ -74,22 +77,6 @@ services:
       - "traefik.http.routers.workshop-frontend.entrypoints=websecure"
       - "traefik.http.routers.workshop-frontend.tls.certresolver=le"
       - "traefik.http.services.workshop-frontend.loadbalancer.server.port=80"
-
-  nginx-media:
-    image: nginx:alpine
-    restart: always
-    volumes:
-      - static_volume:/static:ro
-      - media_volume:/media:ro
-      - ./nginx/media/default.conf:/etc/nginx/media/default.conf:ro
-    networks:
-      - proxy-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.workshop-media.rule=Host(`workshop.santoriello.ch`) && (PathPrefix(`/media`) || PathPrefix(`/static_django`))"
-      - "traefik.http.routers.workshop-media.entrypoints=websecure"
-      - "traefik.http.routers.workshop-media.tls.certresolver=le"
-      - "traefik.http.services.workshop-media.loadbalancer.server.port=80"
 
 secrets:
   mysql_root_password:
