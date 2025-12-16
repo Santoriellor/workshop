@@ -8,7 +8,7 @@ COPY front/package*.json ./
 RUN npm install --legacy-peer-deps
 
 COPY front/ .
-COPY front/.env.docker .env
+COPY front/.env .env
 RUN npm run build
 
 # Stage 2: nginx
