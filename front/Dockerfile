@@ -13,7 +13,7 @@ RUN npm run build
 
 # Stage 2: nginx
 FROM nginx:alpine
-COPY ./nginx/frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx/frontend/nginx.conf /etc/nginx/frontend/default.conf
 COPY --from=frontend_build /frontend/build /usr/share/nginx/html
 
 EXPOSE 80
