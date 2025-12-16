@@ -52,11 +52,11 @@ jobs:
                 }
                 }
                 EOF
-          else
-          echo 'nginx/media/default.conf already exists'
-          fi
-          ls -l ${{ secrets.VPS_DEPLOY_PATH }}/nginx/media/
-          "
+            else
+            echo 'nginx/media/default.conf already exists'
+            fi
+            ls -l ${{ secrets.VPS_DEPLOY_PATH }}/nginx/media/
+            "
 
       - name: Build and restart services on VPS
         run: |
