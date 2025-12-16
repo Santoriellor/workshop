@@ -19,6 +19,22 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
+      # List local nginx/media files (debug)
+      - name: List local nginx/media files
+        run: ls -l ./nginx/media/
+
+      # Ensure nginx/media folder exists on VPS
+      - name: Create nginx/media folder on VPS
+        run: |
+         ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+           mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}/nginx/media
+           ls -l ${{ secrets.VPS_DEPLOY_PATH }}/nginx/media/
+         "
+
+      - name: Copy default.conf to VPS
+        run: |
+          scp ./nginx/media/default.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/nginx/media/default.conf
+
       - name: Copy project to VPS
         run: |
           rsync -avz \
@@ -27,18 +43,6 @@ jobs:
             --exclude "__pycache__" \
             ./ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/
-
-      - name: Ensure nginx/media folder and config exist on VPS
-        run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
-            DEPLOY_PATH='${{ secrets.VPS_DEPLOY_PATH }}'
-            # Create folder if it doesn't exist
-            mkdir -p \$DEPLOY_PATH/nginx/media
-          "
-
-      - name: Copy default.conf to VPS
-        run: |
-          scp ./nginx/media/default.conf ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/nginx/media/default.conf
 
       - name: Build and restart services on VPS
         run: |
