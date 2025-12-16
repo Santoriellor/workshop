@@ -51,7 +51,7 @@ jobs:
                   expires 30d;
                 }
                 }
-                  EOF
+                EOF
           else
           echo 'nginx/media/default.conf already exists'
           fi
