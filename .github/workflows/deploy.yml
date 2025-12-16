@@ -28,15 +28,34 @@ jobs:
             ./ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/
 
-      - name: Verify nginx media config on VPS
+      - name: Ensure nginx media config exists on VPS
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
-            if [ ! -f ${{ secrets.VPS_DEPLOY_PATH }}/nginx/media/default.conf ]; then
-              echo 'ERROR: nginx/media/default.conf not found!'
-              exit 1
-            fi
-            echo 'nginx/media/default.conf exists:'
-            ls -l ${{ secrets.VPS_DEPLOY_PATH }}/nginx/media/
+            mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}/nginx/media
+            CONFIG_FILE='${{ secrets.VPS_DEPLOY_PATH }}/nginx/media/default.conf'
+            if [ ! -f \$CONFIG_FILE ]; then
+              echo 'Creating default nginx/media/default.conf...'
+              cat << 'EOF' > \$CONFIG_FILE
+                server {
+                    listen 80;
+                    
+                    location /static_django/ {
+                    alias /static/;
+                    access_log off;
+                    expires 30d;
+                }
+                
+                  location /media/ {
+                  alias /media/;
+                  access_log off;
+                  expires 30d;
+                }
+                }
+                  EOF
+          else
+          echo 'nginx/media/default.conf already exists'
+          fi
+          ls -l ${{ secrets.VPS_DEPLOY_PATH }}/nginx/media/
           "
 
       - name: Build and restart services on VPS
