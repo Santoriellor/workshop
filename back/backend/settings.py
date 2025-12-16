@@ -53,7 +53,6 @@ DEBUG = os.getenv('DEBUG', 'False').lower() in {'1', 'true', 'yes'}
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
 
-
 # Application definition
 
 INSTALLED_APPS = [
