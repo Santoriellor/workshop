@@ -13,8 +13,6 @@ def generate_invoice(report, request=None):
 
     html_content = generate_invoice_pdf(invoice)
 
-    print(html_content)  # Debugging statement to check HTML content
-
     base_url = f"file://{settings.STATIC_ROOT}/"
 
     pdf_file = HTML(string=html_content, base_url=base_url).write_pdf()
