@@ -13,10 +13,7 @@ def generate_invoice(report, request=None):
 
     html_content = generate_invoice_pdf(invoice)
 
-    if settings.IS_DOCKER:
-        base_url = "http://react_nginx/"
-    else:
-        base_url = request.build_absolute_uri(settings.STATIC_URL) if request else "/"
+    base_url = request.build_absolute_uri("/") if request else "/"
 
     pdf_file = HTML(string=html_content, base_url=base_url).write_pdf()
 

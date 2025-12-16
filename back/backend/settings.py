@@ -18,14 +18,11 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Check if we are inside Docker
-IS_DOCKER = os.getenv('IS_DOCKER', 'False') == 'True'
-
-# Set the MySQL host depending on whether we're inside Docker
-MYSQL_HOST = os.getenv('MYSQL_HOST') if IS_DOCKER else 'localhost'
+# Set the MySQL host
+MYSQL_HOST = os.getenv('MYSQL_HOST')
 
 # Path to the secrets directory (../secrets)
-SECRETS_DIR = Path("/run/secrets") if IS_DOCKER else BASE_DIR.parent / "secrets"
+SECRETS_DIR = Path("/run/secrets")
 
 def read_secret(filename, default=None):
     try:
@@ -35,14 +32,10 @@ def read_secret(filename, default=None):
             return default
         raise Exception(f"Secret file {filename} not found in {SECRETS_DIR}")
 
-if IS_DOCKER:
-    DJANGO_SECRET_KEY = read_secret("django_secret_key")
-    MYSQL_USER = read_secret("mysql_user")
-    MYSQL_PASSWORD = read_secret("mysql_password")
-else:
-    DJANGO_SECRET_KEY = read_secret("django_secret_key.txt")
-    MYSQL_USER = read_secret("mysql_user.txt")
-    MYSQL_PASSWORD = read_secret("mysql_password.txt")
+
+DJANGO_SECRET_KEY = read_secret("django_secret_key")
+MYSQL_USER = read_secret("mysql_user")
+MYSQL_PASSWORD = read_secret("mysql_password")
 
 # Load environment variables from the .env file
 load_dotenv(os.path.join(BASE_DIR, '.env'))
@@ -54,7 +47,7 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('IS_DOCKER', 'False') == 'False'
+DEBUG = 'False'
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
@@ -176,14 +169,11 @@ USE_TZ = True
 
 STATIC_URL = '/static_django/'
 
-# In production inside Docker
-if os.environ.get("IS_DOCKER") == "true":
-    STATIC_ROOT = '/backend/staticfiles'
-    MEDIA_ROOT = '/backend/media'
-else:
-    STATICFILES_DIRS = [BASE_DIR / "static"]
-    STATIC_ROOT = BASE_DIR / "staticfiles"
-    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+# In production
+STATIC_ROOT = '/backend/staticfiles'
+MEDIA_ROOT = '/backend/media'
+
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 #Media file path
 MEDIA_URL = '/media/'
@@ -248,8 +238,6 @@ LOGGING = {
         },
     },
 }
-
-CORS_ALLOWED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 CORS_ORIGIN_WHITELIST = [
      'http://localhost'
