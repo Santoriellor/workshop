@@ -7,7 +7,7 @@ services:
       - mysql_user
       - mysql_password
     env_file:
-      - ./back/.env
+      - /srv/secrets/workshop/back.env
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
       MYSQL_DATABASE: workshop_db
@@ -32,9 +32,8 @@ services:
       - mysql_user
       - mysql_password
     env_file:
-      - ./back/.env
+      - /srv/secrets/workshop/back.env
     environment:
-      DJANGO_SECRET_KEY: /run/secrets/django_secret_key
       MYSQL_USER_FILE: /run/secrets/mysql_user
       MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
       IS_DOCKER: "True"
@@ -81,13 +80,13 @@ services:
 
 secrets:
   mysql_root_password:
-    file: ./secrets/mysql_root_password.txt
+    file: /srv/secrets/workshop/mysql_root_password.txt
   mysql_user:
-    file: ./secrets/mysql_user.txt
+    file: /srv/secrets/workshop/mysql_user.txt
   mysql_password:
-    file: ./secrets/mysql_password.txt
+    file: /srv/secrets/workshop/mysql_password.txt
   django_secret_key:
-    file: ./secrets/django_secret_key.txt
+    file: /srv/secrets/workshop/django_secret_key.txt
 
 volumes:
   mysql_volume:
