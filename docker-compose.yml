@@ -45,6 +45,9 @@ services:
 
     labels:
       - "traefik.enable=true"
+      # Pin the network Traefik routes over. Containers attached to more than one
+      # network leave the choice non-deterministic, and Traefik can pick the internal one.
+      - "traefik.docker.network=proxy-network"
 
       # Backend is served at https://workshop.santoriello.ch/api
       - "traefik.http.routers.workshop-backend.rule=Host(`workshop.santoriello.ch`) && PathPrefix(`/api`)"
@@ -71,6 +74,9 @@ services:
 
     labels:
       - "traefik.enable=true"
+      # Pin the network Traefik routes over. Containers attached to more than one
+      # network leave the choice non-deterministic, and Traefik can pick the internal one.
+      - "traefik.docker.network=proxy-network"
 
       # Frontend exposed at https://workshop.santoriello.ch
       - "traefik.http.routers.workshop-frontend.rule=Host(`workshop.santoriello.ch`)"
