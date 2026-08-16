@@ -114,3 +114,21 @@ Once up and running:
 - Everything is containerized — no need for manual Python/Node installs!
 
 ---
+
+## Configuration
+
+No credentials are stored in this repository.
+
+**Local development:** copy `back/.env.example` to `back/.env` and fill in your own
+values, then create the files listed in `secrets/README.md`. Both paths are
+gitignored.
+
+**Production:** secrets live on the deployment host at `/srv/secrets/workshop/`,
+outside the deploy directory so the deployment rsync cannot overwrite them.
+`docker-compose.yml` references them by absolute path — Docker secrets for the
+database and Django keys, and `env_file` for the rest.
+
+`front/.env` *is* committed deliberately: it contains only `VITE_API_URL`, which
+Vite inlines into the public browser bundle at build time.
+
+---
