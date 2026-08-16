@@ -1,6 +1,10 @@
 # Secrets
-/secrets/
-secrets/
+# secrets/README.md documents the directory for readers; it holds no
+# credentials itself and must stay tracked. The directory itself cannot be
+# excluded with a trailing slash, or git will never look inside it to apply
+# the exception below - so its contents are excluded individually instead.
+secrets/*
+!secrets/README.md
 
 # Python & Django
 __pycache__/
@@ -8,6 +12,10 @@ __pycache__/
 *.sqlite3
 *.log
 .env
+# front/.env is NOT a secret: it holds only VITE_API_URL, which Vite inlines
+# into the public browser bundle. front/Dockerfile copies it at build time,
+# so it must stay tracked.
+!front/.env
 env/
 *.bak
 
