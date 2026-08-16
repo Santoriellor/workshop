@@ -1,0 +1,21 @@
+# Never bake secrets into an image - production supplies these via
+# /srv/secrets/workshop/ (docker secrets and env_file).
+#
+# Only back/.env is excluded here, not **/.env: front/.env holds just the
+# public VITE_API_URL, and front/Dockerfile deliberately does
+# `COPY front/.env .env` before `npm run build` so Vite can inline it into
+# the built bundle. A blanket **/.env would drop front/.env from the build
+# context and break that COPY, failing the frontend build.
+back/.env
+back/.env.*
+secrets/
+
+# Build and VCS noise
+.git/
+.github/
+**/node_modules/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+docs/
+*.md
