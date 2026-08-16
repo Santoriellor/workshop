@@ -56,6 +56,8 @@ services:
 
       # Django listens on port 8000
       - "traefik.http.services.workshop-backend.loadbalancer.server.port=8000"
+      # security-headers and gzip-compress live in Traefik's file provider.
+      - "traefik.http.routers.workshop-backend.middlewares=security-headers@file,gzip-compress@file"
 
   frontend:
     build:
@@ -83,6 +85,7 @@ services:
       - "traefik.http.routers.workshop-frontend.entrypoints=websecure"
       - "traefik.http.routers.workshop-frontend.tls.certresolver=le"
       - "traefik.http.services.workshop-frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.workshop-frontend.middlewares=security-headers@file,gzip-compress@file"
 
 secrets:
   mysql_root_password:
