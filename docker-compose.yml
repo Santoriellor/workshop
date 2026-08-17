@@ -21,6 +21,15 @@ services:
       - ./mysql/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
     networks:
       - internal
+    healthcheck:
+      # The root password is a docker secret file, not an env var. mysqladmin
+      # ping without credentials can exit 0 on "access denied", which would
+      # report healthy while auth is broken - so authenticate properly.
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$(cat /run/secrets/mysql_root_password)\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
 
   backend:
     build:
@@ -61,6 +70,13 @@ services:
       - "traefik.http.services.workshop-backend.loadbalancer.server.port=8000"
       # security-headers and gzip-compress live in Traefik's file provider.
       - "traefik.http.routers.workshop-backend.middlewares=security-headers@file,gzip-compress@file"
+    healthcheck:
+      # python is present; curl and wget are not. Connects to gunicorn's bind.
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), 3).close()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
 
   frontend:
     build:
@@ -89,6 +105,12 @@ services:
       - "traefik.http.routers.workshop-frontend.tls.certresolver=le"
       - "traefik.http.services.workshop-frontend.loadbalancer.server.port=8080"
       - "traefik.http.routers.workshop-frontend.middlewares=security-headers@file,gzip-compress@file"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 secrets:
   mysql_root_password:
