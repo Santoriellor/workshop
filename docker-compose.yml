@@ -46,8 +46,6 @@ services:
     env_file:
       - /srv/secrets/workshop/back.env
     environment:
-      MYSQL_USER_FILE: /run/secrets/mysql_user
-      MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
       IS_DOCKER: "True"
     depends_on:
       mysql:
