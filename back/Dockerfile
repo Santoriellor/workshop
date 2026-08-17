@@ -49,8 +49,11 @@ RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 # the first on every start, and uploads go to the second. Both are named
 # volumes, whose existing ownership is fixed separately in Step 5 - chowning
 # here only covers the image, and a pre-existing volume masks it.
-RUN groupadd --gid 1000 app \
-    && useradd --uid 1000 --gid 1000 --no-create-home --shell /usr/sbin/nologin app \
+# getent guards: these base images already ship a default user at uid/gid 1000,
+# so a bare groupadd/useradd exits non-zero and fails the build. The numeric
+# uid is what matters - /app must be owned by 1000 either way.
+RUN (getent group 1000 || groupadd --gid 1000 app) \
+    && (getent passwd 1000 || useradd --uid 1000 --gid 1000 --no-create-home --shell /usr/sbin/nologin app) \
     && mkdir -p /backend/staticfiles /backend/media \
     && chown -R 1000:1000 /backend
 
