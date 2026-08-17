@@ -5,7 +5,11 @@ WORKDIR /frontend
 # Use .dockerignore to skip node_modules, .git, build artifacts
 
 COPY front/package*.json ./
-RUN npm install --legacy-peer-deps
+# ci, not install: install can silently resolve to newer transitive versions
+# than package-lock.json records, so two builds of the same commit can differ.
+# --legacy-peer-deps is retained - this tree has peer conflicts that npm 7+
+# treats as fatal without it.
+RUN npm ci --legacy-peer-deps
 
 COPY front/ .
 COPY front/.env .env

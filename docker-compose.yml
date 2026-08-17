@@ -15,7 +15,10 @@ services:
       MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
     volumes:
       - mysql_volume:/var/lib/mysql
-      - ./mysql/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+      # :ro - the container has no reason to write to a seed script, and a
+      # writable mount here means a compromised mysqld can alter what runs on
+      # the next initialisation.
+      - ./mysql/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
     networks:
       - internal
 
