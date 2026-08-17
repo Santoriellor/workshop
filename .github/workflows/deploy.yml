@@ -5,7 +5,83 @@ on:
     branches: ["main"]    # or master
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          # CI-only throwaway values. Not secrets: this database exists for the
+          # duration of one job and is reachable only from it.
+          MYSQL_ROOT_PASSWORD: ci-root-password
+          MYSQL_DATABASE: workshop_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -uroot -pci-root-password --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+
+      - name: Install backend system dependencies
+        run: |
+          sudo apt-get update -qq
+          # WeasyPrint/reportlab need these; mysqlclient needs the MariaDB dev
+          # headers and pkg-config to compile.
+          sudo apt-get install -y -qq \
+            gcc pkg-config libmariadb-dev \
+            libpango-1.0-0 libpangocairo-1.0-0 libcairo2 \
+            libgdk-pixbuf-2.0-0 libglib2.0-0 libffi-dev libssl-dev
+
+      - name: Install backend Python dependencies
+        working-directory: back
+        run: pip install -r requirements.txt
+
+      - name: Run backend tests
+        working-directory: back
+        env:
+          DJANGO_SETTINGS_MODULE: backend.settings
+          DJANGO_SECRET_KEY: ci-only-key-not-used-in-production
+          MYSQL_DATABASE: workshop_db
+          MYSQL_USER: root
+          MYSQL_PASSWORD: ci-root-password
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_PORT: '3306'
+          ALLOWED_HOSTS: localhost,127.0.0.1
+          CORS_ALLOWED_ORIGINS: http://localhost
+          STATIC_ROOT: ${{ runner.temp }}/staticfiles
+          MEDIA_ROOT: ${{ runner.temp }}/media
+        run: python -m pytest -q
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      - name: Install frontend dependencies
+        working-directory: front
+        run: npm ci --legacy-peer-deps
+
+      - name: Run frontend tests
+        working-directory: front
+        run: npx vitest run
+
   deploy:
+    needs: test
+    # Guard the branch here, not only in the workflow trigger. Step 4 below
+    # temporarily adds this branch to `on:` so the test job can be exercised
+    # before merging - without this condition, that would deploy a feature
+    # branch to production.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:

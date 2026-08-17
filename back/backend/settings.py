@@ -24,18 +24,33 @@ MYSQL_HOST = os.getenv('MYSQL_HOST')
 # Path to the secrets directory (../secrets)
 SECRETS_DIR = Path("/run/secrets")
 
-def read_secret(filename, default=None):
+def read_secret(filename, default=None, env=None):
+    """Resolve a secret from the environment, then the Docker secrets mount.
+
+    Production mounts Docker secrets at /run/secrets and sets none of these
+    environment variables, so it still reads the files. The env fallback
+    exists so CI and local development can run without a secrets mount -
+    without it the test suite cannot even import settings.
+    """
+    if env:
+        value = os.getenv(env)
+        if value:
+            return value
     try:
         return (SECRETS_DIR / filename).read_text().strip()
     except FileNotFoundError:
         if default is not None:
             return default
-        raise Exception(f"Secret file {filename} not found in {SECRETS_DIR}")
+        raise Exception(
+            f"Secret {filename} not found: set ${env} or mount {SECRETS_DIR / filename}"
+            if env else
+            f"Secret file {filename} not found in {SECRETS_DIR}"
+        )
 
 
-DJANGO_SECRET_KEY = read_secret("django_secret_key")
-MYSQL_USER = read_secret("mysql_user")
-MYSQL_PASSWORD = read_secret("mysql_password")
+DJANGO_SECRET_KEY = read_secret("django_secret_key", env="DJANGO_SECRET_KEY")
+MYSQL_USER = read_secret("mysql_user", env="MYSQL_USER")
+MYSQL_PASSWORD = read_secret("mysql_password", env="MYSQL_PASSWORD")
 
 # Load environment variables from the .env file
 load_dotenv(os.path.join(BASE_DIR, '.env'))
@@ -170,8 +185,12 @@ USE_TZ = True
 STATIC_URL = '/static_django/'
 
 # In production
-STATIC_ROOT = '/backend/staticfiles'
-MEDIA_ROOT = '/backend/media'
+# Absolute container paths by default - /backend is the image WORKDIR and the
+# mount point for the staticfiles and media volumes. Overridable so the test
+# suite can run outside a container, where /backend does not exist and cannot
+# be created. Production sets neither variable and therefore keeps these values.
+STATIC_ROOT = os.getenv('STATIC_ROOT', '/backend/staticfiles')
+MEDIA_ROOT = os.getenv('MEDIA_ROOT', '/backend/media')
 
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
