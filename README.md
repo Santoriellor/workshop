@@ -1,3 +1,5 @@
+[![CI](https://github.com/Santoriellor/workshop/actions/workflows/deploy.yml/badge.svg)](https://github.com/Santoriellor/workshop/actions/workflows/deploy.yml)
+
 # Workshop Web Application (Dockerized)
 
 This is a full-stack Job Card management app with:
