@@ -43,4 +43,17 @@ EXPOSE 8000
 # Copy and set entrypoint script
 COPY back/entrypoint.sh ./entrypoint.sh
 RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
+
+# Run unprivileged. Gunicorn binds 8000, above 1024, so no capability is
+# needed. staticfiles/ and media/ must be writable: collectstatic writes to
+# the first on every start, and uploads go to the second. Both are named
+# volumes, whose existing ownership is fixed separately in Step 5 - chowning
+# here only covers the image, and a pre-existing volume masks it.
+RUN groupadd --gid 1000 app \
+    && useradd --uid 1000 --gid 1000 --no-create-home --shell /usr/sbin/nologin app \
+    && mkdir -p /backend/staticfiles /backend/media \
+    && chown -R 1000:1000 /backend
+
+USER 1000:1000
+
 ENTRYPOINT ["./entrypoint.sh"]
