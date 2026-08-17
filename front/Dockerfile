@@ -15,11 +15,11 @@ COPY front/ .
 COPY front/.env .env
 RUN npm run build
 
-# Stage 2: nginx
-FROM nginx:alpine
+# Stage 2: nginx, unprivileged (uid 101, listens on 8080)
+FROM nginxinc/nginx-unprivileged:1.29-alpine
 # Put the nginx vhost config where nginx will load it by default
 COPY ./nginx/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=frontend_build /frontend/build /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
