@@ -106,6 +106,7 @@ jobs:
         run: |
           rsync -avz \
             --exclude ".git" \
+            --exclude ".github" \
             --exclude "node_modules" \
             --exclude "__pycache__" \
             ./ "$VPS_USER@$VPS_HOST:$VPS_DEPLOY_PATH/"
@@ -118,7 +119,7 @@ jobs:
         run: |
           ssh "$VPS_USER@$VPS_HOST" "
             set -e
-            cd $VPS_DEPLOY_PATH
+            cd '$VPS_DEPLOY_PATH'
             docker compose build --no-cache
             docker compose up -d
           "
