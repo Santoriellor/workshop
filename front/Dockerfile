@@ -1,5 +1,5 @@
 # Stage 1: build React
-FROM node:lts-alpine AS frontend_build
+FROM node:20-alpine AS frontend_build
 WORKDIR /frontend
 
 # Use .dockerignore to skip node_modules, .git, build artifacts
