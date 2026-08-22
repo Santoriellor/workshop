@@ -11,9 +11,9 @@ the backend service, so nothing on the deployment host has to be edited.
 
 import os
 
-_ENV = os.getenv('DJANGO_ENV', 'development').strip().lower()
+_ENV = os.getenv("DJANGO_ENV", "development").strip().lower()
 
-if _ENV == 'production':
+if _ENV == "production":
     from .production import *  # noqa: F401,F403
 else:
     from .development import *  # noqa: F401,F403

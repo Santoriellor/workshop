@@ -35,9 +35,7 @@ class ListQueryCountTests(APITestCase):
         self.owner = Owner.objects.create(
             first_name="Ada", last_name="Lovelace", email="ada@example.com"
         )
-        self.template = TaskTemplate.objects.create(
-            name="Oil change", price=Decimal("50.00")
-        )
+        self.template = TaskTemplate.objects.create(name="Oil change", price=Decimal("50.00"))
         self.item = Inventory.objects.create(
             name="Oil filter",
             reference_code="OF-1",
@@ -56,9 +54,7 @@ class ListQueryCountTests(APITestCase):
             year=2015,
             license_plate=f"QC-{self.serial}",
         )
-        report = Report.objects.create(
-            vehicle=vehicle, user=self.user, status="completed"
-        )
+        report = Report.objects.create(vehicle=vehicle, user=self.user, status="completed")
         Task.objects.create(report=report, task_template=self.template)
         Part.objects.create(report=report, part=self.item, quantity_used=Decimal("2.00"))
         return report
@@ -89,9 +85,7 @@ class ListQueryCountTests(APITestCase):
         one = self.count_queries(reverse("invoice-list"))
 
         for index in range(2, 6):
-            Invoice.objects.create(
-                invoice_number=f"INV-{index}", report=self.build_report()
-            )
+            Invoice.objects.create(invoice_number=f"INV-{index}", report=self.build_report())
         five = self.count_queries(reverse("invoice-list"))
 
         self.assertEqual(

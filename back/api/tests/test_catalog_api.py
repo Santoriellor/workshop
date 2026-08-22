@@ -144,9 +144,7 @@ class InvoiceEndpointTests(APITestCase):
         vehicle = Vehicle.objects.create(
             owner=owner, brand="Audi", model="A3", year=2015, license_plate="INV-1"
         )
-        self.report = Report.objects.create(
-            vehicle=vehicle, user=self.user, status="completed"
-        )
+        self.report = Report.objects.create(vehicle=vehicle, user=self.user, status="completed")
         template = TaskTemplate.objects.create(name="Oil change", price=Decimal("50.00"))
         Task.objects.create(report=self.report, task_template=template)
         item = Inventory.objects.create(
@@ -159,9 +157,7 @@ class InvoiceEndpointTests(APITestCase):
         # Created directly rather than by exporting the report: this test is
         # about the read contract, and rendering the PDF is slow and already
         # covered by test_reportviewset.test_update_triggers_invoice.
-        self.invoice = Invoice.objects.create(
-            invoice_number="INV-000001", report=self.report
-        )
+        self.invoice = Invoice.objects.create(invoice_number="INV-000001", report=self.report)
 
     def test_list_returns_a_bare_array(self):
         response = self.client.get(reverse("invoice-list"))

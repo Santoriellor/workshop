@@ -37,7 +37,7 @@ const Register = () => {
       const query = new URLSearchParams({ [field]: value })
       const { data } = await axiosInstance.get(`/users/check_availability/?${query}`)
       return data[`${field}_taken`] ? `${field} is already taken` : ''
-    } catch (err) {
+    } catch {
       return `Error checking ${field}`
     }
   }

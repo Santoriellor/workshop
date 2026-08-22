@@ -71,9 +71,7 @@ class PublicRouteTests(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(
-            response.data, {"message": "User registered successfully"}
-        )
+        self.assertEqual(response.data, {"message": "User registered successfully"})
         self.assertTrue(
             User.objects.filter(email="publicuser@example.com", username="publicuser").exists()
         )

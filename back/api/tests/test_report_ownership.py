@@ -52,9 +52,7 @@ class ReportAttributionTests(APITestCase):
         self.assertEqual(report.user_id, self.author.id)
 
     def test_an_update_cannot_reattribute_an_existing_report(self):
-        report = Report.objects.create(
-            vehicle=self.vehicle, user=self.author, status="pending"
-        )
+        report = Report.objects.create(vehicle=self.vehicle, user=self.author, status="pending")
         response = self.client.patch(
             reverse("report-detail", kwargs={"pk": report.pk}),
             {

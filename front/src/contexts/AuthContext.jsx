@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${token}` },
       })
       setAuthenticatedUser(response.data)
-    } catch (error) {
+    } catch {
       //console.error('Failed to fetch user data:', error)
       logout() // Log out if the token is invalid
     }

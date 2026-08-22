@@ -12,23 +12,23 @@ from .base import csv_env
 # pages, whatever DEBUG happens to be set to in back.env.
 DEBUG = False
 
-ALLOWED_HOSTS = csv_env('ALLOWED_HOSTS')
-CORS_ALLOWED_ORIGINS = csv_env('CORS_ALLOWED_ORIGINS')
+ALLOWED_HOSTS = csv_env("ALLOWED_HOSTS")
+CORS_ALLOWED_ORIGINS = csv_env("CORS_ALLOWED_ORIGINS")
 
 # traefik terminates TLS and forwards over plain HTTP on the internal network,
 # so without this Django believes every request is insecure and would refuse to
 # set secure cookies.
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_REFERRER_POLICY = 'same-origin'
+SECURE_REFERRER_POLICY = "same-origin"
 
 # The Django admin posts forms; those origins must be trusted by name under
 # Django 4+. Derived from ALLOWED_HOSTS so there is one list to maintain.
-CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in ALLOWED_HOSTS if '.' in host]
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if "." in host]
 
 # Deliberately NOT set here:
 #   SECURE_SSL_REDIRECT  - traefik already redirects the web entrypoint to

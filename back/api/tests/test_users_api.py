@@ -15,7 +15,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from api.tests.helpers import DEFAULT_PASSWORD, authenticate, make_user
+from api.tests.helpers import authenticate, make_user
 
 
 class AnonymousUserEndpointTests(APITestCase):
@@ -42,16 +42,12 @@ class AnonymousUserEndpointTests(APITestCase):
                 self.assertNotIn("ada@example.com", response.content.decode())
 
     def test_check_availability_stays_public(self):
-        response = self.client.get(
-            reverse("user-check-availability") + "?username=ada"
-        )
+        response = self.client.get(reverse("user-check-availability") + "?username=ada")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data["username_taken"])
 
     def test_check_availability_reports_a_free_email(self):
-        response = self.client.get(
-            reverse("user-check-availability") + "?email=nobody@example.com"
-        )
+        response = self.client.get(reverse("user-check-availability") + "?email=nobody@example.com")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(response.data["email_taken"])
 
@@ -80,7 +76,5 @@ class AuthenticatedUserEndpointTests(APITestCase):
         self.assertNotIn("password", response.data)
 
     def test_the_endpoint_is_read_only(self):
-        response = self.client.delete(
-            reverse("user-detail", kwargs={"pk": self.user.pk})
-        )
+        response = self.client.delete(reverse("user-detail", kwargs={"pk": self.user.pk}))
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)

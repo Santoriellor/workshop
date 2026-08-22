@@ -15,17 +15,15 @@ class OptionalPaginationMixin:
     paginator is constructed directly instead.
     """
 
-    default_ordering = 'id'
+    default_ordering = "id"
 
     def list(self, request, *args, **kwargs):
-        ordering = request.query_params.get('ordering', self.default_ordering)
-        queryset = self.filter_queryset(self.get_queryset()).order_by(*ordering.split(','))
+        ordering = request.query_params.get("ordering", self.default_ordering)
+        queryset = self.filter_queryset(self.get_queryset()).order_by(*ordering.split(","))
 
-        if request.query_params.get('limit') or request.query_params.get('offset'):
+        if request.query_params.get("limit") or request.query_params.get("offset"):
             paginator = CustomPagination()
             page = paginator.paginate_queryset(queryset, request)
-            return paginator.get_paginated_response(
-                self.get_serializer(page, many=True).data
-            )
+            return paginator.get_paginated_response(self.get_serializer(page, many=True).data)
 
         return Response(self.get_serializer(queryset, many=True).data)

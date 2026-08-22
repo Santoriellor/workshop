@@ -30,9 +30,7 @@ const Probe = () => {
   const { authenticatedUser, loadingAuth, login, logout } = useAuth()
   return (
     <div>
-      <span data-testid="user">
-        {authenticatedUser ? authenticatedUser.username : 'anonymous'}
-      </span>
+      <span data-testid="user">{authenticatedUser ? authenticatedUser.username : 'anonymous'}</span>
       <span data-testid="loading">{String(loadingAuth)}</span>
       <button onClick={() => login('ada@example.com', 'pw')}>do-login</button>
       <button onClick={() => logout()}>do-logout</button>

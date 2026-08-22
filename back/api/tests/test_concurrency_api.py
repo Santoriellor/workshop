@@ -67,9 +67,7 @@ from rest_framework.test import APITestCase
 from api.models import Inventory, Owner, Report, TaskTemplate, Vehicle
 from api.tests.helpers import authenticate, make_user
 
-MISSING_BODY = {
-    "non_field_errors": ["Missing 'updated_at' field for concurrency check."]
-}
+MISSING_BODY = {"non_field_errors": ["Missing 'updated_at' field for concurrency check."]}
 MALFORMED_BODY = {"non_field_errors": ["Invalid timestamp format."]}
 
 
@@ -95,9 +93,7 @@ class ConcurrencyContractTests(APITestCase):
             quantity_in_stock=20,
             unit_price=15,
         )
-        self.report = Report.objects.create(
-            vehicle=self.vehicle, user=self.user, status="pending"
-        )
+        self.report = Report.objects.create(vehicle=self.vehicle, user=self.user, status="pending")
 
     # ---- owners ----
 
@@ -129,10 +125,7 @@ class ConcurrencyContractTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(
             response.data,
-            {
-                "detail": "This owner has been modified by someone else. "
-                "Please refresh."
-            },
+            {"detail": "This owner has been modified by someone else. " "Please refresh."},
         )
 
     def test_owner_update_with_the_current_updated_at_succeeds(self):
@@ -178,10 +171,7 @@ class ConcurrencyContractTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(
             response.data,
-            {
-                "detail": "This vehicle has been modified by someone else. "
-                "Please refresh."
-            },
+            {"detail": "This vehicle has been modified by someone else. " "Please refresh."},
         )
 
     def test_vehicle_update_with_the_current_updated_at_succeeds(self):
@@ -215,10 +205,7 @@ class ConcurrencyContractTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(
             response.data,
-            {
-                "detail": "This task template has been modified by someone "
-                "else. Please refresh."
-            },
+            {"detail": "This task template has been modified by someone " "else. Please refresh."},
         )
 
     def test_task_template_update_with_the_current_updated_at_succeeds(self):
@@ -252,10 +239,7 @@ class ConcurrencyContractTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(
             response.data,
-            {
-                "detail": "This inventory part has been modified by someone "
-                "else. Please refresh."
-            },
+            {"detail": "This inventory part has been modified by someone " "else. Please refresh."},
         )
 
     def test_inventory_update_with_the_current_updated_at_succeeds(self):
@@ -293,10 +277,7 @@ class ConcurrencyContractTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(
             response.data,
-            {
-                "detail": "This report has been modified by someone else. "
-                "Please refresh."
-            },
+            {"detail": "This report has been modified by someone else. " "Please refresh."},
         )
 
     def test_report_update_with_the_current_updated_at_succeeds(self):
