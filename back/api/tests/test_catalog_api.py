@@ -1,11 +1,20 @@
 """
 Characterization tests for the inventory, task-template and invoice endpoints.
 
-Three viewsets set `pagination_class = None` and then hand-roll pagination in
-`list()`: they return a bare array unless the caller sends `limit` or `offset`,
-in which case they return the LimitOffsetPagination envelope with a default page
-of five. Task 12 collapses those three copies into one mixin; these tests are
-what proves the collapse changed nothing.
+Inventory and Invoice each set `pagination_class = None` and hand-roll
+pagination in `list()`: they return a bare array unless the caller sends
+`limit` or `offset`, in which case they switch to `CustomPagination`
+(`LimitOffsetPagination` with `default_limit = 5`) and return the envelope
+`{count, next, previous, results}`. Task 12 collapses those two copies into
+one mixin; these tests are what proves the collapse changed nothing.
+
+TaskTemplate has no `list()` override and no `pagination_class` of its own,
+so it falls through to the project-wide `DEFAULT_PAGINATION_CLASS`
+(`LimitOffsetPagination` with no `PAGE_SIZE` configured in settings) rather
+than sharing Inventory/Invoice's hand-rolled branch — its envelope trigger
+semantics differ and are deliberately left unpinned here, because Task 12's
+plan only touches the Report/Inventory/Invoice `list()` overrides and never
+touches `TaskTemplateViewSet`.
 """
 
 from decimal import Decimal
@@ -53,8 +62,7 @@ class InventoryEndpointTests(APITestCase):
     def test_limit_switches_the_response_to_the_pagination_envelope(self):
         response = self.client.get(reverse("inventory-list") + "?limit=3")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("count", response.data)
-        self.assertIn("results", response.data)
+        self.assertEqual(set(response.data.keys()), {"count", "next", "previous", "results"})
         self.assertEqual(response.data["count"], 7)
         self.assertEqual(len(response.data["results"]), 3)
 
@@ -181,5 +189,5 @@ class InvoiceEndpointTests(APITestCase):
 
     def test_limit_switches_the_response_to_the_pagination_envelope(self):
         response = self.client.get(reverse("invoice-list") + "?limit=1")
-        self.assertIn("results", response.data)
+        self.assertEqual(set(response.data.keys()), {"count", "next", "previous", "results"})
         self.assertEqual(response.data["count"], 1)
