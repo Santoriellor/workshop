@@ -112,3 +112,29 @@ class ListQueryCountTests(APITestCase):
         row = self.client.get(reverse("invoice-list")).data[0]
         self.assertEqual(row["owner_full_name"], "Ada Lovelace")
         self.assertEqual(row["vehicle_plate"], "QC-1")
+
+    def test_updating_a_report_costs_a_constant_number_of_queries(self):
+        """A PATCH must not fetch the report a second time through the
+        eager-loaded queryset. ReportViewSet.get_object() costs a
+        select_related join plus two prefetch_related queries, so calling
+        it twice per update would add three unnecessary queries every time
+        a report is edited.
+        """
+        report = self.build_report()
+        url = reverse("report-detail", kwargs={"pk": report.pk})
+        data = {"status": "in_progress", "updated_at": report.updated_at}
+
+        with CaptureQueriesContext(connection) as captured:
+            response = self.client.patch(url, data, format="json")
+            self.assertEqual(response.status_code, 200)
+
+        # 7 queries for a single get_object() (select_related join plus two
+        # prefetch_related queries) followed by validation and the save.
+        # Before the fix, ReportViewSet.update() called get_object() a second
+        # time, adding the join and both prefetches again for 11 total.
+        self.assertEqual(
+            len(captured),
+            7,
+            f"updating a report cost {len(captured)} queries; ReportViewSet.update "
+            "must call get_object() only once",
+        )

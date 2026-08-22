@@ -207,16 +207,21 @@ class ReportViewSet(OptionalPaginationMixin, viewsets.ModelViewSet):
         """Attribute a new report to whoever is making the request."""
         serializer.save(user=self.request.user)
 
+    def perform_update(self, serializer):
+        """Capture the pre-save status off the serializer's already-loaded
+        instance, rather than a second get_object() call - on this viewset
+        get_object() also re-runs the select_related/prefetch_related from
+        the class-level queryset, so a second call is not free."""
+        self._previous_status = serializer.instance.status
+        self._updated_instance = serializer.instance
+        super().perform_update(serializer)
+
     def update(self, request, *args, **kwargs):
         """Update the report, and generate an invoice the first time it is exported."""
-        instance = self.get_object()
-        previous_status = instance.status
-
         response = super().update(request, *args, **kwargs)
 
-        instance.refresh_from_db()
-        if previous_status != 'exported' and instance.status == 'exported':
-            generate_invoice(instance, request)
+        if self._previous_status != 'exported' and self._updated_instance.status == 'exported':
+            generate_invoice(self._updated_instance, request)
 
         return response
 
