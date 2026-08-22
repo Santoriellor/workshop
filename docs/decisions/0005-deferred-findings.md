@@ -3,8 +3,8 @@
 ## Status
 
 Living document. Started during the documentation phase (Task 1) of the
-`2026-08-22-workshop-refactor` plan; appended to by Tasks 8, 10, 12, 13, 14
-and 16 as they run.
+`2026-08-22-workshop-refactor` plan; any task in the plan may append a
+finding as it runs.
 
 ## Purpose
 
@@ -71,4 +71,16 @@ cycle entirely.
   isolated formatter-sweep commit; that lands in this cycle's refactor phase,
   not the documentation phase.
 
-<!-- Tasks 8, 10, 12, 13, 14 and 16 append their own entries below this line. -->
+### Found during Task 2 — dependency findings, owned by Task 14
+
+- **27 npm advisories in transitive frontend dependencies.** `npm audit`
+  against `front/` reports 27 advisories, all in transitive packages rather
+  than direct dependencies. Not fixed in this cycle; Task 14 owns dependency
+  changes.
+- **`@vitest/coverage-c8@^0.33.0` conflicts with `vitest@^3.1.3`.** The
+  pinned coverage package's peer dependency range does not accept the pinned
+  `vitest` major version, so both CI and local installs must run
+  `npm ci --legacy-peer-deps` to work around the mismatch instead of a clean
+  `npm ci`. Recorded rather than fixed here; Task 14 owns dependency changes.
+
+<!-- Any task in the plan may append its own entries below this line. -->
