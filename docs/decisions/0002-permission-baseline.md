@@ -2,11 +2,22 @@
 
 ## Status
 
-Partially implemented. The specific defect described below has already been
-fixed and deployed, ahead of this refactor cycle. The general pattern change
-(every viewset declaring its own permissions explicitly, public access
-granted per-action) is implemented by a later task in this cycle (Task 7 of
-the `2026-08-22-workshop-refactor` plan).
+Implemented. The specific defect described below was fixed and deployed
+ahead of this refactor cycle, on 2026-08-22, because it was live on
+`workshop.santoriello.ch` and this plan had it queued behind six other
+tasks — it could not wait for its originally-scheduled slot (Task 7).
+Task 7 was amended in place: rather than re-implement a fix that had
+already shipped, it closed the test gap the out-of-band fix left behind.
+The out-of-band fix landed with five tests in
+`back/api/tests/test_user_endpoint_permissions.py`; Task 7 replaced that
+file with the full ten-test set specified for it in
+`back/api/tests/test_users_api.py` (the repo's `test_<thing>_api.py`
+convention, which the hurried file did not follow) and removed the old
+file once every case it covered was present in the new one. The general
+pattern change described below (every viewset declaring its own
+permissions explicitly, public access granted per-action) was already in
+place across `back/api/views.py` by the time Task 7 ran; see "Current
+state".
 
 ## Context
 
@@ -68,7 +79,13 @@ project-wide, not merely a mistake that was fixed once.
 
 ## Consequences
 
-Later tasks in this refactor cycle apply this pattern consistently and add a
-characterization test asserting the corrected boundary for every viewset (per
-Spec D8, since this is a security-motivated behaviour change, it is asserted
-as corrected behaviour, not pinned as current behaviour).
+`back/api/tests/test_users_api.py` (Task 7) asserts the corrected boundary
+for `UserViewSet` specifically — including the five cases the out-of-band
+fix's tests did not cover: that no email leaks into an anonymous response
+body, that `check_availability` reports a free email correctly, that no
+list row carries a `password` field, that `me` returns the caller's own
+identity, and that the endpoint rejects writes with 405 (it is a
+`ReadOnlyModelViewSet`). Later tasks in this refactor cycle apply the same
+per-viewset characterization to the rest of `back/api/views.py` (per Spec
+D8, since this is a security-motivated behaviour change, it is asserted as
+corrected behaviour, not pinned as current behaviour).
