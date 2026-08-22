@@ -13,6 +13,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from api.models import User
 from api.tests.helpers import DEFAULT_PASSWORD, authenticate, make_user
 
 
@@ -70,6 +71,12 @@ class PublicRouteTests(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.data, {"message": "User registered successfully"}
+        )
+        self.assertTrue(
+            User.objects.filter(email="publicuser@example.com", username="publicuser").exists()
+        )
 
     def test_register_rejects_a_duplicate_email(self):
         make_user(email="dupe@example.com", username="dupe1")

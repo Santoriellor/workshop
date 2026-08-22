@@ -6,6 +6,8 @@ from decimal import Decimal
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.dateformat import format
 from django.utils.timezone import now
 from .models import (
@@ -60,6 +62,27 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'password']
         extra_kwargs = {'password': {'write_only': True}}
+
+    def validate(self, attrs):
+        """Run AUTH_PASSWORD_VALIDATORS, which create_user does not.
+
+        Django applies these validators from its auth forms, not from the model
+        manager, so a serializer that calls create_user directly bypasses every
+        one of them. The throwaway User instance gives
+        UserAttributeSimilarityValidator something to compare against; it is
+        never saved.
+        """
+        password = attrs.get('password')
+        if password:
+            candidate = User(
+                username=attrs.get('username', ''),
+                email=attrs.get('email', ''),
+            )
+            try:
+                validate_password(password, candidate)
+            except DjangoValidationError as exc:
+                raise serializers.ValidationError({'password': list(exc.messages)})
+        return attrs
 
     def create(self, validated_data):
         user = User.objects.create_user(

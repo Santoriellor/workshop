@@ -91,3 +91,16 @@ cycle entirely.
   as of the ownership fix, but the field and the client-side required check
   that depends on it were left in place; removing them touches the form hook,
   the modal state and the validation list for no behavioural gain.
+
+### Found during Task 9
+
+- **Frontend password strength checks are commented out.**
+  `front/src/utils/validation.js:52-60` has the real strength checks disabled;
+  `isValidPassword` currently only requires one lowercase letter. Task 9 makes
+  the backend the enforcement point — `AUTH_PASSWORD_VALIDATORS` now runs via
+  `UserSerializer.validate`, so a weak password is rejected with a 400 no
+  matter what the client sends — but the client itself still won't tell a user
+  their password is weak until they submit and get that 400 back. Restoring
+  the frontend checks so the mismatch between what the UI accepts and what the
+  API accepts is caught earlier is Task 13's responsibility; not touched here
+  per this task's constraints.
