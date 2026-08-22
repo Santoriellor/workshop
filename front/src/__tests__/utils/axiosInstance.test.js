@@ -109,4 +109,23 @@ describe('axiosInstance', () => {
     expect(refreshToken).not.toHaveBeenCalled()
     expect(logout).not.toHaveBeenCalled()
   })
+
+  it('does not loop when the replayed request is also rejected', async () => {
+    refreshToken.mockResolvedValue('fresh-token')
+
+    let calls = 0
+    axiosInstance.defaults.adapter = async (config) => {
+      calls += 1
+      if (calls > 5) {
+        throw new Error('the interceptor looped')
+      }
+      return Promise.reject({ response: { status: 401 }, config })
+    }
+
+    await expect(axiosInstance.get('/owners/')).rejects.toBeTruthy()
+
+    expect(calls).toBe(2)
+    expect(refreshToken).toHaveBeenCalledTimes(1)
+    expect(logout).toHaveBeenCalledTimes(0)
+  })
 })

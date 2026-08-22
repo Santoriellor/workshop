@@ -49,8 +49,17 @@ export const isTakenEmail = (email, existingEmails) => {
 
 export const isValidPassword = (password) => {
   if (password.length === 0) return ''
-  /* if (password.length < 8)
-    return "Password must be at least 8 characters long."; */
+  // Django's AUTH_PASSWORD_VALIDATORS (back/backend/settings/base.py) is what the
+  // server actually enforces since Task 9: MinimumLengthValidator (default 8),
+  // CommonPasswordValidator, NumericPasswordValidator, and
+  // UserAttributeSimilarityValidator. Only the length floor is safely
+  // replicable here without duplicating Django's common-password wordlist or
+  // its username/email similarity check.
+  if (password.length < 8) return 'Password must be at least 8 characters long.'
+  // The checks below are deliberately left disabled: none of uppercase, digit,
+  // or special-character composition is required by AUTH_PASSWORD_VALIDATORS.
+  // Enabling them would make the client reject passwords the server accepts,
+  // which is worse than no check at all.
   /* if (!/[A-Z]/.test(password))
     return "Password must contain at least one uppercase letter."; */
   if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter.'
