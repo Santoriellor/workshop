@@ -66,10 +66,14 @@ cycle entirely.
   cannot remove a root-owned path without root access on the VPS. Cleaning it
   up requires an operator with root on the deployment host; it is not
   something this repository's tooling can do on its own.
-- **Nothing formats or lints the backend.** Only `front` has Prettier/ESLint
-  configured today. The estate spec's D4 introduces ruff for Python as an
-  isolated formatter-sweep commit; that lands in this cycle's refactor phase,
-  not the documentation phase.
+- ~~**Nothing formats or lints the backend.**~~ **Resolved by Task 15**, no
+  longer deferred. At the time this entry was written (Task 1, documentation
+  phase) only `front` had Prettier/ESLint configured. `ruff.toml` (repository
+  root) now lints and formats `back/`, `front/eslint.config.js` replaces the
+  removed `front/.eslintrc.js` under ESLint 9's flat-config format, and both
+  run as CI gates in `.github/workflows/deploy.yml` alongside the two test
+  suites. Left in place here, struck through rather than deleted, as a record
+  that the gap this entry originally flagged is now closed.
 
 ### Found during Task 2 — dependency findings, owned by Task 14
 
@@ -101,6 +105,47 @@ cycle entirely.
   because production serves the frontend from the same origin as the API and
   does not need it; `back/.env.example` already sets `http://localhost:3000` for
   the Vite dev server.
+- **`_ENV` lands in `django.conf.settings` as `settings._ENV`.**
+  `back/backend/settings/__init__.py` assigns `_ENV = os.getenv("DJANGO_ENV",
+  "development").strip().lower()` at module scope before selecting which
+  settings module to load. Django's `Settings.__init__` copies every
+  module-level name for which `name.isupper()` is true onto the settings
+  object — and `"_ENV".isupper()` is `True` in Python (leading underscores
+  are not cased characters, so `isupper()` only looks at the letters), so
+  `_ENV` is not filtered out the way a genuinely private helper would be.
+  The result is harmless — `settings._ENV` is just the lowercased environment
+  name, not a secret — but it is an accidental extra attribute on the
+  settings object, not a designed one.
+- **Production `CSRF_TRUSTED_ORIGINS` filters hosts on `'.' in host`.**
+  `back/backend/settings/production.py:31` builds it as
+  `[f"https://{host}" for host in ALLOWED_HOSTS if "." in host]`. Today
+  `ALLOWED_HOSTS` is `workshop.santoriello.ch`, which contains a dot and
+  produces the correct single entry. But if `ALLOWED_HOSTS` is ever widened
+  to a Django wildcard-subdomain entry such as `.santoriello.ch`, that entry
+  also contains a dot and would pass the filter unchanged, producing
+  `https://.santoriello.ch` — a leading-dot origin that does not match any
+  `Origin` header a real browser sends, so CSRF-protected POSTs from the
+  intended wildcard subdomains would fail even though `ALLOWED_HOSTS` itself
+  correctly permits the host. Not a live bug today; a latent one for the day
+  `ALLOWED_HOSTS` grows a wildcard entry.
+- **Production `CORS_ALLOWED_ORIGINS` unset now yields `[]` silently where it
+  previously crashed at import.** Before Task 10,
+  `os.getenv('CORS_ALLOWED_ORIGINS').split(',')` raised `AttributeError` the
+  moment the variable was unset, which — however unfriendly the error — meant
+  a misconfigured production deployment could not start at all and the
+  problem was impossible to miss. `csv_env()` replaced that with a graceful
+  default, but `production.py:16` calls `csv_env("CORS_ALLOWED_ORIGINS")`
+  with no default argument, so an unset variable now resolves quietly to
+  `CORS_ALLOWED_ORIGINS = []`. Django starts normally, the deploy looks
+  healthy, and every cross-origin request from the frontend is simply
+  rejected by CORS with no log line pointing at the cause. The loud-failure
+  guarantee that made this class of misconfiguration impossible to deploy
+  unnoticed is gone; catching it now depends on someone testing the frontend
+  against the deployed backend rather than the deploy itself failing. Fixing
+  it would mean giving `production.py` its own required-variable check (mirroring
+  `read_secret()`'s pattern) rather than reusing `csv_env()`'s permissive
+  default — out of scope for this cycle, which does not add new settings
+  validation.
 
 ### Found during Task 9
 
@@ -112,8 +157,38 @@ cycle entirely.
   matter what the client sends — but the client itself still won't tell a user
   their password is weak until they submit and get that 400 back. Restoring
   the frontend checks so the mismatch between what the UI accepts and what the
-  API accepts is caught earlier is Task 13's responsibility; not touched here
-  per this task's constraints.
+  API accepts is caught earlier was flagged as Task 13's responsibility.
+  **Update at Task 16:** Task 13 ran (it introduced the single HTTP client and
+  `useUserStore.updateUser`) and did not touch `validation.js`. The lowercase
+  requirement at `front/src/utils/validation.js:65`
+  (`if (!/[a-z]/.test(password))`) is still active today and is still
+  stricter than the backend: `AUTH_PASSWORD_VALIDATORS` has no lowercase
+  requirement, so the client rejects some passwords Django would accept. This
+  remains deferred, now beyond this plan entirely rather than pending a later
+  task in it.
+- **`MinimumLengthValidator` has no test password that isolates it.** Every
+  password in `test_registration_password.py` that is short enough to trip
+  `MinimumLengthValidator` (default: under 8 characters) is *also* on
+  Django's common-password list, so `CommonPasswordValidator` rejects it too
+  and the test cannot tell which validator actually fired. Confirmed
+  directly: `CommonPasswordValidator().validate("abc123")` — the password
+  used by `test_a_short_password_is_rejected` — raises on its own, before
+  length is even considered. This does not weaken the suite's claim that weak
+  passwords are rejected, only its claim about *which* validator is
+  responsible for rejecting each one.
+
+### Found during Task 13 — one HTTP client, `useUserStore.updateUser`
+
+- **`Register.jsx` double-navigates after a successful registration.**
+  `AuthContext.jsx`'s `register()` already calls `navigate('/login')` after
+  the success dialog (line 110) and returns `true`. `Register.jsx`'s
+  `handleSubmit` then does `if (isRegistered) { navigate('/login') }` (line
+  106) on that same `true`. Both calls target the same route, so this is
+  inert in practice — React Router does not error on a redundant `navigate`
+  to the current destination — but it is dead, confusing code: a reader
+  fixing either call site would reasonably expect it to be the only one.
+  Removing it is a one-line change but touches a component this task's scope
+  did not otherwise touch.
 
 ### Found during Task 14 — axios 0.27 → 1.x
 
@@ -182,7 +257,24 @@ cycle entirely.
   (`NO AXIOS ADVISORY`). 12 vulnerabilities remain (2 low, 10 high), all in
   `vite` and its `react-router`/`turbo-stream` dev-tooling transitive chain —
   none in axios or its dependents. Out of scope for this task (Spec D5 is
-  axios-only); left for a future dependency-hygiene pass.
+  axios-only); left for a future dependency-hygiene pass. Reconfirmed at
+  Task 16: `npm audit --omit=dev` against the current `package-lock.json`
+  still reports exactly 12 (2 low, 10 high), same packages.
+- **`typescript` and `@typescript-eslint/parser` were dropped from
+  `package-lock.json` during the axios install.** Neither is a direct
+  dependency; both used to appear as installed transitive packages (pulled in
+  by an ESLint plugin's optional peer) and no longer do after
+  `npm install --legacy-peer-deps` re-resolved the tree for the axios bump.
+  `package-lock.json` still lists them as *peer dependency ranges* several
+  ESLint packages declare (e.g. `"typescript": ">=4.8.4 <5.9.0"`), which is
+  just those packages documenting what they'd accept — there is no
+  `node_modules/typescript` or `node_modules/@typescript-eslint/parser` entry
+  in the lockfile any more. This is inert today because
+  `front/eslint.config.js` (Task 15) uses ESLint's default JavaScript parser,
+  not `@typescript-eslint/parser` — nothing in the config or the codebase
+  references either package. It would only matter if a future change adopted
+  TypeScript or the TypeScript ESLint parser, at which point both would need
+  to be added back as direct dependencies rather than assumed still present.
 
 ### Found during Task 12
 
@@ -195,6 +287,37 @@ cycle entirely.
   assign `response.data` straight into state, would store an object where an
   array is expected. Unifying this means changing the store contract as well as
   the API and is out of scope for this cycle.
+- **An empty `?ordering=` yields a 500, on all three `OptionalPaginationMixin`
+  endpoints.** `OptionalPaginationMixin.list()`
+  (`back/api/mixins.py:20-22`) does
+  `ordering = request.query_params.get("ordering", self.default_ordering)`
+  then `.order_by(*ordering.split(","))`. A caller who sends `?ordering=`
+  (present but empty, as opposed to omitted) gets `ordering = ""`, and
+  `"".split(",")` is `['']`, so the call becomes `.order_by('')`, which Django
+  raises `FieldError` on — an uncaught 500 for `ReportViewSet`,
+  `InventoryViewSet` and `InvoiceViewSet` alike. This bug predates Task 12 —
+  each viewset carried its own copy of the same logic before the mixin
+  consolidated them — but consolidating it means the fix, when it happens, is
+  now a single `if ordering:` guard in one place instead of three. Not fixed
+  here because Task 12's brief was consolidation, not new defect fixes.
+- **`ConcurrencyCheckMixin.validate` diverges from the pre-Task-12 code only
+  for a falsy-but-non-`None` `self.instance`.** The five serializers this
+  mixin replaced each wrote `if self.instance:` (truthiness); the mixin
+  (`back/api/serializers.py:43`) writes `if self.instance is None:`
+  (identity) with inverted logic. In DRF, `self.instance` is always either
+  `None` (create) or a saved model instance (update), and a model instance
+  with no `__bool__`/`__len__` override is always truthy, so the two forms
+  are behaviourally identical for every real case in this codebase. Recorded
+  because it is a genuine semantic change, not because it is reachable.
+- **Import audit for the ruff sweep (Spec D8 asked which imports survived
+  it):** `back/api/views.py`'s unused `import os` — flagged during Task 12's
+  characterization — no longer exists; ruff's `--fix` (the formatter-sweep
+  commit, `b0f43bb6`) removed it as an F401 violation. `back/api/serializers.py`
+  imports `os`, `datetime` and `Decimal` (plus `now` from
+  `django.utils.timezone`); all four are used
+  (`os.path.join`/`os.path.exists` at `serializers.py:397-398`,
+  `datetime.now().year` at `:186`, `Decimal(...)` at `:316` and `:351`, `now()`
+  at `:319` and `:354`), so ruff correctly left all four in place.
 
 ### Found during Task 15, corrected during Task 15 review
 
@@ -214,3 +337,56 @@ cycle entirely.
   reasoning the sibling memos at lines 42-49 already rely on for
   `vehicles`/`owners`. Corrected: the deps array is now
   `[item.user, users]`, and the per-file ESLint override has been removed.
+
+### Found during Task 16 — pre-existing domain findings, not touched this cycle
+
+These surfaced while re-reading `back/api/models.py` and `back/api/views.py`
+for the Task 16 documentation refresh. None are regressions introduced by
+this refactor; all predate it and remain exactly as found, per this task's
+"no application code" constraint.
+
+- **`Report.status` is an unconstrained `CharField` with `choices`, not a
+  `choices`-enforced value at the database level** (`back/api/models.py:109`).
+  Django validates `choices` in `full_clean()` and in `ModelForm`/DRF
+  serializer validation, but nothing stops a direct `.save()` (a migration, a
+  shell session, `bulk_create`) from writing an arbitrary string.
+  `ReportViewSet` (`back/api/views.py:240`) then compares `status` to the bare
+  literal `"exported"` twice on one line
+  (`self._previous_status != "exported" and self._updated_instance.status ==
+  "exported"`) rather than a named constant — so a typo'd status string would
+  silently never trigger invoice generation instead of raising anywhere.
+- **`Invoice.total_cost` recomputes from the report's tasks and parts on every
+  read** (`back/api/models.py:249-262`), rather than being stored at export
+  time. This means a historic, already-issued invoice's displayed total
+  changes if a `TaskTemplate.price` or `Inventory.unit_price` it referenced is
+  edited later — the PDF generated at export time is frozen, but the API
+  response for that same invoice is not. This is a domain-correctness bug
+  (an invoice should be immutable once issued), not a performance one, and
+  fixing it properly means storing the total at export time plus a migration
+  to backfill it for existing rows — out of scope for a documentation-only
+  task and not something this cycle's plan scoped in.
+- **A commented-out `total_cost` field lingers on `Invoice`**
+  (`back/api/models.py:243`): `""" total_cost = models.DecimalField(...) """`,
+  dead since the column was dropped in migration `0009` in favor of the
+  `@property` above it. Harmless, but a `git log`/`git blame` archaeology
+  session would answer the same question this comment is trying to.
+- **`Part.save()` has an `if`/`else` whose two branches are identical**
+  (`back/api/models.py:206-212`): both the `if previous_inventory ==
+  self.part:` branch and its `else` do exactly
+  `previous_inventory.quantity_in_stock += previous_part.quantity_used;
+  previous_inventory.save()`. The `else` branch's comment ("If changing
+  inventory item, restore the old one and update the new one") describes
+  intended behaviour the code does not actually implement differently from
+  the `if` branch — whatever divergent handling was meant for
+  "changed to a different inventory item mid-update" either was never
+  written or was written and then made identical by mistake. Not touched
+  here; behaviour is unchanged either way since both branches do the same
+  thing today.
+- **The `myapiapp` logger in `LOGGING`** (`back/backend/settings/base.py:255-259`)
+  does not correspond to any entry in `INSTALLED_APPS` — the custom app is
+  named `api`. Nothing in the codebase currently logs through a logger named
+  `myapiapp`, so the handler is configured but unused; a developer adding
+  `logging.getLogger(__name__)`-style logging inside `api/` and expecting the
+  `myapiapp` logger's `INFO` level and console handler to apply would be
+  surprised that it does not, since `__name__` inside `api/` resolves to
+  `api.<module>`, not `myapiapp.<module>`.
