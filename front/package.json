@@ -22,8 +22,8 @@
     "start": "vite",
     "build": "vite build",
     "test": "vitest",
-    "lint": "eslint . --ext js,jsx",
-    "lint:fix": "eslint . --ext js,jsx --fix"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "browserslist": {
     "production": [

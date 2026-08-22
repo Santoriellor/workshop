@@ -195,3 +195,16 @@ cycle entirely.
   assign `response.data` straight into state, would store an object where an
   array is expected. Unifying this means changing the store contract as well as
   the API and is out of scope for this cycle.
+
+### Found during Task 15
+
+- **`ReportCard.jsx`'s `userName` memo has a missing `react-hooks/exhaustive-deps`
+  dependency.** `getUserNameById` (`front/src/components/reports/ReportCard.jsx:37-39`)
+  closes over `users` and is redefined on every render; the `useMemo` at line 50
+  only lists `[item.user]`. ESLint's fix would be to add `getUserNameById` (or
+  `users`) to the dependency array, but since the function is a new reference
+  every render, that would make the memo recompute on every render — a
+  behaviour change, not a formatting one. Deferred rather than fixed; disabled
+  for this one file in `front/eslint.config.js` with a comment pointing here.
+  A real fix means wrapping `getUserNameById` in `useCallback` (or moving it
+  out of the component) and is out of scope for a formatting sweep.
