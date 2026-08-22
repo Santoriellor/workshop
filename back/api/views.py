@@ -90,15 +90,15 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = []
-    
+    permission_classes = [permissions.IsAuthenticated]
+
     @action(detail=False, methods=['get'])
     def me(self, request):
         """Returns the currently logged-in user"""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
-    
-    @action(detail=False, methods=["get"])
+
+    @action(detail=False, methods=["get"], permission_classes=[permissions.AllowAny])
     def check_availability(self, request):
         username = request.query_params.get("username")
         email = request.query_params.get("email")
