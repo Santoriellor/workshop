@@ -46,14 +46,14 @@ def read_secret(filename, default=None, env=None):
             return value
     try:
         return (SECRETS_DIR / filename).read_text().strip()
-    except FileNotFoundError:
+    except FileNotFoundError as exc:
         if default is not None:
             return default
         raise Exception(
             f"Secret {filename} not found: set ${env} or mount {SECRETS_DIR / filename}"
             if env
             else f"Secret file {filename} not found in {SECRETS_DIR}"
-        ) from None
+        ) from exc
 
 
 def csv_env(name, default=""):

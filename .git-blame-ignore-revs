@@ -1,4 +1,21 @@
 # Commits that only reformat. Enable with:
 #   git config blame.ignoreRevsFile .git-blame-ignore-revs
 # ruff, Prettier and ESLint 9 sweep, 2026-08-22
+#
+# NOTE: b0f43bb6 is formatting-first but not formatting-only. Ruff's --fix
+# also made 9 small, behaviour-preserving code changes while the sweep ran.
+# If you are trying to blame one of the lines below, the sweep commit is
+# where it actually happened - look there instead of skipping past it:
+#   back/api/management/commands/populate_db.py:15,19,22 - UP015, dropped
+#     the redundant "r" mode from open()
+#   back/api/serializers.py:52-53,131-132 - B904, added exception chaining
+#     ("raise ... from <exc>") on two bare raises inside except blocks
+#     (the isoparse site was later re-touched, see its own history)
+#   back/backend/settings/base.py:49-56 - B904, same as above, one site
+#     (also later re-touched, see its own history)
+#   back/api/tests/test_models.py:41 - F841, dropped an unused local variable
+#     assignment (the Part.objects.create() call itself is unchanged)
+#   front/src/components/authentication/Register.jsx:40 - dropped an unused
+#     `catch (err)` binding to `catch {}` (ES2019 optional catch binding)
+#   front/src/contexts/AuthContext.jsx:21 - same as above, `catch (error)`
 b0f43bb65ed642bcdc06c9460bbb75773988c105

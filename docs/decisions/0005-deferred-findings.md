@@ -196,15 +196,21 @@ cycle entirely.
   array is expected. Unifying this means changing the store contract as well as
   the API and is out of scope for this cycle.
 
-### Found during Task 15
+### Found during Task 15, corrected during Task 15 review
 
-- **`ReportCard.jsx`'s `userName` memo has a missing `react-hooks/exhaustive-deps`
-  dependency.** `getUserNameById` (`front/src/components/reports/ReportCard.jsx:37-39`)
-  closes over `users` and is redefined on every render; the `useMemo` at line 50
-  only lists `[item.user]`. ESLint's fix would be to add `getUserNameById` (or
-  `users`) to the dependency array, but since the function is a new reference
-  every render, that would make the memo recompute on every render — a
-  behaviour change, not a formatting one. Deferred rather than fixed; disabled
-  for this one file in `front/eslint.config.js` with a comment pointing here.
-  A real fix means wrapping `getUserNameById` in `useCallback` (or moving it
-  out of the component) and is out of scope for a formatting sweep.
+- **`ReportCard.jsx`'s `userName` memo was missing a `react-hooks/exhaustive-deps`
+  dependency, and was a live bug, not lint pedantry.** `getUserNameById`
+  (`front/src/components/reports/ReportCard.jsx:37-39`) closes over `users`
+  from `useUserStore`, which initialises to `[]` and is populated by an async
+  fetch. With the `useMemo` at line 50 listing only `[item.user]`, a card
+  mounted before that fetch resolved computed `'Unknown User'` once and never
+  recomputed after `users` arrived.
+
+  This was first misdiagnosed as "adding `users` would make the memo
+  recompute every render" and deferred by disabling
+  `react-hooks/exhaustive-deps` for the file in `front/eslint.config.js`. That
+  rationale was wrong: `users` is a store reference that only changes when
+  the fetch lands, not a fresh reference every render — exactly the same
+  reasoning the sibling memos at lines 42-49 already rely on for
+  `vehicles`/`owners`. Corrected: the deps array is now
+  `[item.user, users]`, and the per-file ESLint override has been removed.

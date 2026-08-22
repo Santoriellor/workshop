@@ -33,11 +33,6 @@ const ReportCard = ({ item, handleExportClick }) => {
   // Delete reports with alert
   const deleteReportWithAlert = withSuccessAlert(deleteReport, 'Report deleted successfully!')
 
-  // Get user name by user Id
-  const getUserNameById = (userId) => {
-    return users.find((user) => user.id === userId)?.username || 'Unknown User'
-  }
-
   // Memoized values
   const vehicleInfo = useMemo(
     () => getVehicleInfoByVehicleId(item.vehicle, vehicles),
@@ -47,7 +42,13 @@ const ReportCard = ({ item, handleExportClick }) => {
     () => getOwnerNameByVehicleId(item.vehicle, vehicles, owners),
     [item.vehicle, vehicles, owners],
   )
-  const userName = useMemo(() => getUserNameById(item.user), [item.user])
+  // Get user name by user Id - inlined into the memo so the lint rule can see
+  // every value it reads; a separate getUserNameById() reference is a new
+  // function every render and can't be listed as a stable dependency.
+  const userName = useMemo(
+    () => users.find((user) => user.id === item.user)?.username || 'Unknown User',
+    [item.user, users],
+  )
 
   // Open viewing modal
   const handleCardClick = (e) => {

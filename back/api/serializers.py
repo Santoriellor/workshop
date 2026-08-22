@@ -49,8 +49,8 @@ class ConcurrencyCheckMixin:
 
         try:
             client_parsed_updated_at = isoparse(client_updated_at)
-        except Exception:
-            raise ValidationError("Invalid timestamp format.") from None
+        except Exception as exc:
+            raise ValidationError("Invalid timestamp format.") from exc
 
         if abs((client_parsed_updated_at - self.instance.updated_at).total_seconds()) > 0.000001:
             raise ConflictException(

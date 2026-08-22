@@ -54,15 +54,4 @@ module.exports = [
       'no-console': 'off',
     },
   },
-  {
-    // getUserNameById reads `users` via closure and is redefined every
-    // render; adding it (or `users`) to the useMemo deps would make the
-    // memo recompute every render, which is a behaviour change this
-    // formatting pass must not make. Deferred - see
-    // docs/decisions/0005-deferred-findings.md, "Found during Task 15".
-    files: ['src/components/reports/ReportCard.jsx'],
-    rules: {
-      'react-hooks/exhaustive-deps': 'off',
-    },
-  },
 ]
