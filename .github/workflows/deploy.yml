@@ -104,7 +104,11 @@ jobs:
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH }}
         run: |
-          rsync -avz \
+          # --delete makes the server mirror the repo. Without it a renamed or removed
+          # file lingers forever: space-multi's deploy failed compiling a class and its
+          # rename side by side. Excluded paths are NOT deleted unless --delete-excluded
+          # is passed. Verified before enabling: this deploy path holds only source.
+          rsync -avz --delete \
             --exclude ".git" \
             --exclude ".github" \
             --exclude "node_modules" \
