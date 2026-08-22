@@ -3994,6 +3994,39 @@ git commit -m "docs: record the formatting tooling and gate it in CI"
 
 ### Task 16: Full verification and handover
 
+> **ADDED BEFORE EXECUTION — refresh the Phase A documentation.**
+>
+> The sibling space-multi cycle finished with two Medium findings at its final
+> review, both of the same species: the documentation written in Task 1 had gone
+> stale inside its own refactor. A later task renamed a class the docs still
+> described; another added a service to a package the docs still listed as
+> holding one class; and a comment claiming "the single error shape" stopped
+> being true when a different task fixed the error handler.
+>
+> That is a predictable consequence of documenting first, not an argument
+> against it — the docs are what made the later tasks specifiable. It just means
+> Phase A needs a revisit at the end, so add this before the handover step:
+>
+> Re-read `docs/architecture.md`, `docs/design.md`, `docs/technical.md`,
+> `docs/runbook.md` and the five ADRs against the tree as it now stands, and
+> correct every statement this cycle invalidated. Expect at least:
+>
+> - `back/backend/settings.py` is now a package (Task 10), selected by
+>   `DJANGO_ENV`; any doc describing a single settings module is wrong.
+> - `back/api/pagination.py` and `back/api/mixins.py` exist (Task 12); any
+>   module inventory omitting them is incomplete.
+> - `Report.user` is read-only and set from `request.user` (Task 8); registration
+>   now runs Django's password validators (Task 9). Docs describing either as a
+>   defect are describing a fixed one.
+> - the frontend has one HTTP client and `useUserStore.updateUser` (Task 13),
+>   and runs axios 1.x (Task 14).
+> - `ruff.toml`, `front/eslint.config.js` and the CI lint gates exist (Task 15);
+>   `front/.eslintrc.js` does not.
+>
+> Grep for the old names before declaring it done — a stale reference in prose
+> does not fail any test.
+
+
 **Files:**
 - Modify: `docs/decisions/0005-deferred-findings.md`
 
