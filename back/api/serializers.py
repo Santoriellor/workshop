@@ -254,7 +254,11 @@ class ReportSerializer(serializers.ModelSerializer):
     # Outgoing task and part data
     tasks_data = TaskSerializer(many=True, source='task_set', read_only=True)
     parts_data = PartSerializer(many=True, source='part_set', read_only=True)
-    
+    # The author is taken from the authenticated request in
+    # ReportViewSet.perform_create, never from the request body. It stays in the
+    # output because the UI labels rows with it.
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Report
         fields = '__all__'

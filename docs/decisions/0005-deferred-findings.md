@@ -84,3 +84,10 @@ cycle entirely.
   `npm ci`. Recorded rather than fixed here; Task 14 owns dependency changes.
 
 <!-- Any task in the plan may append its own entries below this line. -->
+
+### Found during Task 8
+
+- The report modal still puts `user` in the create payload. The API ignores it
+  as of the ownership fix, but the field and the client-side required check
+  that depends on it were left in place; removing them touches the form hook,
+  the modal state and the validation list for no behavioural gain.

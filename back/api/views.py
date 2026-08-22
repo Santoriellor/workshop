@@ -222,7 +222,11 @@ class ReportViewSet(viewsets.ModelViewSet):
         'vehicle__owner': ['exact'],
     }
     ordering_fields = ['vehicle__brand', 'vehicle__model', 'created_at', 'updated_at', 'status']
-    
+
+    def perform_create(self, serializer):
+        """Attribute a new report to whoever is making the request."""
+        serializer.save(user=self.request.user)
+
     def list(self, request, *args, **kwargs):
         limit = request.query_params.get("limit")
         offset = request.query_params.get("offset")
