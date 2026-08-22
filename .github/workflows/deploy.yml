@@ -46,6 +46,13 @@ jobs:
         working-directory: back
         run: pip install -r requirements.txt
 
+      - name: Lint and format-check the backend
+        working-directory: .
+        run: |
+          pip install -r back/requirements-dev.txt
+          ruff check back
+          ruff format --check back
+
       - name: Run backend tests
         working-directory: back
         env:
@@ -70,6 +77,10 @@ jobs:
       - name: Install frontend dependencies
         working-directory: front
         run: npm ci --legacy-peer-deps
+
+      - name: Lint the frontend
+        working-directory: front
+        run: npx eslint . --max-warnings 0
 
       - name: Run frontend tests
         working-directory: front

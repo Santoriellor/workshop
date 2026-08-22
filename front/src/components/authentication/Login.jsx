@@ -11,7 +11,7 @@ import '../../styles/Auth.css'
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const { login, loading } = useAuth()
+  const { login, loadingAuth } = useAuth()
   const navigate = useNavigate()
 
   // Error messages
@@ -79,8 +79,8 @@ const Login = () => {
           />
           <p className="error-text">{errors.password && <>{errors.password}</>}</p>
 
-          <button type="submit" disabled={!isFormValid || loading}>
-            {loading ? 'Logging in...' : 'Login'}
+          <button type="submit" disabled={!isFormValid || loadingAuth}>
+            {loadingAuth ? 'Logging in...' : 'Login'}
           </button>
         </form>
         <p className="bottomline">

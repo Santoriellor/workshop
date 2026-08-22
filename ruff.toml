@@ -1,0 +1,31 @@
+# ruff covers back/ only; the frontend is handled by Prettier and ESLint.
+line-length = 100
+target-version = "py312"
+extend-exclude = [
+    "back/api/migrations",
+    "back/staticfiles",
+    "back/media",
+]
+
+[lint]
+# E/W pycodestyle, F pyflakes, I import order, UP pyupgrade, B bugbear,
+# C4 comprehensions. Deliberately not the full default-plus set: this is a
+# formatting cycle, not a rewrite.
+select = ["E", "W", "F", "I", "UP", "B", "C4"]
+ignore = [
+    # Django settings modules exist to be star-imported from base.
+    "F403",
+    "F405",
+    # Line length is enforced by the formatter, not by the linter, so a long
+    # URL in a comment is not an error.
+    "E501",
+]
+
+[lint.per-file-ignores]
+# Tests assert on names that ruff reads as unused when they only appear in a
+# subTest label, and fixtures are deliberately verbose.
+"back/api/tests/*" = ["B011"]
+
+[format]
+quote-style = "double"
+indent-style = "space"

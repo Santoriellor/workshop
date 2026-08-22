@@ -1,5 +1,17 @@
 from django.contrib import admin
-from .models import Report, Owner, Vehicle, User, UserProfile, Task, TaskTemplate, Part, Inventory, Invoice
+
+from .models import (
+    Inventory,
+    Invoice,
+    Owner,
+    Part,
+    Report,
+    Task,
+    TaskTemplate,
+    User,
+    UserProfile,
+    Vehicle,
+)
 
 admin.site.register(User)
 admin.site.register(UserProfile)

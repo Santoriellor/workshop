@@ -1,0 +1,4 @@
+# Development tooling. Deliberately NOT in requirements.txt: back/Dockerfile
+# installs that file into the production image, and a linter has no business
+# being there.
+ruff==0.6.9

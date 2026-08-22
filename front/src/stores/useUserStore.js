@@ -21,7 +21,7 @@ const useUserStore = create((set) => ({
     }
   },
 
-  updateOwner: async (id, userData) => {
+  updateUser: async (id, userData) => {
     try {
       const response = await axiosInstance.patch(`${USER_API_URL}${id}/`, userData)
       set((state) => ({

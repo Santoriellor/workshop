@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-//import axios from 'axios'
 import Swal from 'sweetalert2'
 // Utils
 import axiosInstance, { setAxiosToken } from '../utils/axiosInstance'
@@ -19,7 +18,7 @@ export const AuthProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${token}` },
       })
       setAuthenticatedUser(response.data)
-    } catch (error) {
+    } catch {
       //console.error('Failed to fetch user data:', error)
       logout() // Log out if the token is invalid
     }
@@ -100,51 +99,33 @@ export const AuthProvider = ({ children }) => {
   const register = async (username, email, password) => {
     setLoadingAuth(true)
     try {
-      // Send registration data to the backend
-      await axiosInstance.post(`/register/`, {
-        username,
-        email,
-        password,
-      })
+      await axiosInstance.post(`/register/`, { username, email, password })
 
-      // Alert the user on success
       Swal.fire({
         icon: 'success',
         title: 'Registration Successful',
         text: 'You have been registered successfully! Please log in.',
       })
 
-      // Redirect to the login page
       navigate('/login')
+      return true
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        // Optional: log quietly
-        console.warn('Registration 400:', error.response.data)
+      // One dialog, not two. The previous version fired inside the 400 branch
+      // and then again unconditionally below it, so every failed registration
+      // showed the message twice.
+      const detail =
+        error.response?.data?.detail ||
+        error.response?.data?.password?.[0] ||
+        error.response?.data?.email?.[0] ||
+        error.response?.data?.username?.[0]
 
-        Swal.fire({
-          icon: 'error',
-          title: 'Registration Failed',
-          text:
-            error.response.data?.detail ||
-            'An error occurred during registration. Please try again.',
-        })
-      } else {
-        // Unexpected error
-        console.error('Unexpected registration error:', error)
-
-        Swal.fire({
-          icon: 'error',
-          title: 'Registration Error',
-          text: 'An unexpected error occurred. Please try again.',
-        })
-      }
-      // Alert the user on error
       Swal.fire({
         icon: 'error',
         title: 'Registration Failed',
-        text:
-          error.response?.data?.error || 'An error occurred during registration. Please try again.',
+        text: detail || 'An error occurred during registration. Please try again.',
       })
+
+      return false
     } finally {
       setLoadingAuth(false)
     }

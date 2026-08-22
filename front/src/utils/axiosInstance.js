@@ -1,33 +1,42 @@
 import axios from 'axios'
 import { refreshToken, logout } from './authUtils'
 
+/**
+ * The one base URL for every call to this API. Exported so nothing else has to
+ * read import.meta.env directly - authUtils and the registration form used to.
+ */
+export const API_BASE_URL = import.meta.env.VITE_API_URL
+
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: API_BASE_URL,
 })
 
-// Set token dynamically (e.g., after login or token refresh)
+// Set the token dynamically (after login, or after a refresh).
 export const setAxiosToken = (token) => {
   axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`
 }
 
-// Add response interceptor to handle token refresh on 401 errors
 axiosInstance.interceptors.response.use(
-  (response) => response, // If the request is successful, return the response
+  (response) => response,
   async (error) => {
     const { response, config } = error
-    if (response && response.status === 401) {
-      // If a 401 error occurs, attempt to refresh the token
-      const newToken = await refreshToken() // Call the refreshToken function
+
+    // `_retry` is what stops this from recursing. The replay below goes through
+    // this same interceptor, so without the flag a request that keeps returning
+    // 401 refreshes and replays forever.
+    if (response && response.status === 401 && config && !config._retry) {
+      config._retry = true
+
+      const newToken = await refreshToken()
       if (newToken) {
-        // If refresh successful, retry the failed request with the new token
-        config.headers['Authorization'] = `Bearer ${newToken}`
-        return axiosInstance(config) // Retry the original request
-      } else {
-        // If token refresh fails, log the user out
-        logout()
+        config.headers = { ...(config.headers || {}), Authorization: `Bearer ${newToken}` }
+        return axiosInstance(config)
       }
+
+      logout()
     }
-    return Promise.reject(error) // If the error is not related to auth, reject the promise
+
+    return Promise.reject(error)
   },
 )
 

@@ -7,13 +7,12 @@ import {
   isValidPassword,
   passwordsMatch,
 } from '../../utils/validation'
+import axiosInstance from '../../utils/axiosInstance'
 import '../../styles/Auth.css'
-
-const apiURL = import.meta.env.VITE_API_URL
 
 const Register = () => {
   const navigate = useNavigate()
-  const { register, loading } = useAuth()
+  const { register, loadingAuth } = useAuth()
 
   // Form fields
   const [username, setUsername] = useState('')
@@ -29,13 +28,16 @@ const Register = () => {
     confirmPassword: '',
   })
 
-  // Check availability of username and email with the backend
+  // Deliberately builds the query string with URLSearchParams rather than
+  // passing axios a `params` object: that keeps every call site in this
+  // codebase free of axios parameter serialization, which is the part of the
+  // 1.x upgrade in Task 14 that changes behaviour.
   const checkAvailability = async (field, value) => {
     try {
-      const res = await fetch(`${apiURL}/users/check_availability/?${field}=${value}`)
-      const data = await res.json()
+      const query = new URLSearchParams({ [field]: value })
+      const { data } = await axiosInstance.get(`/users/check_availability/?${query}`)
       return data[`${field}_taken`] ? `${field} is already taken` : ''
-    } catch (err) {
+    } catch {
       return `Error checking ${field}`
     }
   }
@@ -158,8 +160,8 @@ const Register = () => {
           />
           <p className="error-text">{errors.confirmPassword && <>{errors.confirmPassword}</>}</p>
 
-          <button type="submit" disabled={!isFormValid || loading}>
-            {loading ? 'Registering...' : 'Register'}
+          <button type="submit" disabled={!isFormValid || loadingAuth}>
+            {loadingAuth ? 'Registering...' : 'Register'}
           </button>
         </form>
         <p className="bottomline">

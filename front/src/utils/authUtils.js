@@ -1,14 +1,12 @@
 import axios from 'axios'
-import { setAxiosToken } from './axiosInstance'
-
-const apiURL = import.meta.env.VITE_API_URL
+import { API_BASE_URL, setAxiosToken } from './axiosInstance'
 
 export const refreshToken = async () => {
   const refreshToken = localStorage.getItem('refreshToken')
   if (!refreshToken) return null
 
   try {
-    const response = await axios.post(`${apiURL}/token/refresh/`, {
+    const response = await axios.post(`${API_BASE_URL}/token/refresh/`, {
       refresh: refreshToken,
     })
 
