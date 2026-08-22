@@ -115,6 +115,75 @@ cycle entirely.
   API accepts is caught earlier is Task 13's responsibility; not touched here
   per this task's constraints.
 
+### Found during Task 14 — axios 0.27 → 1.x
+
+- **No call site passes a `params` object.**
+
+  ```
+  cd front && grep -rn "params:" src --include=*.js --include=*.jsx | grep -v "__tests__"
+  ```
+
+  produced no output. Every call site builds its query string with
+  `URLSearchParams` and concatenates it onto the URL (including the one Task
+  13 moved off `fetch`), so `paramsSerializer` never runs and the 1.x change
+  from a serializer function to a `{ encode, serialize }` object cannot affect
+  this codebase.
+
+- **Every error read is one of four shapes, all unchanged in 1.x.**
+
+  ```
+  cd front && grep -rn "error\.response\|error\.message\|err\.response" src --include=*.js --include=*.jsx | grep -v "__tests__"
+  ```
+
+  hits `src/contexts/AuthContext.jsx`, five modal components, and the seven
+  Zustand stores' `catch` blocks, all reading `error.response`,
+  `error.response.status`, `error.response.data...` or `error.message`.
+  `axiosInstance.js` and `authUtils.js` catch and either replay or log the
+  error object without inspecting a property. `AxiosError` still carries
+  `response`, `config` and `message` unchanged in 1.x; nothing in this
+  codebase reads the `code` property 1.x adds, and nothing calls
+  `error.toJSON()` or checks `isAxiosError`. This bump is a version change,
+  not an error-handling migration.
+
+- **The bump: `axios@^0.27.2` → `axios@^1.7.9`, resolved to `1.19.0`**
+  (latest 1.x satisfying the range at install time). `front/package.json` and
+  `front/package-lock.json` are the only files this task touches;
+  `npm install --legacy-peer-deps` was used to match CI, working around the
+  pre-existing `@vitest/coverage-c8`/`vitest@^3` peer conflict recorded above.
+
+- **The `authHeader(config)` `.get()` branch now executes**, confirmed with a
+  throwaway diagnostic test (not committed) that read
+  `config.headers.constructor.name` inside a custom `axiosInstance.defaults.adapter`:
+  it reported `AxiosHeaders`, `typeof headers.get === 'function'` was `true`,
+  and `headers.get('Authorization')` returned the bearer token. Before this
+  bump `config.headers` was a plain object and only the fallback
+  (`config.headers?.Authorization`) branch ran; the committed unit test
+  `authHeader reads the header from either axios header representation`
+  already exercised both branches directly, but the *application* code path
+  only started reaching the `.get()` branch after this upgrade.
+
+- **The 401 retry interceptor (`src/utils/axiosInstance.js`) still holds.**
+  Verified with the existing suite plus the same throwaway diagnostic:
+  - A recoverable 401 (adapter rejects once, then succeeds) refreshes exactly
+    once and replays successfully — covered by
+    `refreshes the token and replays the request after a 401`.
+  - An unconditionally-401 adapter does not recurse — covered by
+    `does not loop when the replayed request is also rejected`, which caps the
+    adapter at 5 calls and asserts exactly 2.
+  - `config._retry` does survive axios 1.x's internal config rebuild between
+    attempts: the diagnostic showed `seen[0] !== seen[1]` (1.x hands the
+    adapter a new merged config object on the replay, not the same reference
+    the interceptor mutated) but `seen[0]._retry === true` and
+    `seen[1]._retry === true` — axios's `mergeConfig` carries custom
+    properties like `_retry` through the merge, so the bound is not lost even
+    though the object identity changes.
+
+- **`npm audit --omit=dev` reports no axios advisory** after the bump
+  (`NO AXIOS ADVISORY`). 12 vulnerabilities remain (2 low, 10 high), all in
+  `vite` and its `react-router`/`turbo-stream` dev-tooling transitive chain —
+  none in axios or its dependents. Out of scope for this task (Spec D5 is
+  axios-only); left for a future dependency-hygiene pass.
+
 ### Found during Task 12
 
 - Pagination is still declared two different ways. `ReportViewSet`,
