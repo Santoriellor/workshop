@@ -207,7 +207,15 @@ class ReportViewSet(viewsets.ModelViewSet):
     Includes logic for pagination, filtering, ordering, and concurrency control.
     Exposes related tasks and parts.
     """
-    queryset = Report.objects.select_related('vehicle').all()
+    # tasks_data and parts_data serialize task_set and part_set for every row,
+    # and TaskSerializer/PartSerializer render their foreign keys as ids, so the
+    # two prefetches are enough - no deeper join is needed.
+    queryset = (
+        Report.objects
+        .select_related('vehicle')
+        .prefetch_related('task_set', 'part_set')
+        .all()
+    )
     serializer_class = ReportSerializer
     permission_classes = [permissions.IsAuthenticated]
     
@@ -363,7 +371,15 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     Allows listing and updating invoices with ordering and filtering support.
     Pagination is disabled unless explicitly requested via query parameters.
     """
-    queryset = Invoice.objects.all()
+    # The serializer reads report.vehicle.owner for owner_full_name and
+    # vehicle_plate, and Invoice.total_cost walks report.task_set.task_template
+    # and report.part_set.part. All four paths are loaded up front.
+    queryset = (
+        Invoice.objects
+        .select_related('report__vehicle__owner')
+        .prefetch_related('report__task_set__task_template', 'report__part_set__part')
+        .all()
+    )
     serializer_class = InvoiceSerializer
     permission_classes = [permissions.IsAuthenticated]
     
