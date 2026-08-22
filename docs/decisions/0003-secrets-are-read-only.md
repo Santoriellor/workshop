@@ -28,7 +28,8 @@ This refactor cycle changes neither the contents of `secrets/`, nor
 
 ## Finding recorded, not acted on
 
-`read_secret()` (`back/backend/settings.py:27-48`) resolves a secret's value
+`read_secret()` (`back/backend/settings/base.py:35-56`, since Task 10 split
+`settings.py` into the `settings/` package) resolves a secret's value
 by checking an environment variable first and only falling back to the
 mounted Docker secret file if that environment variable is unset or empty:
 

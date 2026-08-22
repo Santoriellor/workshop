@@ -13,9 +13,9 @@ localStorage.setItem('token', response.data.access)
 localStorage.setItem('refreshToken', response.data.refresh)
 ```
 
-(`front/src/contexts/AuthContext.jsx:50-51`, inside `AuthProvider.login`).
+(`front/src/contexts/AuthContext.jsx:49-50`, inside `AuthProvider.login`).
 The access token is then read back out of `localStorage` on every page load
-(`AuthContext.jsx:30`) and attached to outgoing requests via
+(`AuthContext.jsx:29`) and attached to outgoing requests via
 `setAxiosToken`.
 
 Anything stored in `localStorage` is readable by any JavaScript running on

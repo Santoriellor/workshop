@@ -10,7 +10,7 @@ production behind traefik at `workshop.santoriello.ch`.
 ## Components
 
 - **`api`** — the single Django app. It is mounted at `/api/` by
-  `back/backend/urls.py:25` (`path('api/', include('api.urls'))`). All
+  `back/backend/urls.py:26` (`path("api/", include("api.urls"))`). All
   models, views, serializers and business logic for the product live here;
   there is no second app.
 - **`backend`** — the Django project package: settings, root URLconf, WSGI
@@ -22,12 +22,12 @@ production behind traefik at `workshop.santoriello.ch`.
 ## Request flow
 
 Two function-style authentication endpoints sit outside the router:
-`POST /api/register/` and `POST /api/login/` (`back/api/urls.py:22-23`), plus
+`POST /api/register/` and `POST /api/login/` (`back/api/urls.py:31-32`), plus
 SimpleJWT's own `POST /api/token/refresh/`. `login/` returns an access and a
 refresh JWT and the caller's serialized user data; `register/` creates a user.
 
 Everything else is routed through a single DRF `DefaultRouter`
-(`back/api/urls.py:11-18`), which registers eight viewsets:
+(`back/api/urls.py:19-27`), which registers eight viewsets:
 
 | Path | ViewSet |
 |---|---|
@@ -41,11 +41,14 @@ Everything else is routed through a single DRF `DefaultRouter`
 | `invoices` | `InvoiceViewSet` |
 
 **Authentication** is JWT only: `REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']`
-in `back/backend/settings.py` lists exactly
+in `back/backend/settings/base.py` lists exactly
 `rest_framework_simplejwt.authentication.JWTAuthentication` — no session or
 basic auth. Access tokens live 20 minutes, refresh tokens live 1 day, and
 refresh tokens rotate (`ROTATE_REFRESH_TOKENS = True`, `SIMPLE_JWT` in
-`settings.py`).
+`settings/base.py`). `back/backend/settings.py` is no longer a file: it is a
+package (`back/backend/settings/__init__.py`, `base.py`, `development.py`,
+`production.py`) selected by the `DJANGO_ENV` environment variable — see
+`docs/decisions/0001-settings-split-by-environment.md`.
 
 **Permissions.** `REST_FRAMEWORK['DEFAULT_PERMISSION_CLASSES']` is
 `IsAuthenticated`, but every viewset re-declares `permission_classes` on the
@@ -57,15 +60,20 @@ finding and its fix.
 **Pagination.** `DEFAULT_PAGINATION_CLASS` is `LimitOffsetPagination` with no
 page size configured, so a plain list request returns a bare JSON array
 unless the caller sends `limit` or `offset`. Three viewsets
-(`ReportViewSet`, `InventoryViewSet`, `InvoiceViewSet`) set
-`pagination_class = None` on the class and hand-roll the identical behaviour
-in an overridden `list()`: only paginate (via a local `CustomPagination`,
-`default_limit = 5`) when the request supplies `limit` or `offset`, otherwise
-return every row unpaginated.
+(`ReportViewSet`, `InventoryViewSet`, `InvoiceViewSet`) opt out of it
+(`pagination_class = None`) and instead mix in `OptionalPaginationMixin`
+(`back/api/mixins.py`), which centralizes the behaviour that used to be
+hand-rolled identically in each viewset's own `list()`: only paginate (via
+`CustomPagination`, `back/api/pagination.py`, `default_limit = 5`) when the
+request supplies `limit` or `offset`, otherwise return every row unpaginated.
+The other four viewsets (`OwnerViewSet`, `VehicleViewSet`, `UserViewSet`,
+`UserProfileViewSet`) still inherit `LimitOffsetPagination` directly, so
+pagination is declared two different ways across the eight viewsets — see
+`docs/decisions/0005-deferred-findings.md`.
 
 **Invoicing.** Invoices are not requested directly; they are a side effect.
 When a `Report` update transitions `status` to `"exported"`
-(`back/api/views.py:255-257`, inside `ReportViewSet.update`), the view calls
+(`back/api/views.py:236-241`, inside `ReportViewSet.update`), the view calls
 `generate_invoice()`, which creates an `Invoice` row and renders it to PDF
 with WeasyPrint (`back/api/services/invoices.py`). The PDF is written under
 `MEDIA_ROOT/invoices/` and attached to the `Invoice.pdf` field.
@@ -91,7 +99,7 @@ MySQL's own `docker-entrypoint-initdb.d` mechanism (it grants privileges to
 - **traefik** (outside this repository) terminates TLS and routes by host and
   path: `Host(\`workshop.santoriello.ch\`)` to the frontend, and
   `Host(\`workshop.santoriello.ch\`) && PathPrefix(\`/api\`)` to the backend on
-  port 8000 (`docker-compose.yml:64` and `:103`).
+  port 8000 (`docker-compose.yml:65` and `:104`).
 - Two Docker networks: `internal` (backend + mysql, declared
   `internal: true` so nothing on the `proxy-network` — including traefik —
   can reach MySQL directly) and `proxy-network` (backend + frontend, external,

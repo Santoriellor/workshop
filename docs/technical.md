@@ -5,8 +5,9 @@
 - Docker and Docker Compose, for the containerized workflow described in the
   README.
 - For running the backend suite outside a container: Python 3.12 and a
-  reachable MySQL 8.0 (there is no SQLite fallback — `back/backend/settings.py`
-  hard-codes `django.db.backends.mysql`). `mysqlclient` compiles against the
+  reachable MySQL 8.0 (there is no SQLite fallback —
+  `back/backend/settings/base.py` hard-codes `django.db.backends.mysql`).
+  `mysqlclient` compiles against the
   MariaDB development headers (`gcc pkg-config libmariadb-dev` on
   Debian/Ubuntu).
 - For running the frontend suite outside a container: Node 20.
@@ -25,22 +26,28 @@ The frontend is reachable at `http://localhost` and the backend API at
 ## Configuration
 
 Environment variables the backend reads, with the file and line each is read
-at:
+at. `back/backend/settings.py` is now a package (Task 10 of the
+`2026-08-22-workshop-refactor` plan): `base.py` holds settings common to
+every environment, `development.py` and `production.py` hold the two
+environment-specific overrides, and `__init__.py` picks between them based
+on `DJANGO_ENV` (unset resolves to development — see
+`docs/decisions/0001-settings-split-by-environment.md`):
 
 | Variable | Read at | Purpose |
 |---|---|---|
-| `DJANGO_SECRET_KEY` | `settings.py:51` (env fallback for the `django_secret_key` secret) | Django `SECRET_KEY` |
-| `MYSQL_USER` | `settings.py:52` (env fallback for the `mysql_user` secret) | Database user |
-| `MYSQL_PASSWORD` | `settings.py:53` (env fallback for the `mysql_password` secret) | Database password |
-| `MYSQL_HOST` | `settings.py:22` | Database host |
-| `MYSQL_PORT` | `settings.py:141` | Database port |
-| `MYSQL_DATABASE` | `settings.py:137` | Database name; the test database is `test_<name>` |
-| `DEBUG` | `settings.py:66` | `1`/`true`/`yes` enables debug; anything else disables it |
-| `ALLOWED_HOSTS` | `settings.py:68` | Comma-separated |
-| `CORS_ALLOWED_ORIGINS` | `settings.py:69` | Comma-separated; **currently mandatory — see `docs/decisions/0005-deferred-findings.md`** |
-| `STATIC_ROOT`, `MEDIA_ROOT` | `settings.py:192-193` | Overridable so the suite can run outside a container |
+| `DJANGO_SECRET_KEY` | `settings/base.py:70` (env fallback for the `django_secret_key` secret) | Django `SECRET_KEY` |
+| `MYSQL_USER` | `settings/base.py:71` (env fallback for the `mysql_user` secret) | Database user |
+| `MYSQL_PASSWORD` | `settings/base.py:72` (env fallback for the `mysql_password` secret) | Database password |
+| `MYSQL_HOST` | `settings/base.py:29` | Database host |
+| `MYSQL_PORT` | `settings/base.py:150` | Database port |
+| `MYSQL_DATABASE` | `settings/base.py:146` | Database name; the test database is `test_<name>` |
+| `DEBUG` | `settings/development.py:12` | `1`/`true`/`yes` enables debug; anything else disables it. Ignored in production, which hard-codes `DEBUG = False` regardless of this variable (`settings/production.py:13`) |
+| `ALLOWED_HOSTS` | `settings/development.py:14`, `settings/production.py:15` | Comma-separated, via the shared `csv_env()` helper |
+| `CORS_ALLOWED_ORIGINS` | `settings/development.py:18`, `settings/production.py:16` | Comma-separated via `csv_env()`. Development defaults to `http://localhost:3000` when unset; production has no default and silently resolves to `[]` when unset — see `docs/decisions/0005-deferred-findings.md` |
+| `STATIC_ROOT`, `MEDIA_ROOT` | `settings/base.py:200-201` | Overridable so the suite can run outside a container |
 | `SEED_DEMO_DATA` | `back/entrypoint.sh:23` | `true` triggers a one-off `populate_db --all` |
 | `DJANGO_SUPERUSER_USERNAME` / `_EMAIL` / `_PASSWORD` | `back/entrypoint.sh:18` | Consumed by `createsuperuser --noinput` |
+| `DJANGO_ENV` | `settings/__init__.py:14` | `production` loads `production.py`; anything else, including unset, loads `development.py` |
 
 The frontend reads exactly one variable, `VITE_API_URL`, from `front/.env`.
 That file is committed on purpose — Vite inlines the value into the public
@@ -48,7 +55,8 @@ bundle at build time, so there is nothing secret about it.
 
 Local development configures the backend through `back/.env`
 (`back/.env.example` documents every key; both are gitignored),
-loaded by `load_dotenv()` in `settings.py`.
+loaded by `load_dotenv()` in `settings/base.py`, deliberately before any
+secret is read (`docs/decisions/0001-settings-split-by-environment.md`).
 
 ## Secrets
 

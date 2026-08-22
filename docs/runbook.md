@@ -6,8 +6,13 @@ All three containers log to stdout/stderr, so `docker compose logs` (or
 `docker logs <container>`) is the entry point in every environment:
 
 - `backend` — Gunicorn's own request/error logs, plus Django's `LOGGING`
-  configuration in `settings.py`, which sends the `django` and `myapiapp`
-  loggers to a console handler at `INFO`.
+  configuration in `settings/base.py` (`back/backend/settings.py` is a
+  package since Task 10 — see
+  `docs/decisions/0001-settings-split-by-environment.md`), which sends the
+  `django` and `myapiapp` loggers to a console handler at `INFO`. The
+  `myapiapp` logger name is stale and matches no app in `INSTALLED_APPS` —
+  the app is called `api` — so nothing in this codebase currently logs
+  through it; see `docs/decisions/0005-deferred-findings.md`.
 - `frontend` — nginx access/error logs are explicitly redirected to
   `/dev/stdout` for the `/media/` and `/static_django/` locations
   (`nginx/frontend/nginx.conf`), because the unprivileged nginx image
@@ -55,22 +60,32 @@ Two failure modes are known:
    backend container just sits there printing "Waiting for MySQL...". Check
    `docker compose ps` for the `mysql` service's health status and
    `docker compose logs mysql` for why its healthcheck is failing.
-2. **Settings raise before Django even starts.** `settings.py` calls
-   `os.getenv('CORS_ALLOWED_ORIGINS').split(',')` unconditionally — if that
-   variable is unset, `os.getenv` returns `None` and `.split(',')` raises
-   `AttributeError` at import time, before any Django machinery runs. The
-   same is true of `read_secret()` for `DJANGO_SECRET_KEY`, `MYSQL_USER` and
-   `MYSQL_PASSWORD`: if a value is neither a mounted Docker secret under
-   `/run/secrets/` nor set as the corresponding environment variable,
-   `read_secret()` raises. In both cases the container exits immediately and
-   `docker compose logs backend` shows a Python traceback, not a running
-   server. See `docs/decisions/0005-deferred-findings.md` for the planned fix.
+2. **Settings raise before Django even starts.** `read_secret()`
+   (`back/backend/settings/base.py`) raises for `DJANGO_SECRET_KEY`,
+   `MYSQL_USER` or `MYSQL_PASSWORD` if a value is neither a mounted Docker
+   secret under `/run/secrets/` nor set as the corresponding environment
+   variable. The container exits immediately and `docker compose logs
+   backend` shows a Python traceback, not a running server.
+
+   This used to also be true of `CORS_ALLOWED_ORIGINS`, which was read with a
+   bare `os.getenv('CORS_ALLOWED_ORIGINS').split(',')` that raised
+   `AttributeError` at import when the variable was unset. Task 10 replaced
+   that with `csv_env()`, so an unset `CORS_ALLOWED_ORIGINS` no longer
+   crashes the container — see
+   `docs/decisions/0001-settings-split-by-environment.md`. It is not risk-free
+   in its new form: development defaults to `http://localhost:3000`, but
+   production has no default and an unset variable there now resolves
+   silently to `CORS_ALLOWED_ORIGINS = []` instead of failing loudly. If the
+   frontend origin is mysteriously getting CORS-rejected in production with
+   no error anywhere, check that `CORS_ALLOWED_ORIGINS` is actually set in
+   `/srv/secrets/workshop/back.env` — see
+   `docs/decisions/0005-deferred-findings.md`.
 
 ## Media and static files are missing
 
 `static_volume` and `media_volume` are both mounted read-write into the
 `backend` container and read-only into the `frontend` container
-(`docker-compose.yml:39-41,86-87`). `collectstatic --noinput` runs on every
+(`docker-compose.yml:40-41,87-88`). `collectstatic --noinput` runs on every
 backend start (`back/entrypoint.sh:14-15`), so static files should always be
 current after a successful backend startup. If `/static_django/` or `/media/`
 404 from the frontend:

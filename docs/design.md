@@ -7,7 +7,7 @@
   required, unique field (`REQUIRED_FIELDS = ['username']`) kept for legacy
   compatibility.
 - **`UserProfile`** — one-to-one with `User`. Created (and re-saved) by a
-  `post_save` signal on `User` (`back/api/models.py:250-261`), so a profile
+  `post_save` signal on `User` (`back/api/models.py:266-279`), so a profile
   always exists once a user exists.
 - **`Owner`** — a vehicle owner: name, address, phone, optional unique email.
 - **`Vehicle`** — FK to `Owner`. Brand, model, unique license plate, year.
@@ -24,7 +24,10 @@
   used quantity from `Inventory.quantity_in_stock` (restoring the previous
   amount first if it's an update to an existing `Part`) and refuses to save
   if there isn't enough stock; `Part.delete()` restores the quantity
-  (`back/api/models.py:179-217`).
+  (`back/api/models.py:179-231`). `Part.save()`'s update branch also
+  carries a pre-existing, harmless oddity: its `if previous_inventory ==
+  self.part` / `else` split does the identical restore in both branches —
+  see `docs/decisions/0005-deferred-findings.md`.
 - **`Invoice`** — FK to `Report`. `total_cost` is a `@property` computed on
   read from the report's tasks and parts, not a stored column — the stored
   `total_cost` column was removed in migration `0009`.

@@ -50,7 +50,9 @@ permission_classes = [permissions.IsAuthenticated]
 def check_availability(self, request):
 ```
 
-(`back/api/views.py:93,101`). The fix was merged and deployed, and verified
+(`back/api/views.py:103,111`, current line numbers — the file has moved
+since this fix, most recently because Task 12 deduplicated its pagination and
+concurrency-check logic into `back/api/mixins.py`). The fix was merged and deployed, and verified
 live: `GET /api/users/` now returns 401 for an unauthenticated caller, and
 `check_availability` — which by design must be reachable before login, since
 the registration form uses it to check username/email availability — still
