@@ -20,6 +20,18 @@ const authHeader = (config) =>
     ? config.headers.get('Authorization')
     : config.headers?.Authorization
 
+describe('authHeader', () => {
+  it('reads the header from either axios header representation', () => {
+    const axiosHeadersConfig = {
+      headers: { get: (name) => (name === 'Authorization' ? 'Bearer from-get' : undefined) },
+    }
+    expect(authHeader(axiosHeadersConfig)).toBe('Bearer from-get')
+
+    const plainObjectConfig = { headers: { Authorization: 'Bearer from-property' } }
+    expect(authHeader(plainObjectConfig)).toBe('Bearer from-property')
+  })
+})
+
 describe('axiosInstance', () => {
   beforeEach(() => {
     vi.clearAllMocks()
