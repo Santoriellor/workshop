@@ -16,7 +16,13 @@ import os
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# back/backend/settings/base.py -> back/backend/settings -> back/backend -> back
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Before any secret or setting is read, so back/.env can supply every one of
+# them. It previously ran after read_secret(), which silently made three of the
+# documented variables unusable from that file.
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Set the MySQL host
 MYSQL_HOST = os.getenv('MYSQL_HOST')
@@ -48,25 +54,26 @@ def read_secret(filename, default=None, env=None):
         )
 
 
+def csv_env(name, default=''):
+    """Parse a comma-separated environment variable into a list of strings.
+
+    CORS_ALLOWED_ORIGINS was previously read as
+    `os.getenv('CORS_ALLOWED_ORIGINS').split(',')`, which raises AttributeError
+    on an unset variable - before Django starts, with no useful message.
+    """
+    raw = os.getenv(name, default) or ''
+    return [item.strip() for item in raw.split(',') if item.strip()]
+
+
 DJANGO_SECRET_KEY = read_secret("django_secret_key", env="DJANGO_SECRET_KEY")
 MYSQL_USER = read_secret("mysql_user", env="MYSQL_USER")
 MYSQL_PASSWORD = read_secret("mysql_password", env="MYSQL_PASSWORD")
-
-# Load environment variables from the .env file
-load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = DJANGO_SECRET_KEY
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# Parse DEBUG from env safely (treat any of 1/true/yes as True)
-DEBUG = os.getenv('DEBUG', 'False').lower() in {'1', 'true', 'yes'}
-
-ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
 
 # Application definition
 
@@ -257,7 +264,3 @@ LOGGING = {
         },
     },
 }
-
-CORS_ORIGIN_WHITELIST = [
-     'http://localhost'
-]

@@ -92,6 +92,16 @@ cycle entirely.
   that depends on it were left in place; removing them touches the form hook,
   the modal state and the validation list for no behavioural gain.
 
+### Found during Task 10
+
+- `CORS_ORIGIN_WHITELIST = ['http://localhost']` was removed rather than
+  migrated. It is the pre-3.0 name of `CORS_ALLOWED_ORIGINS`; django-cors-headers
+  4.6.0 ignores it, so it had no effect and reading it as live configuration was
+  misleading. `localhost` is not added to `CORS_ALLOWED_ORIGINS` in its place,
+  because production serves the frontend from the same origin as the API and
+  does not need it; `back/.env.example` already sets `http://localhost:3000` for
+  the Vite dev server.
+
 ### Found during Task 9
 
 - **Frontend password strength checks are commented out.**

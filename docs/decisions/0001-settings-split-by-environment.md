@@ -2,8 +2,9 @@
 
 ## Status
 
-Accepted. Implemented by a later task in this refactor cycle (Task 10 of the
-`2026-08-22-workshop-refactor` plan).
+Accepted and implemented (Task 10 of the `2026-08-22-workshop-refactor`
+plan). `back/backend/settings.py` is now the package described below;
+`docker-compose.yml` sets `DJANGO_ENV=production` on the backend service.
 
 ## Context
 
@@ -31,9 +32,15 @@ observed in the code as it stands today:
 ## Decision
 
 `backend/settings` becomes a package. Its `__init__.py` selects which
-settings module to load based on `DJANGO_ENV` (e.g. `local`, `ci`,
-`production`), rather than branching on ad-hoc environment variables inside
-one flat file.
+settings module to load based on `DJANGO_ENV`: `production` loads
+`production.py`; anything else, including unset, loads `development.py`.
+Common settings live in `base.py`, imported by both. Unset resolves to
+development deliberately — it is the safe default for a workstation, for CI,
+and for a container started without the compose environment applied — and
+`development.py` keeps `DEBUG` driven by the `DEBUG` environment variable
+(default `False`), exactly as the pre-split file did, rather than hardcoding
+it on. Only `production.py` hardcodes `DEBUG = False` unconditionally, so a
+missing `DJANGO_ENV` can never enable Django's debug pages on its own.
 
 ## Consequences
 
@@ -44,7 +51,16 @@ are all untouched by this change; only the new package's internals encode the
 per-environment differences. Production must set `DJANGO_ENV=production`,
 which `docker-compose.yml` will set going forward.
 
-This ADR records the decision only. The three defects above are not fixed by
-this documentation phase; they are listed as present-day findings in
-`docs/decisions/0005-deferred-findings.md` and fixed by the task that
-implements this split.
+The three defects above are fixed as part of this same task: `csv_env()` in
+`base.py` replaces the bare `.split(',')` so an unset `CORS_ALLOWED_ORIGINS`
+no longer raises `AttributeError` at import; `load_dotenv()` now runs before
+`read_secret()` so `back/.env` can supply `DJANGO_SECRET_KEY`, `MYSQL_USER`
+and `MYSQL_PASSWORD`; and `CORS_ORIGIN_WHITELIST` is dropped rather than
+carried forward, per the finding recorded in
+`docs/decisions/0005-deferred-findings.md`.
+
+`manage.py check --deploy --fail-level ERROR` against `production.py`
+exits 0 with exactly two expected warnings: `security.W004` (no
+`SECURE_HSTS_SECONDS`) and `security.W008` (no `SECURE_SSL_REDIRECT`), both
+deliberately absent because traefik already handles HSTS and the HTTPS
+redirect — see the comment block at the end of `production.py`.

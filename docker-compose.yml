@@ -47,6 +47,7 @@ services:
       - /srv/secrets/workshop/back.env
     environment:
       IS_DOCKER: "True"
+      DJANGO_ENV: "production"
     depends_on:
       mysql:
         condition: service_healthy
