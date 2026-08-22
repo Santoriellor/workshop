@@ -164,7 +164,7 @@ Recorded here so the tasks below can refer to them by name. Each was read in the
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: `docs/decisions/0005-deferred-findings.md`, appended to by Tasks 10, 12, 13 and 16.
+- Produces: `docs/decisions/0005-deferred-findings.md`, appended to by Tasks 8, 10, 12, 13, 14 and 16.
 
 - [ ] **Step 1: Create the branch**
 
@@ -557,11 +557,11 @@ Create `back/api/tests/test_permissions_matrix.py`:
 Characterization tests for the permission boundary of every registered route.
 
 These assert what the API does today so the refactor can be shown not to change
-it. One group of routes is deliberately absent: /api/users/. Those are reachable
-without credentials today, which is a defect, so per spec decision D8 they are
-not pinned here - Task 7 asserts the corrected behaviour in test_users_api.py
-instead. Pinning them would make the deploy gate defend the hole.
-"""
+it. One group of routes is deliberately absent: /api/users/. Those were
+reachable without credentials when this plan was written; the fix shipped
+out-of-band on 2026-08-22 and they now return 401. Task 7 owns their
+assertions in test_users_api.py - do not add them here, and do not assume
+the old permissive behaviour when reading the rest of this task.
 
 from django.urls import reverse
 from rest_framework import status
@@ -1588,8 +1588,50 @@ Task order in this phase is a dependency order, not a preference:
 
 ### Task 7: Security — close the unauthenticated user listing
 
+> **AMENDED BEFORE EXECUTION — the production fix has already shipped.**
+>
+> This defect was pulled out of the plan and fixed out-of-band on 2026-08-22,
+> because `/api/users/` was leaking every account's username and email on a live
+> site and this plan had it queued behind six other tasks. It is merged
+> (`3fed517b`), deployed, and verified live: `GET /api/users/` returns 401 and
+> `check_availability` still returns 200.
+>
+> **Do not re-implement it.** The shipped fix differs from what the steps below
+> propose, and the shipped one is what production runs:
+>
+> ```python
+> permission_classes = [permissions.IsAuthenticated]
+>
+> @action(detail=False, methods=["get"], permission_classes=[permissions.AllowAny])
+> def check_availability(self, request):
+> ```
+>
+> rather than a `get_permissions()` override. Both are equivalent; do not churn
+> the working code to match the plan's prose. Task 13's requirement that
+> `check_availability` stays public is satisfied either way.
+>
+> **What this task now does** is close the test gap. The shipped fix came with
+> five tests in `back/api/tests/test_user_endpoint_permissions.py`; the steps
+> below specify ten. Your job:
+>
+> 1. Create `back/api/tests/test_users_api.py` with the full set from Step 2
+>    below — it matches this repo's `test_<thing>_api.py` convention, which the
+>    hurried out-of-band filename did not.
+> 2. `git rm back/api/tests/test_user_endpoint_permissions.py` once every case
+>    it covers is present in the new file. Two files testing one viewset rot.
+> 3. Skip the steps that modify `back/api/views.py`. Verify the shipped code
+>    matches the snippet above and move on.
+> 4. Still write `docs/decisions/0002-permission-baseline.md` as specified, and
+>    record there that the fix shipped ahead of this plan and why.
+>
+> The five cases the shipped tests already cover: anonymous list, anonymous
+> detail, anonymous `me`, `check_availability` still public, authenticated list.
+> The five they do not: no email leaked to an anonymous caller, a free-email
+> availability check, no password field in any list row, `me` returning the
+> caller's identity, and the endpoint rejecting writes with 405.
+
 A security fix, so it asserts the **corrected** behaviour rather than current
-behaviour (Spec D8). Current behaviour is the defect.
+behaviour (Spec D8).
 
 **Files:**
 - Create: `back/api/tests/test_users_api.py`
