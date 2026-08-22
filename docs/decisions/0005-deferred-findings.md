@@ -114,3 +114,15 @@ cycle entirely.
   the frontend checks so the mismatch between what the UI accepts and what the
   API accepts is caught earlier is Task 13's responsibility; not touched here
   per this task's constraints.
+
+### Found during Task 12
+
+- Pagination is still declared two different ways. `ReportViewSet`,
+  `InventoryViewSet` and `InvoiceViewSet` opt out of DRF pagination and use
+  `OptionalPaginationMixin`; `OwnerViewSet`, `VehicleViewSet`, `UserViewSet` and
+  `UserProfileViewSet` inherit `LimitOffsetPagination` with no default page size,
+  which happens to produce a bare array too — until a caller passes `limit`, at
+  which point those four return the envelope and their zustand stores, which
+  assign `response.data` straight into state, would store an object where an
+  array is expected. Unifying this means changing the store contract as well as
+  the API and is out of scope for this cycle.

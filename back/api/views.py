@@ -16,7 +16,6 @@ to interact with corresponding serializers and models for structured input/outpu
 
 import os
 from rest_framework import permissions, status, viewsets, filters
-from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -35,12 +34,10 @@ from .serializers import (
     OwnerSerializer, VehicleSerializer,
     ReportSerializer, TaskSerializer, TaskTemplateSerializer,
     InventorySerializer, PartSerializer, InvoiceSerializer
-) 
+)
 from .filters import OwnerFilter
+from .mixins import OptionalPaginationMixin
 from .services.invoices import generate_invoice
-
-class CustomPagination(LimitOffsetPagination):
-    default_limit = 5
 
 # Authentication Views
 class RegisterView(APIView):
@@ -155,19 +152,6 @@ class OwnerViewSet(viewsets.ModelViewSet):
             ).order_by(f'{direction}_full_name')
 
         return queryset
-    
-    def update(self, request, *args, **kwargs):
-        """Allow partial updates while keeping existing values for missing fields."""
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-                
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=400)
 
 # Vehicles Views
 class VehicleViewSet(viewsets.ModelViewSet):
@@ -186,21 +170,8 @@ class VehicleViewSet(viewsets.ModelViewSet):
     filterset_fields = ['brand', 'model', 'year', 'license_plate', 'owner']
     ordering_fields = ['brand', 'model']
 
-    def update(self, request, *args, **kwargs):
-        """Allow partial updates while keeping existing values for missing fields."""
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-                
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=400)
-
 # Reports Views
-class ReportViewSet(viewsets.ModelViewSet):
+class ReportViewSet(OptionalPaginationMixin, viewsets.ModelViewSet):
     """
     API endpoint for managing maintenance reports.
 
@@ -218,10 +189,11 @@ class ReportViewSet(viewsets.ModelViewSet):
     )
     serializer_class = ReportSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+
     # disable Pagination
     pagination_class = None
-    
+    default_ordering = 'vehicle__brand,vehicle__model'
+
     # To set up filters from the backend side
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = {
@@ -235,43 +207,19 @@ class ReportViewSet(viewsets.ModelViewSet):
         """Attribute a new report to whoever is making the request."""
         serializer.save(user=self.request.user)
 
-    def list(self, request, *args, **kwargs):
-        limit = request.query_params.get("limit")
-        offset = request.query_params.get("offset")
-        ordering = request.query_params.get("ordering", "vehicle__brand,vehicle__model")
-
-        queryset = self.filter_queryset(self.get_queryset()).order_by(*ordering.split(","))
-        
-        if limit or offset:
-            self.pagination_class = CustomPagination
-            paginator = self.pagination_class()
-            paginated_queryset = paginator.paginate_queryset(queryset, request)
-            return paginator.get_paginated_response(self.get_serializer(paginated_queryset, many=True).data)
-        
-        # If no pagination params are set, return all results
-        return Response(self.get_serializer(queryset, many=True).data)
-    
     def update(self, request, *args, **kwargs):
-        """Allow partial updates while keeping existing values for missing fields."""
-        partial = kwargs.pop('partial', False)
+        """Update the report, and generate an invoice the first time it is exported."""
         instance = self.get_object()
-        
-        # Get the current status before updating
         previous_status = instance.status
-    
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
-        if serializer.is_valid():
-            serializer.save()
-            
-            # Check if status changed to "exported"
-            if previous_status != "exported" and serializer.validated_data.get("status") == "exported":
-                 invoice = generate_invoice(instance, request)
-                
-            return Response(serializer.data)
+        response = super().update(request, *args, **kwargs)
 
-        return Response(serializer.errors, status=400)
-    
+        instance.refresh_from_db()
+        if previous_status != 'exported' and instance.status == 'exported':
+            generate_invoice(instance, request)
+
+        return response
+
     @action(detail=True, methods=['get'])
     def tasks(self, request, pk=None):
         """ Get tasks related to a report """
@@ -302,21 +250,8 @@ class TaskTemplateViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['name', 'description']
     ordering_fields = ['name']
-    
-    def update(self, request, *args, **kwargs):
-        """Allow partial updates while keeping existing values for missing fields."""
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=400)
-
-class InventoryViewSet(viewsets.ModelViewSet):
+class InventoryViewSet(OptionalPaginationMixin, viewsets.ModelViewSet):
     """
     API endpoint for managing inventory items.
 
@@ -326,45 +261,17 @@ class InventoryViewSet(viewsets.ModelViewSet):
     queryset = Inventory.objects.all()
     serializer_class = InventorySerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+
     # disable Pagination
     pagination_class = None
-    
+    default_ordering = 'name'
+
     # To set up filters from the backend side
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['name', 'reference_code', 'category', 'updated_at']
     ordering_fields = ['name']
-    
-    def list(self, request, *args, **kwargs):
-        limit = request.query_params.get("limit")
-        offset = request.query_params.get("offset")
-        ordering = request.query_params.get("ordering", "name")
 
-        queryset = self.filter_queryset(self.get_queryset()).order_by(*ordering.split(","))
-        
-        if limit or offset:
-            self.pagination_class = CustomPagination
-            paginator = self.pagination_class()
-            paginated_queryset = paginator.paginate_queryset(queryset, request)
-            return paginator.get_paginated_response(self.get_serializer(paginated_queryset, many=True).data)
-        
-        # If no pagination params are set, return all results
-        return Response(self.get_serializer(queryset, many=True).data)
-    
-    def update(self, request, *args, **kwargs):
-        """Allow partial updates while keeping existing values for missing fields."""
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-           
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=400)
-
-class InvoiceViewSet(viewsets.ModelViewSet):
+class InvoiceViewSet(OptionalPaginationMixin, viewsets.ModelViewSet):
     """
     API endpoint for managing invoices.
 
@@ -382,40 +289,13 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     )
     serializer_class = InvoiceSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+
     # disable Pagination
     pagination_class = None
-    
+    default_ordering = 'issued_date'
+
     # To set up filters from the backend side
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['invoice_number']
     ordering_fields = ['issued_date']
-
-    def list(self, request, *args, **kwargs):
-        limit = request.query_params.get("limit")
-        offset = request.query_params.get("offset")
-        ordering = request.query_params.get("ordering", "issued_date")
-
-        queryset = self.filter_queryset(self.get_queryset()).order_by(*ordering.split(","))
-        
-        if limit or offset:
-            self.pagination_class = CustomPagination
-            paginator = self.pagination_class()
-            paginated_queryset = paginator.paginate_queryset(queryset, request)
-            return paginator.get_paginated_response(self.get_serializer(paginated_queryset, many=True).data)
-        
-        # If no pagination params are set, return all results
-        return Response(self.get_serializer(queryset, many=True).data)
-    
-    def update(self, request, *args, **kwargs):
-        """Allow partial updates while keeping existing values for missing fields."""
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=400)
 
