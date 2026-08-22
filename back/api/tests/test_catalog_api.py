@@ -187,3 +187,127 @@ class InvoiceEndpointTests(APITestCase):
         response = self.client.get(reverse("invoice-list") + "?limit=1")
         self.assertEqual(set(response.data.keys()), {"count", "next", "previous", "results"})
         self.assertEqual(response.data["count"], 1)
+
+
+class OrderingFallbackTests(APITestCase):
+    """A present-but-blank `ordering` value must fall back to
+    `default_ordering`, on all three viewsets that use `OptionalPaginationMixin`.
+
+    `request.query_params.get("ordering", self.default_ordering)` only
+    substitutes the default when the key is *absent*. `?ordering=` (and
+    anything that reduces to no real field names once split on commas) leaves
+    `ordering` as `''`, and `''.split(",")` is `['']` - `order_by('')` then
+    raises `FieldError`, a 500 on an authenticated endpoint. This pins the
+    fallback for Report, Inventory and Invoice, and pins that valid ordering
+    values still sort exactly as before.
+    """
+
+    def setUp(self):
+        self.user = make_user(email="e@example.com", username="e")
+        authenticate(self.client, self.user)
+
+        Inventory.objects.create(
+            name="Zebra filter",
+            reference_code="REF-Z",
+            quantity_in_stock=Decimal("1.00"),
+            unit_price=Decimal("1.00"),
+        )
+        Inventory.objects.create(
+            name="Alpha filter",
+            reference_code="REF-A",
+            quantity_in_stock=Decimal("1.00"),
+            unit_price=Decimal("1.00"),
+        )
+
+        owner = Owner.objects.create(
+            first_name="Ada", last_name="Lovelace", email="ordering@example.com"
+        )
+        # Created out of brand order, so a plain id-order listing would not
+        # coincidentally match a vehicle__brand,vehicle__model ordering.
+        vehicle_zeta = Vehicle.objects.create(
+            owner=owner, brand="Zeta Motors", model="Q", year=2015, license_plate="ORD-Z"
+        )
+        vehicle_alpha = Vehicle.objects.create(
+            owner=owner, brand="Alpha Motors", model="R", year=2016, license_plate="ORD-A"
+        )
+        vehicle_mid = Vehicle.objects.create(
+            owner=owner, brand="Mid Motors", model="S", year=2017, license_plate="ORD-M"
+        )
+        vehicle_omega = Vehicle.objects.create(
+            owner=owner, brand="Omega Motors", model="T", year=2018, license_plate="ORD-O"
+        )
+        self.expected_brand_order = [
+            vehicle_alpha.id,
+            vehicle_mid.id,
+            vehicle_omega.id,
+            vehicle_zeta.id,
+        ]
+        Report.objects.create(vehicle=vehicle_zeta, user=self.user, status="completed")
+        Report.objects.create(vehicle=vehicle_alpha, user=self.user, status="completed")
+        Report.objects.create(vehicle=vehicle_mid, user=self.user, status="completed")
+
+        template = TaskTemplate.objects.create(name="Oil change", price=Decimal("50.00"))
+        item = Inventory.objects.create(
+            name="Oil filter",
+            reference_code="OF-ORD",
+            quantity_in_stock=Decimal("20.00"),
+            unit_price=Decimal("15.00"),
+        )
+        report_for_invoice = Report.objects.create(
+            vehicle=vehicle_omega, user=self.user, status="completed"
+        )
+        Task.objects.create(report=report_for_invoice, task_template=template)
+        Part.objects.create(report=report_for_invoice, part=item, quantity_used=Decimal("1.00"))
+        Invoice.objects.create(invoice_number="ORD-000001", report=report_for_invoice)
+        Invoice.objects.create(invoice_number="ORD-000002", report=report_for_invoice)
+
+        self.endpoints = {
+            "report": reverse("report-list"),
+            "inventory": reverse("inventory-list"),
+            "invoice": reverse("invoice-list"),
+        }
+
+    def assert_falls_back_to_default(self, url, query):
+        default_response = self.client.get(url)
+        response = self.client.get(url + query)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            f"{url}{query} returned {response.status_code}, body={response.data!r}",
+        )
+        self.assertIsInstance(response.data, list)
+        self.assertEqual(response.data, default_response.data)
+
+    def test_empty_ordering_falls_back_for_all_three_endpoints(self):
+        for name, url in self.endpoints.items():
+            with self.subTest(endpoint=name):
+                self.assert_falls_back_to_default(url, "?ordering=")
+
+    def test_whitespace_only_ordering_falls_back_for_all_three_endpoints(self):
+        for name, url in self.endpoints.items():
+            with self.subTest(endpoint=name):
+                self.assert_falls_back_to_default(url, "?ordering=%20")
+
+    def test_only_separators_ordering_falls_back_for_all_three_endpoints(self):
+        for name, url in self.endpoints.items():
+            with self.subTest(endpoint=name):
+                self.assert_falls_back_to_default(url, "?ordering=,")
+
+    def test_empty_segment_among_valid_fields_falls_back_to_the_valid_fields(self):
+        # "name,," on Inventory: the empty trailing segments are dropped, and
+        # the one real field left ("name") is exactly what default_ordering
+        # already is, so the result matches the unfiltered default.
+        self.assert_falls_back_to_default(self.endpoints["inventory"], "?ordering=name,,")
+
+    def test_valid_single_field_ordering_is_unaffected(self):
+        response = self.client.get(self.endpoints["inventory"] + "?ordering=name")
+        names = [row["name"] for row in response.data]
+        self.assertEqual(names, ["Alpha filter", "Oil filter", "Zebra filter"])
+
+    def test_valid_comma_separated_pair_ordering_is_unaffected(self):
+        response = self.client.get(
+            self.endpoints["report"] + "?ordering=vehicle__brand,vehicle__model"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        vehicle_ids = [row["vehicle"] for row in response.data]
+        self.assertEqual(vehicle_ids, self.expected_brand_order)
