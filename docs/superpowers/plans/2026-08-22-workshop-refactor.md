@@ -562,6 +562,7 @@ reachable without credentials when this plan was written; the fix shipped
 out-of-band on 2026-08-22 and they now return 401. Task 7 owns their
 assertions in test_users_api.py - do not add them here, and do not assume
 the old permissive behaviour when reading the rest of this task.
+"""
 
 from django.urls import reverse
 from rest_framework import status
