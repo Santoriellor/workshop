@@ -127,7 +127,31 @@ in and runs `docker compose build --no-cache && docker compose up -d`.
 
 ## Formatting
 
-Only `front` has any formatter/linter configured (Prettier + ESLint). Nothing
-formats or lints the backend today. See
-`docs/decisions/0005-deferred-findings.md` for what a later phase of this
-refactor does about that (ruff for Python).
+Backend (from the repository root):
+
+```bash
+pip install -r back/requirements-dev.txt
+ruff check back --fix
+ruff format back
+```
+
+Frontend (from `front/`):
+
+```bash
+npx prettier --write "src/**/*.{js,jsx,css}"
+npx eslint . --fix
+```
+
+Configuration lives in `ruff.toml` (repository root), `front/.prettierrc` and
+`front/eslint.config.js`.
+
+Every fresh clone needs one one-time command for `git blame` to skip the
+formatting sweep commit (recorded in `.git-blame-ignore-revs`):
+
+```bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
+Both checks also run in `.github/workflows/deploy.yml`'s `test` job — `ruff
+check`, `ruff format --check` and `eslint . --max-warnings 0` — and a style
+failure blocks the `deploy` job the same way a failing test would.
