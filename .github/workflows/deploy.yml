@@ -107,8 +107,17 @@ jobs:
           # --delete makes the server mirror the repo. Without it a renamed or removed
           # file lingers forever: space-multi's deploy failed compiling a class and its
           # rename side by side. Excluded paths are NOT deleted unless --delete-excluded
-          # is passed. Verified before enabling: this deploy path holds only source.
+          # is passed. Uploads, static files and the database are named Docker volumes,
+          # and secrets come from /srv/secrets/workshop, so none of them live here.
+          # nginx/media on the server is root-owned, dated Dec 2025, and referenced
+          # by nothing in docker-compose.yml, which defines only mysql, backend and
+          # frontend and mounts no host nginx dir - nginx/frontend/nginx.conf reaches
+          # the image through the Dockerfile at build time. rsync cannot delete it
+          # without root, so --delete fails the whole transfer unless it is excluded.
+          # Sockets are runtime artifacts and are never repo content.
           rsync -avz --delete \
+            --exclude "nginx/media" \
+            --exclude "*.sock" \
             --exclude ".git" \
             --exclude ".github" \
             --exclude "node_modules" \
