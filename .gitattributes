@@ -1,1 +1,25 @@
+* text=auto eol=lf
+
+# Shell scripts were already pinned before this file was generalised. Keeping
+# the rule explicit means it survives any later edit to the blanket line above.
 *.sh text eol=lf
+
+# Explicitly mark binary assets so autocrlf/eol normalization never touches
+# them, regardless of git's content heuristics.
+#
+# SVG is deliberately NOT in this list. It is XML, so it is text, and marking it
+# binary here would have been actively harmful: `binary` means "never convert",
+# so re-normalising would freeze whatever line endings the working tree happened
+# to hold. On this Windows checkout that meant staging autocrlf's CRLF back into
+# a blob that was already LF, growing close-circle-full.svg by a byte. Treating
+# SVG as text normalises all of them to LF instead, which is the point.
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
