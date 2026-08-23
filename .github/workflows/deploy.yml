@@ -120,14 +120,16 @@ jobs:
           # rename side by side. Excluded paths are NOT deleted unless --delete-excluded
           # is passed. Uploads, static files and the database are named Docker volumes,
           # and secrets come from /srv/secrets/workshop, so none of them live here.
-          # nginx/media on the server is root-owned, dated Dec 2025, and referenced
-          # by nothing in docker-compose.yml, which defines only mysql, backend and
-          # frontend and mounts no host nginx dir - nginx/frontend/nginx.conf reaches
-          # the image through the Dockerfile at build time. rsync cannot delete it
-          # without root, so --delete fails the whole transfer unless it is excluded.
+          # nginx/media was excluded here until 2026-08-23. It was root-owned, dated
+          # Dec 2025, and referenced by nothing in docker-compose.yml, which defines
+          # only mysql, backend and frontend and mounts no host nginx dir -
+          # nginx/frontend/nginx.conf reaches the image through the Dockerfile at
+          # build time. rsync could not delete a root-owned path, so --delete failed
+          # the whole transfer unless it was excluded. The estate retirement cycle
+          # removed it from the server with root, so the exclusion is gone and that
+          # path is mirrored like everything else.
           # Sockets are runtime artifacts and are never repo content.
           rsync -avz --delete \
-            --exclude "nginx/media" \
             --exclude "*.sock" \
             --exclude ".git" \
             --exclude ".github" \
